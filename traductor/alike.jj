@@ -298,7 +298,6 @@ Symbol.Types Relacion() :
 				}
 			}
 		}
-		//System.out.println("Relavion: " + tipo);
 		return tipo;
 	}
 }
@@ -334,7 +333,6 @@ Symbol.Types Expresion_simple() :
 		if ((match1 && tipo != Symbol.Types.INT) || (match2 && (tipo != Symbol.Types.INT || tipo2 != Symbol.Types.INT))) {
 			tipo = Symbol.Types.UNDEFINED;
 		}
-		//System.out.println("Expr: " + tipo);
 		return tipo;
 	}
 }
@@ -351,7 +349,6 @@ Symbol.Types Termino() :
 		if (match2 && (tipo != Symbol.Types.INT || tipo2 != Symbol.Types.INT)) { 
 			tipo = Symbol.Types.UNDEFINED;
 		}
-		//System.out.println("Termino: " + tipo);
 		return tipo;
 	}
 }
@@ -371,7 +368,6 @@ Symbol.Types Factor() :
 		else if (match2) {
 			tipo = tipo2;
 		}
-		//System.out.println("Factor: " + tipo);
 		return tipo;
 	}
 }
