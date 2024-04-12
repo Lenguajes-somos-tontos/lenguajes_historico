@@ -406,18 +406,18 @@ Symbol.Types Primario() :
 					// Se sube el tipo que retorna la función
 				}
 				else {
-					System.out.println("La función " + t.image + " tiene parámetros");
+					System.out.println("ERROR: La función " + t.image + " tiene parámetros");
 					// Se ha utilizado una función que tiene parámetros como
 					// una que no los tiene
 				}
 			}
 			else {
-				System.out.println("El tipo procedimiento de " + t.image + " no es correcto");
+				System.out.println("ERROR: El tipo de " + t.image + " no es correcto");
 				// El ID es un procedimiento, error
 			}
 		}
 		catch (SymbolNotFoundException s) {
-			System.out.println("El símbolo " + t.image + " no está definido");
+			System.out.println("ERROR: El símbolo " + t.image + " no está definido");
 		}
 	}
 |	t = <tNUM> {tipo = Symbol.Types.INT;}
@@ -452,8 +452,7 @@ void Asignacion() :
 			}
 		}
 		catch (SymbolNotFoundException s) {
-			System.out.println("El simbolo no existe");
-			// El ID no existe, error
+			System.out.println("ERROR: El simbolo " + id.image + " no está definido");
 		}
 	}
 }
