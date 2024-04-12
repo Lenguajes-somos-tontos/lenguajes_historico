@@ -471,7 +471,25 @@ void Instruccion_sin_return() :
 			if (llamada_funcion_simple) {
 				try {
 					Symbol simbolo_proc_func = st.getSymbol(id.image);
-					// Si no salta excepción, no saca nada
+					
+					if ((simbolo_proc_func.type != Symbol.Types.FUNCTION) || (simbolo_proc_func.type != Symbol.Types.PROCEDURE)) {
+						System.out.println("ERROR: Se esperaba un procedimiento o función");
+					}
+					else {
+						// El ID que se ha escrito es un función o procedimiento, verificar que no tiene parámetros
+						if (simbolo_proc_func.type == Symbol.Types.FUNCTION) {
+							SymbolFunction s = (SymbolFunction) simbolo_proc_func;
+							if (!s.parList.isEmpty()) {
+								System.out.println("ERROR: Los parámetros de la función " + id.image + " no son correctos");
+							}
+						}
+						else {
+							SymbolProcedure s = (SymbolProcedure) simbolo_proc_func;
+							if (!s.parList.isEmpty()) {
+								System.out.println("ERROR: Los parámetros del procedimiento " + id.image + " no son correctos");
+							}
+						}
+					}
 				}
 				catch (SymbolNotFoundException s) {
 					System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
@@ -496,7 +514,25 @@ void Instruccion_con_return() :
 			if (llamada_funcion_simple) {
 				try {
 					Symbol simbolo_proc_func = st.getSymbol(id.image);
-					// Si no salta excepción, no saca nada
+					
+					if ((simbolo_proc_func.type != Symbol.Types.FUNCTION) || (simbolo_proc_func.type != Symbol.Types.PROCEDURE)) {
+						System.out.println("ERROR: Se esperaba un procedimiento o función");
+					}
+					else {
+						// El ID que se ha escrito es un función o procedimiento, verificar que no tiene parámetros
+						if (simbolo_proc_func.type == Symbol.Types.FUNCTION) {
+							SymbolFunction s = (SymbolFunction) simbolo_proc_func;
+							if (!s.parList.isEmpty()) {
+								System.out.println("ERROR: Los parámetros de la función " + id.image + " no son correctos");
+							}
+						}
+						else {
+							SymbolProcedure s = (SymbolProcedure) simbolo_proc_func;
+							if (!s.parList.isEmpty()) {
+								System.out.println("ERROR: Los parámetros del procedimiento " + id.image + " no son correctos");
+							}
+						}
+					}
 				}
 				catch (SymbolNotFoundException s) {
 					System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
