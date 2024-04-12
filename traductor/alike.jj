@@ -461,10 +461,23 @@ void Asignacion() :
 
 void Instruccion_sin_return() :
 {
+	Token id;
+	boolean llamada_funcion_simple = true;
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
-	| LOOKAHEAD(2) <tID> (Instr_funcion_vector())?
+	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image){llamada_funcion_simple = false;})?
+		{
+			if (llamada_funcion_simple) {
+				try {
+					Symbol simbolo_proc_func = st.getSymbol(id.image);
+					// Si no salta excepción, no saca nada
+				}
+				catch (SymbolNotFoundException s) {
+					System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
+				}
+			}
+		}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tNULL>) <tPC>
 }
@@ -473,10 +486,23 @@ void Instruccion_sin_return() :
 
 void Instruccion_con_return() :
 {
+	Token id;
+	boolean llamada_funcion_simple = true;
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
-	| LOOKAHEAD(2) <tID> (Instr_funcion_vector())?
+	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image){llamada_funcion_simple = false;})?
+		{
+			if (llamada_funcion_simple) {
+				try {
+					Symbol simbolo_proc_func = st.getSymbol(id.image);
+					// Si no salta excepción, no saca nada
+				}
+				catch (SymbolNotFoundException s) {
+					System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
+				}
+			}
+		}
 	| Instr_condicional_con_return() | Instr_iterativa_con_return()
 	| <tNULL>
 	| <tRETURN> Expresion()) <tPC>
@@ -484,7 +510,7 @@ void Instruccion_con_return() :
 
 
 
-void Instr_funcion_vector() :
+void Instr_funcion_vector(String id) :
 {
 }
 {
