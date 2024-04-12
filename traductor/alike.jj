@@ -425,9 +425,7 @@ Symbol.Types Primario() :
 |	t = <tSTRING> {tipo = Symbol.Types.STRING;}
 |	t = <tTRUE> {tipo = Symbol.Types.BOOL;}
 |	t = <tFALSE> {tipo = Symbol.Types.BOOL;})
-	{
-		return tipo;
-	}
+	{return tipo;}
 }
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
@@ -448,13 +446,8 @@ void Asignacion() :
 			simbolo_asignacion = st.getSymbol(id.image);
 
 			Symbol.Types tipo_id = simbolo_asignacion.type;
-			if ((tipo_id == tipo_asignacion) &&
-				((tipo_id != Symbol.Types.FUNCTION) || (tipo_id != Symbol.Types.PROCEDURE) || tipo_id != Symbol.Types.ARRAY)) {
-				// La asignación está bien
-				System.out.println("La asignacion es buena");
-
-			}
-			else {
+			if (!((tipo_id == tipo_asignacion) &&
+				((tipo_id != Symbol.Types.FUNCTION) || (tipo_id != Symbol.Types.PROCEDURE) || tipo_id != Symbol.Types.ARRAY))) {
 				System.out.println("Los tipos de la asignación no son correctos");
 			}
 		}
