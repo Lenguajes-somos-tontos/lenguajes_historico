@@ -448,7 +448,7 @@ void Asignacion() :
 			Symbol.Types tipo_id = simbolo_asignacion.type;
 			if (!((tipo_id == tipo_asignacion) &&
 				((tipo_id != Symbol.Types.FUNCTION) || (tipo_id != Symbol.Types.PROCEDURE) || tipo_id != Symbol.Types.ARRAY))) {
-				System.out.println("Los tipos de la asignación no son correctos");
+				System.out.println("ERROR: Se esperaba un tipo " + tipo_id);
 			}
 		}
 		catch (SymbolNotFoundException s) {
