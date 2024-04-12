@@ -1,0 +1,822 @@
+//*****************************************************************
+// File:   alike.jj
+// Author: Jorge Rodilla Esteve 845389 Enrique Martinez Casanova 839773
+// Date:   marzo 2024
+// Coms:   compilar mediante "ant"
+//*****************************************************************
+
+options {
+	IGNORE_CASE = true;			// Esto hace que las comparaciones de tokens sea case-insensitive
+	COMMON_TOKEN_ACTION = false;
+}
+
+PARSER_BEGIN(alike)
+
+package traductor;
+
+import lib.symbolTable.*;
+import lib.symbolTable.exceptions.*;
+import java.util.*;
+import lib.attributes.*;
+
+public class alike {
+	static SymbolTable st;
+	public static void main(String[] args) {
+	st = new SymbolTable();
+
+	   alike parser = null;
+		try {
+		    if (args.length == 0) {
+			   parser = new alike(System.in);
+			}
+		    else {
+			   parser = new alike(new java.io.FileInputStream(args[0]));
+		    }
+		   parser.Programa();
+		   System.out.println("***** Análisis terminado *****");
+	    }
+	    catch (java.io.FileNotFoundException e) {
+		   System.err.println ("Fichero " + args[0] + " no encontrado.");
+	    }
+	    catch (TokenMgrError e) {
+		   System.err.println("LEXICAL ERROR: " + e.getMessage());
+	    }
+	    catch (ParseException e) {
+		   System.err.println("PARSE ERROR: " + e.getMessage());
+		}
+	    catch (Exception e) {
+			System.err.println("Finalizo traducción por detección de error no controlado: \n\t" + e.getMessage());
+  		}
+	}
+}
+
+PARSER_END(alike)
+
+TOKEN : {
+	<#tLETRA: (["a"-"z"])>
+|	<#tDIGITO: ["0"-"9"]>
+|	<#tCARACTER: (~["\t","\n","\r"])>
+}
+
+TOKEN : {
+	<tBOOL: "boolean">
+|	<tCHAR: "character">
+|	<tINT: "integer">
+|   <tASIG: ":=">
+|   <tDISTINTO: "/=">
+|   <tIGUAL: "=">
+|   <tMAYOR: ">">
+|   <tMENOR: "<">
+|   <tMENORIGUAL: "<=">
+|   <tMAYORIGUAL: ">=">
+|   <tOPMAS: "+">
+|   <tOPMENOS: "-">
+|   <tOPMULT: "*">
+|   <tOPDIV: "/">
+|   <tBARRAB: "_">
+|   <tIF: "if">
+|   <tAND: "and">
+|   <tOR: "or">
+|   <tNOT: "not">
+|   <tTHEN: "then">
+|   <tELSE: "else">
+|   <tELSIF: "elsif">
+|   <tPC: ";">
+|   <tPUNTOS: "..">
+|   <tCOMA: ",">
+|   <tWHILE: "while">
+|   <tTRUE: "true">
+|   <tFALSE: "false">
+|   <tLOOP: "loop">
+|   <tPROC: "procedure">
+|   <tFUNC: "function">
+|   <tIS: "is">
+|	<tBEGIN: "begin">
+|	<tEND: "end">	
+|	<tOPMOD: "mod">
+|	<tOF: "of">
+|	<tREF: "ref">
+|	<tAP: "(">
+|	<tCP: ")">
+|	<tAC: "[">
+|	<tCC: "]">
+|	<tARRAY: "array">
+|	<tDOSP: ":">
+|	<tRETURN: "return">
+|	<tNULL: "null">
+|	<tNUM: (<tDIGITO>)+>
+|	<tID: (<tLETRA > | <tBARRAB>) (<tLETRA> | <tDIGITO> | <tBARRAB>)*>
+|	<tSTRING: "\""(<tCARACTER>)*"\"">
+|	<tCONSTCHAR: "\'"<tCARACTER>"\'">
+}
+
+SKIP :
+{
+	" "
+|	"\t"
+|	"\n"
+|	"\r"
+|	<tCOMMENT : "--" (<tCARACTER>)*>
+}
+
+
+
+void Programa() : 
+{
+}
+{
+
+	////////////////////////////////////////////////////////////////////////////
+	// LISTA DE AVANCES
+	////////////////////////////////////////////////////////////////////////////
+	/*
+	 * - La produccion Declaracion() ya mete automaticamente los simbolos en la tabla,
+	 *   no mete los que ya estan definidos a ese nivel, y saca mensajes de error por pantalla
+	 *   en caso de que una variable ya este definida o en caso de que un array tenga mal los indices (ind_menor > ind_mayor).
+	 *
+	 * - La producción Parametros() devuelve la lista de símbolos leídos de parámetros sin checkear repetidos
+	 *   o índices de array incorrectos y los inserta en la tabla de simbolos.
+	 *
+	 * - Procedimiento() y Funcion() funcionan igual, se mete el símbolo al mismo nivel de lo anterior, nuevo
+	 *   bloque para variables globales y parámetros, si hay cualquier problema (nombre de variable, parámetro o función
+	 *   ya repetido, o índices de algún array por parámetro incorrectos), se inserta lo que se pueda en la tabla de símbolos
+	 *   (da igual lo que se meta porque el procedimiento o función está mal) y se asigna el array de parámetros.
+	 */
+	{st.insertBlock();}
+	Programa_completo()
+	{st.removeBlock();}
+	<EOF>
+}
+
+
+
+void Declaracion() : // Cada linea de declaracion dispara esta produccion
+{
+	ArrayList<String> array_nombres_variables;	// Estas variables son del mismo tipo
+	Symbol tipo_variables;						// UN simbolo sin nombre
+}
+{
+	{array_nombres_variables = new ArrayList<String>();}
+
+	(Lista_IDS(array_nombres_variables) <tDOSP> tipo_variables = Tipos_variables())
+
+	{
+		// Se tiene un simbolo sin nombre y un array de Strings
+		for (String variable : array_nombres_variables) {
+			tipo_variables.name = variable;					// Se asigna el nombre
+			try {st.insertSymbol(tipo_variables.clone());}	// Se inserta una copia del puntero
+			catch (AlreadyDefinedSymbolException e) {
+				System.out.println("Simbolo " + variable + " ya definido");
+			}
+			catch (IndexArrayNotCorrect i) {	// Caso de simbolo array con indices incorrectos
+				System.out.println("Los indices del array " + variable + " no son correctos");
+			}
+		}
+	}
+}
+
+
+
+// Devuelve UN simbolo sin nombre del tipo correspondiente
+Symbol Tipos_variables() :
+{
+	Symbol result;
+}
+{
+	(result = Tipo_variable() | result = Tipo_array())
+	{return result;}
+}
+
+
+
+// Array por referencia de IDs leidos
+void Lista_IDS(ArrayList<String> array_nombres_variables) :
+{
+	Token t;
+}
+{
+	t = <tID> {array_nombres_variables.add(t.image.toLowerCase());} (<tCOMA> Lista_IDS(array_nombres_variables))?
+}
+
+
+
+// Devuelve un puntero a símbolo sin nombre
+Symbol Tipo_variable() :
+{
+	Token t;
+	Symbol result = null;
+}
+{
+	(t = <tBOOL> | t = <tINT> | t = <tCHAR>)
+	{
+		switch (t.image.toLowerCase()) {
+			case "boolean":
+				result = new SymbolBool("");
+				break;
+			case "integer":
+				result = new SymbolInt("");
+				break;
+			case "character":
+				result = new SymbolChar("");
+				break;
+		}
+		return result;
+	}
+}
+
+
+
+// Simbolo de tipo array sin nombre
+Symbol Tipo_array() :
+{
+	Token indMin, indMax;
+	Symbol tipo_base;
+}
+{
+	<tARRAY> <tAP> indMin = <tNUM> <tPUNTOS> indMax = <tNUM> <tCP> <tOF> tipo_base = Tipo_variable()
+	{
+		int indMin_i = Integer.parseInt(indMin.image);
+		int indMax_i = Integer.parseInt(indMax.image);
+		Symbol result = new SymbolArray("", indMin_i, indMax_i, tipo_base.type);
+		return result;
+	}
+}
+
+
+
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+Symbol.Types Expresion() :
+{
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	boolean match2 = false;
+}
+{
+	(tipo = Relacion() (((<tAND> | <tOR>) tipo2 = Relacion())+ {match2 = true;} )?)
+
+	{
+		if (match2 && (tipo != Symbol.Types.BOOL || tipo2 != Symbol.Types.BOOL)) {
+			tipo = Symbol.Types.UNDEFINED;
+		}
+		System.out.println("Expresion: " + tipo);
+		return tipo;
+	}
+}
+
+Symbol.Types Relacion() :
+{
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	Token op = null;
+	boolean match2 = false;
+}
+{
+	(tipo = Expresion_simple() (op = Operador_relacional() tipo2 = Expresion_simple() {match2=true;})?)
+	{
+		if (match2) {
+			if (tipo != tipo2) {
+				tipo = Symbol.Types.UNDEFINED; 
+			}
+		}
+		if (tipo != Symbol.Types.UNDEFINED) {
+			if (match2 && (op.image.equals("=") || op.image.equals("/="))) {
+				if (tipo == Symbol.Types.STRING || tipo == Symbol.Types.ARRAY) {
+					tipo = Symbol.Types.UNDEFINED;
+				}
+				else {
+					tipo = Symbol.Types.BOOL;
+				}
+			}
+			else if (match2 && (!op.image.equals("=") || !op.image.equals("/="))) {
+				if (tipo != Symbol.Types.INT || tipo == Symbol.Types.CHAR) {
+					tipo = Symbol.Types.UNDEFINED;
+				}
+				else {
+					tipo = Symbol.Types.BOOL;
+				}
+			}
+		}
+		//System.out.println("Relavion: " + tipo);
+		return tipo;
+	}
+}
+
+Token Operador_relacional() :
+{
+	Token t;
+}
+{
+    (t = <tIGUAL> | t = <tMENOR> | t = <tMAYOR> | t = <tMENORIGUAL> | t = <tMAYORIGUAL> | t = <tDISTINTO>)
+	{
+		return t;
+	}
+}
+
+void Operador_multiplicativo() :
+{
+}
+{
+    <tOPMULT> | <tOPMOD> | <tOPDIV>
+}
+
+Symbol.Types Expresion_simple() :
+{
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	boolean match1 = false;
+	boolean match2 = false;
+}
+{
+   ((<tOPMAS> {match1=true;} | <tOPMENOS> {match1=true;})?   tipo = Termino() ((<tOPMAS> | <tOPMENOS>)  tipo2 = Termino() {match2=true;})*)
+   {
+		if ((match1 && tipo != Symbol.Types.INT) || (match2 && (tipo != Symbol.Types.INT || tipo2 != Symbol.Types.INT))) {
+			tipo = Symbol.Types.UNDEFINED;
+		}
+		//System.out.println("Expr: " + tipo);
+		return tipo;
+	}
+}
+
+Symbol.Types Termino() :
+{
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	boolean match2 = false;
+}
+{
+    (tipo = Factor() (Operador_multiplicativo() tipo2 = Factor() {match2 = true;})*)
+	{
+		if (match2 && (tipo != Symbol.Types.INT || tipo2 != Symbol.Types.INT)) { 
+			tipo = Symbol.Types.UNDEFINED;
+		}
+		//System.out.println("Termino: " + tipo);
+		return tipo;
+	}
+}
+
+Symbol.Types Factor() :
+{
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	boolean match2 = false;
+}
+{
+    (tipo = Primario() | <tNOT> tipo2 = Primario() {match2 = true;})
+	{
+		if (match2 && tipo2 != Symbol.Types.BOOL) { 
+			tipo = Symbol.Types.UNDEFINED;
+		}
+		else if (match2) {
+			tipo = tipo2;
+		}
+		//System.out.println("Factor: " + tipo);
+		return tipo;
+	}
+}
+
+Symbol.Types Primario() :
+{
+	Token t;
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	Symbol simbolo = null;
+}
+{
+    (<tAP> tipo = Expresion() <tCP>
+|	LOOKAHEAD(2) <tID> <tAP> Expresion() (<tCOMA> Expresion())* <tCP>
+|	t = <tID>
+	{
+		try {
+			simbolo = st.getSymbol(t.image);
+
+			if (simbolo.type == Symbol.Types.INT) {
+				tipo = Symbol.Types.INT;
+			}
+			else if (simbolo.type == Symbol.Types.BOOL) {
+				tipo = Symbol.Types.BOOL;
+			}
+			else if (simbolo.type == Symbol.Types.CHAR) {
+				tipo = Symbol.Types.CHAR;
+			}
+			else if (simbolo.type == Symbol.Types.ARRAY) {
+				tipo = Symbol.Types.ARRAY;
+			}
+			else if (simbolo.type == Symbol.Types.FUNCTION) {
+				SymbolFunction s = (SymbolFunction) simbolo;
+				// Se verifica que la función no tiene parámetros
+				if (s.parList.isEmpty()) {
+					tipo = s.returnType;
+					// Se sube el tipo que retorna la función
+				}
+				else {
+					System.out.println("La función " + t.image + " tiene parámetros");
+					// Se ha utilizado una función que tiene parámetros como
+					// una que no los tiene
+				}
+			}
+			else {
+				System.out.println("El tipo procedimiento de " + t.image + " no es correcto");
+				// El ID es un procedimiento, error
+			}
+		}
+		catch (SymbolNotFoundException s) {
+			System.out.println("El símbolo " + t.image + " no está definido");
+		}
+	}
+|	t = <tNUM> {tipo = Symbol.Types.INT;}
+|	t = <tCONSTCHAR> {tipo = Symbol.Types.CHAR;}
+|	t = <tSTRING> {tipo = Symbol.Types.STRING;}
+|	t = <tTRUE> {tipo = Symbol.Types.BOOL;}
+|	t = <tFALSE> {tipo = Symbol.Types.BOOL;})
+	{
+		return tipo;
+	}
+}
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+
+
+void Asignacion() :
+{
+	Token id;
+	Symbol.Types tipo_asignacion;
+	Symbol simbolo_asignacion;
+}
+{
+	id = <tID> <tASIG> tipo_asignacion = Expresion()
+	{
+		try {
+			simbolo_asignacion = st.getSymbol(id.image);
+
+			Symbol.Types tipo_id = simbolo_asignacion.type;
+			if ((tipo_id == tipo_asignacion) &&
+				((tipo_id != Symbol.Types.FUNCTION) || (tipo_id != Symbol.Types.PROCEDURE) || tipo_id != Symbol.Types.ARRAY)) {
+				// La asignación está bien
+				System.out.println("La asignacion es buena");
+
+			}
+			else {
+				System.out.println("Los tipos de la asignación no son correctos");
+			}
+		}
+		catch (SymbolNotFoundException s) {
+			System.out.println("El simbolo no existe");
+			// El ID no existe, error
+		}
+	}
+}
+
+
+
+void Instruccion_sin_return() :
+{
+}
+{
+	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
+	| LOOKAHEAD(2) <tID> (Instr_funcion_vector())?
+	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
+	| <tNULL>) <tPC>
+}
+
+
+
+void Instruccion_con_return() :
+{
+}
+{
+	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
+	| LOOKAHEAD(2) <tID> (Instr_funcion_vector())?
+	| Instr_condicional_con_return() | Instr_iterativa_con_return()
+	| <tNULL>
+	| <tRETURN> Expresion()) <tPC>
+}
+
+
+
+void Instr_funcion_vector() :
+{
+}
+{
+	<tAP> Expresion() Instr_funcion_vector_2()
+}
+
+
+
+void Instr_funcion_vector_2() :
+{
+}
+{
+	<tCP> Instr_funcion_vector_3()
+	| (<tCOMA> Expresion())+ <tCP> // Este es el matching de las llamadas a funciones
+	// recordar caso put_line(), tiene parametros indefinidos de cualquier tipo, incluido strings
+}
+
+
+
+void Instr_funcion_vector_3() :
+{
+}
+{
+	<tASIG> Expresion() // Matching de asignacion a componente de array
+	| {}				// Matching de llamada a funcion con un solo parametro
+}
+
+
+
+void Programa_completo() :
+{
+}
+{
+	<tPROC> <tID> <tIS>
+	(Declaracion() <tPC>)*
+	(Procedimiento() | Funcion())*
+	<tBEGIN>
+	{System.out.println(st.toString());}
+	(Instruccion_sin_return())+
+	//{System.out.println(st.toString());}
+	<tEND> <tPC>
+}
+
+
+
+// Devuelve un Symbol del tipo en cuestión, por valor o por referencia y sin nombre
+Symbol Parametro_aux() :
+{
+	boolean por_referencia;
+	Symbol tipo_parametro;
+}
+{
+	({por_referencia = true;} <tREF> | {por_referencia = false;} {}) tipo_parametro = Tipos_variables() // Tipos_variables() devuelve UN symbol sin nombre de un tipo
+	{
+		if (por_referencia) {	// Se modifica el Symbol para indicar que es un parametro por referencia o por valor
+			tipo_parametro.parClass = Symbol.ParameterClass.REF;
+		}
+		else {
+			tipo_parametro.parClass = Symbol.ParameterClass.VAL;
+		}
+		return tipo_parametro;
+	}
+}
+
+
+
+// Array por referencia con los símbolos leídos de parámetros
+void Parametro(ArrayList<Symbol> lista_parametros) :
+{
+	ArrayList<String> array_nombres_variables = new ArrayList<>();
+	Symbol tipo_parametros;
+}
+{
+	Lista_IDS(array_nombres_variables) <tDOSP> tipo_parametros = Parametro_aux()
+	{
+		// Misma lógica que Declaracion(), se recoge un puntero a símbolo sin nombre y una lista de Strings,
+		// se le asigna un nombre al puntero y se mete una copia en el array de simbolos
+		for (String nombre_parametro : array_nombres_variables) {
+			tipo_parametros.name = nombre_parametro;
+			lista_parametros.add(tipo_parametros.clone());
+		}
+	}
+}
+
+
+
+// Similar a Declaracion(), inserta en la tabla de simbolos un array de símbolos (la lista de parametros) y lo retorna
+ArrayList<Symbol> Parametros() :
+{
+	ArrayList<Symbol> lista_parametros = new ArrayList<>();
+}
+{
+	(<tAP> Parametro(lista_parametros) (<tPC> Parametro(lista_parametros))* <tCP>)?
+	{
+		for (Symbol simbolo : lista_parametros) {
+			try {st.insertSymbol(simbolo);}
+			catch (AlreadyDefinedSymbolException a) {System.out.println("El simbolo " + simbolo.name + " ya esta definido (NO)");}
+			catch (IndexArrayNotCorrect i) {System.out.println("Los indices del array " + simbolo.name + " no son correctos");}
+		}
+		return lista_parametros;
+	}
+}
+
+
+
+void Procedimiento() :
+{
+	Token nombre_procedimiento;
+	SymbolProcedure simbolo_procedimiento;
+}
+{
+	<tPROC> nombre_procedimiento = <tID>
+	// Antes de leer la lista de parametros se inserta el simbolo procedimiento y se crea el bloque de parametros y variables locales
+	{
+		// Se crea el simbolo procedimiento sin parametros, que van un nivel por debajo
+		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image, new ArrayList<Symbol>());
+		try {st.insertSymbol(simbolo_procedimiento);}
+		catch (AlreadyDefinedSymbolException a) {System.out.println("El procedimiento " + nombre_procedimiento.image + " ya esta definido");}
+		catch (IndexArrayNotCorrect i) {}	// Se sabe que el simbolo no es un array
+		st.insertBlock();
+	}
+	simbolo_procedimiento.parList = Parametros() <tIS>	// Se asigna al simbolo del procedimiento la lista de parametros
+	(Declaracion() <tPC>)*
+	(Procedimiento() | Funcion())*
+	<tBEGIN>
+	(Instruccion_sin_return())+
+	//{System.out.println(st.toString());}
+	{st.removeBlock();}
+	<tEND> <tPC>
+}
+
+
+
+// Igual a Procedimiento(), sólo cambia el return
+void Funcion() :
+{
+	Token nombre_funcion;
+	Symbol tipo_return;
+	SymbolFunction simbolo_funcion;
+}
+{
+	<tFUNC> nombre_funcion = <tID>
+	{
+		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED);
+		try {st.insertSymbol(simbolo_funcion);}
+		catch (AlreadyDefinedSymbolException a) {System.out.println("La funcion " + nombre_funcion.image + " ya esta definida");}
+		catch (IndexArrayNotCorrect i) {}
+		st.insertBlock();
+	}
+	// Se asigna la lista de parámetros, se recoge el tipo que retorna la función y se asigna al simbolo función
+	simbolo_funcion.parList = Parametros() <tRETURN> tipo_return = Tipo_variable() <tIS> {simbolo_funcion.returnType = tipo_return.type;}
+	(Declaracion() <tPC>)*
+	(Procedimiento() | Funcion())*
+	<tBEGIN>
+	(Instruccion_con_return())+
+	//{System.out.println(st.toString());}
+	{st.removeBlock();}
+	<tEND> <tPC>
+}
+
+
+
+void Instr_iterativa_sin_return():
+{
+	Symbol.Types tipo;
+}
+{
+	<tWHILE> tipo = Expresion() <tLOOP>
+	{
+		if (tipo != Symbol.Types.BOOL) {
+			System.out.println("Se esperaba una expresión booleana");
+		}
+	}
+	(Instruccion_sin_return())+
+	<tEND> <tLOOP>
+}
+
+
+
+void Instr_condicional_sin_return():
+{
+	Symbol.Types tipo;
+}
+{
+	<tIF> tipo = Expresion() <tTHEN>
+	{
+		if (tipo != Symbol.Types.BOOL) {
+			System.out.println("Se esperaba una expresión booleana");
+		}
+	}
+	(Instruccion_sin_return())+
+	MasIF()
+	<tEND> <tIF>
+}
+
+
+
+void MasIF():
+{
+	Symbol.Types tipo;
+}
+{
+	<tELSIF> tipo = Expresion() <tTHEN>
+	{
+		if (tipo != Symbol.Types.BOOL) {
+			System.out.println("Se esperaba una expresión booleana");
+		}
+	}
+	(Instruccion_sin_return())+
+	MasIF()
+	| <tELSE> (Instruccion_sin_return())+
+	| {}
+}
+
+
+
+void Instr_iterativa_con_return():
+{
+	Symbol.Types tipo;
+}
+{
+	<tWHILE> tipo = Expresion() <tLOOP>
+	{
+		if (tipo != Symbol.Types.BOOL) {
+			System.out.println("Se esperaba una expresión booleana");
+		}
+	}
+	(Instruccion_con_return())+
+	<tEND> <tLOOP>
+}
+
+
+
+void Instr_condicional_con_return():
+{
+	Symbol.Types tipo;
+}
+{
+	<tIF> tipo = Expresion() <tTHEN>
+	{
+		if (tipo != Symbol.Types.BOOL) {
+			System.out.println("Se esperaba una expresión booleana");
+		}
+	}
+	(Instruccion_con_return())+
+	MasIF_return()
+	<tEND> <tIF>
+}
+
+
+
+void MasIF_return():
+{
+	Symbol.Types tipo;
+}
+{
+	<tELSIF> tipo = Expresion() <tTHEN>
+	{
+		if (tipo != Symbol.Types.BOOL) {
+			System.out.println("Se esperaba una expresión booleana");
+		}
+	}
+
+	(Instruccion_con_return())+
+	MasIF_return()
+	| <tELSE> (Instruccion_con_return())+
+	| {}
+}
+
+
+
+
+// ANALIZADOR LÉXICO, SACA POR PANTALLA CADA TOKEN RECONOCIDO
+TOKEN_MGR_DECLS : {
+  static void CommonTokenAction(Token token) {
+	String tipo_token = "";
+	switch (tokenImage[token.kind]) {
+		case "\":=\"":
+			tipo_token = "operador asignación";
+			break;
+		case "<tID>":
+			tipo_token = "identificador";
+			break;
+		case "<tNUM>":
+			tipo_token = "constante entera";
+			break;
+		case "<tSTRING>":
+			tipo_token = "cadena";
+			break;
+		case "\"+\"":
+			tipo_token = "operador suma";
+			break;
+		case "\"-\"":
+			tipo_token = "operador resta";
+			break;
+		case "\">\"":
+			tipo_token = "operador mayor";
+			break;
+		case "\"<\"":
+			tipo_token = "operador menor";
+			break;
+		case "\"/\"":
+			tipo_token = "operador division";
+			break;
+		case "\"*\"":
+			tipo_token = "operador multiplicación";
+			break;
+		case "<tCOMMENT>":
+			tipo_token = "comentario";
+			break;
+		case "\"mod\"":
+			tipo_token = "operador módulo";
+			break;
+		case "<EOF>":
+			tipo_token = "fin de fichero";
+			break;
+		default:
+			tipo_token = "token";
+			break;
+	}
+    System.out.println("(" + token.beginLine + "," + token.beginColumn + "): " + tipo_token + " " + "\"" + token + "\"");
+  }
+}
