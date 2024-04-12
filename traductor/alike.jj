@@ -466,36 +466,37 @@ void Instruccion_sin_return() :
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
-	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image){llamada_funcion_simple = false;})?
-		{
-			if (llamada_funcion_simple) {
-				try {
-					Symbol simbolo_proc_func = st.getSymbol(id.image);
-					
-					if ((simbolo_proc_func.type != Symbol.Types.FUNCTION) || (simbolo_proc_func.type != Symbol.Types.PROCEDURE)) {
-						System.out.println("ERROR: Se esperaba un procedimiento o función");
+	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
+	{
+		// Si se entra al if, es que se ha llamado a un procedimiento/función
+		if (llamada_funcion_simple) {
+			try {
+				Symbol simbolo_proc_func = st.getSymbol(id.image);
+
+				if ((simbolo_proc_func.type != Symbol.Types.FUNCTION) && (simbolo_proc_func.type != Symbol.Types.PROCEDURE)) {
+					System.out.println("ERROR: Se esperaba un procedimiento o función");
+				}
+				else {
+					// El ID que se ha escrito es un procedimiento/función, verificar que no tiene parámetros
+					if (simbolo_proc_func.type == Symbol.Types.FUNCTION) {
+						SymbolFunction s = (SymbolFunction) simbolo_proc_func;
+						if (!s.parList.isEmpty()) {
+							System.out.println("ERROR: Los parámetros de la función " + id.image + " no son correctos");
+						}
 					}
 					else {
-						// El ID que se ha escrito es un función o procedimiento, verificar que no tiene parámetros
-						if (simbolo_proc_func.type == Symbol.Types.FUNCTION) {
-							SymbolFunction s = (SymbolFunction) simbolo_proc_func;
-							if (!s.parList.isEmpty()) {
-								System.out.println("ERROR: Los parámetros de la función " + id.image + " no son correctos");
-							}
-						}
-						else {
-							SymbolProcedure s = (SymbolProcedure) simbolo_proc_func;
-							if (!s.parList.isEmpty()) {
-								System.out.println("ERROR: Los parámetros del procedimiento " + id.image + " no son correctos");
-							}
+						SymbolProcedure s = (SymbolProcedure) simbolo_proc_func;
+						if (!s.parList.isEmpty()) {
+							System.out.println("ERROR: Los parámetros del procedimiento " + id.image + " no son correctos");
 						}
 					}
 				}
-				catch (SymbolNotFoundException s) {
-					System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
-				}
+			}
+			catch (SymbolNotFoundException s) {
+				System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
 			}
 		}
+	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tNULL>) <tPC>
 }
@@ -509,36 +510,37 @@ void Instruccion_con_return() :
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
-	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image){llamada_funcion_simple = false;})?
-		{
-			if (llamada_funcion_simple) {
-				try {
-					Symbol simbolo_proc_func = st.getSymbol(id.image);
-					
-					if ((simbolo_proc_func.type != Symbol.Types.FUNCTION) || (simbolo_proc_func.type != Symbol.Types.PROCEDURE)) {
-						System.out.println("ERROR: Se esperaba un procedimiento o función");
+	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
+	{
+		// Si se entra al if, es que se ha llamado a un procedimiento/función
+		if (llamada_funcion_simple) {
+			try {
+				Symbol simbolo_proc_func = st.getSymbol(id.image);
+
+				if ((simbolo_proc_func.type != Symbol.Types.FUNCTION) && (simbolo_proc_func.type != Symbol.Types.PROCEDURE)) {
+					System.out.println("ERROR: Se esperaba un procedimiento o función");
+				}
+				else {
+					// El ID que se ha escrito es un procedimiento/función, verificar que no tiene parámetros
+					if (simbolo_proc_func.type == Symbol.Types.FUNCTION) {
+						SymbolFunction s = (SymbolFunction) simbolo_proc_func;
+						if (!s.parList.isEmpty()) {
+							System.out.println("ERROR: Los parámetros de la función " + id.image + " no son correctos");
+						}
 					}
 					else {
-						// El ID que se ha escrito es un función o procedimiento, verificar que no tiene parámetros
-						if (simbolo_proc_func.type == Symbol.Types.FUNCTION) {
-							SymbolFunction s = (SymbolFunction) simbolo_proc_func;
-							if (!s.parList.isEmpty()) {
-								System.out.println("ERROR: Los parámetros de la función " + id.image + " no son correctos");
-							}
-						}
-						else {
-							SymbolProcedure s = (SymbolProcedure) simbolo_proc_func;
-							if (!s.parList.isEmpty()) {
-								System.out.println("ERROR: Los parámetros del procedimiento " + id.image + " no son correctos");
-							}
+						SymbolProcedure s = (SymbolProcedure) simbolo_proc_func;
+						if (!s.parList.isEmpty()) {
+							System.out.println("ERROR: Los parámetros del procedimiento " + id.image + " no son correctos");
 						}
 					}
 				}
-				catch (SymbolNotFoundException s) {
-					System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
-				}
+			}
+			catch (SymbolNotFoundException s) {
+				System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
 			}
 		}
+	}
 	| Instr_condicional_con_return() | Instr_iterativa_con_return()
 	| <tNULL>
 	| <tRETURN> Expresion()) <tPC>
@@ -548,29 +550,57 @@ void Instruccion_con_return() :
 
 void Instr_funcion_vector(String id) :
 {
+	Symbol.Types tipo;
 }
 {
-	<tAP> Expresion() Instr_funcion_vector_2()
+	<tAP> tipo = Expresion() Instr_funcion_vector_2(id, tipo)
 }
 
 
 
-void Instr_funcion_vector_2() :
+void Instr_funcion_vector_2(String id, Symbol.Types tipo) :
 {
 }
 {
-	<tCP> Instr_funcion_vector_3()
-	| (<tCOMA> Expresion())+ <tCP> // Este es el matching de las llamadas a funciones
+	<tCP> Instr_funcion_vector_3(id, tipo)
+	| (<tCOMA> Expresion())+ <tCP> // Matching de las llamadas a funciones con más de un parámetro
+
 	// recordar caso put_line(), tiene parametros indefinidos de cualquier tipo, incluido strings
 }
 
 
 
-void Instr_funcion_vector_3() :
+void Instr_funcion_vector_3(String id, Symbol.Types tipo_primera_expresion) :
 {
+	Symbol.Types tipo_asignacion;
 }
 {
-	<tASIG> Expresion() // Matching de asignacion a componente de array
+	// Matching de asignacion a componente de array (tipo_primera_expresion) es el tipo del índice
+	<tASIG> tipo_asignacion = Expresion()
+	{
+		try {
+			Symbol simbolo = st.getSymbol(id);
+			SymbolArray simbolo_array = (SymbolArray) simbolo;
+
+			if (tipo_primera_expresion != Symbol.Types.INT) {
+				System.out.println("ERROR: Se esperaba una expresión de tipo INT");
+			}
+			else {
+				if (tipo_asignacion != simbolo_array.baseType) {
+					// No se verifica que la expresión a la derecha pueda ser string, función, array o procedimiento
+					// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
+					System.out.println("ERROR: Se esperaba una expresión de tipo " + simbolo_array.baseType);
+				}
+			}
+		}
+		catch (SymbolNotFoundException s) {
+			System.out.println("ERROR: El símbolo " + id + " no está definido");
+		}
+		catch (ClassCastException e) {	// Excepción que saltará si se intenta meter un simbolo que no es un array en un SymbolArray
+			System.out.println("ERROR: El símbolo " + id + " no es un array");
+		}
+	}
+
 	| {}				// Matching de llamada a funcion con un solo parametro
 }
 
