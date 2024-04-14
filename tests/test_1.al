@@ -3,14 +3,19 @@ procedure test_1 is
     k: boolean;
     v: ARRAY(1..1000) OF integer;
 ------------------------------------------------------
-function inicializar return integer is
+function inicializar(n: boolean; vi: ref array(1..777) of boolean; i: integer) return boolean is
     i: integer;
 begin
     null;
 end;
 ------------------------------------------------------
+procedure calcular(n, num: integer; v: ref array(1..1000) of integer) is
+    i: integer;
+    cuenta: integer;
+begin
+    null;
+end;
 ------------------------------------------------------
 begin
-    inicializar;
-    --v(inicializar) := inicializar + 24;
+    inicializar(true and not true, v, (n*81)-21);
 end;

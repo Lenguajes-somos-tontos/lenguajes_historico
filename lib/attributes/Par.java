@@ -1,10 +1,12 @@
 package lib.attributes;
 
-public class Par<T, U> {
-    public T primero;
-    public U segundo;
+import lib.symbolTable.Symbol;
 
-    public Par(T primero, U segundo) {
+public class Par {
+    public Symbol.Types primero;
+    public boolean segundo;
+
+    public Par(Symbol.Types primero, boolean segundo) {
         this.primero = primero;
         this.segundo = segundo;
     }

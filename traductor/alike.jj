@@ -21,8 +21,11 @@ import lib.attributes.*;
 
 public class alike {
 	static SymbolTable st;
+	static SemanticFunction sf;
+
 	public static void main(String[] args) {
-	st = new SymbolTable();
+		st = new SymbolTable();
+		sf = new SemanticFunction();
 
 	   alike parser = null;
 		try {
@@ -161,17 +164,7 @@ void Declaracion() : // Cada linea de declaracion dispara esta produccion
 	(Lista_IDS(array_nombres_variables) <tDOSP> tipo_variables = Tipos_variables())
 
 	{
-		// Se tiene un simbolo sin nombre y un array de Strings
-		for (String variable : array_nombres_variables) {
-			tipo_variables.name = variable;					// Se asigna el nombre
-			try {st.insertSymbol(tipo_variables.clone());}	// Se inserta una copia del puntero
-			catch (AlreadyDefinedSymbolException e) {
-				System.out.println("Simbolo " + variable + " ya definido");
-			}
-			catch (IndexArrayNotCorrect i) {	// Caso de simbolo array con indices incorrectos
-				System.out.println("Los indices del array " + variable + " no son correctos");
-			}
-		}
+		sf.Declaracion(array_nombres_variables, tipo_variables, st);
 	}
 }
 
@@ -209,18 +202,7 @@ Symbol Tipo_variable() :
 {
 	(t = <tBOOL> | t = <tINT> | t = <tCHAR>)
 	{
-		switch (t.image.toLowerCase()) {
-			case "boolean":
-				result = new SymbolBool("");
-				break;
-			case "integer":
-				result = new SymbolInt("");
-				break;
-			case "character":
-				result = new SymbolChar("");
-				break;
-		}
-		return result;
+		return sf.Tipo_variable(t, result);
 	}
 }
 
@@ -235,10 +217,7 @@ Symbol Tipo_array() :
 {
 	<tARRAY> <tAP> indMin = <tNUM> <tPUNTOS> indMax = <tNUM> <tCP> <tOF> tipo_base = Tipo_variable()
 	{
-		int indMin_i = Integer.parseInt(indMin.image);
-		int indMax_i = Integer.parseInt(indMax.image);
-		Symbol result = new SymbolArray("", indMin_i, indMax_i, tipo_base.type);
-		return result;
+		return sf.Tipo_array(indMin, indMax, tipo_base);
 	}
 }
 
@@ -247,60 +226,34 @@ Symbol Tipo_array() :
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
-Symbol.Types Expresion() :
+Par Expresion() :
 {
-	Symbol.Types tipo = Symbol.Types.UNDEFINED;
-	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	Par tipo;
+	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
 	boolean match2 = false;
 }
 {
 	(tipo = Relacion() (((<tAND> | <tOR>) tipo2 = Relacion())+ {match2 = true;} )?)
-
 	{
-		if (match2 && (tipo != Symbol.Types.BOOL || tipo2 != Symbol.Types.BOOL)) {
-			tipo = Symbol.Types.UNDEFINED;
-		}
-		System.out.println("Expresion: " + tipo);
-		return tipo;
+		return sf.Expresion(tipo, tipo2, match2);
 	}
 }
 
-Symbol.Types Relacion() :
+
+Par Relacion() :
 {
-	Symbol.Types tipo = Symbol.Types.UNDEFINED;
-	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	Par tipo;
+	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
 	Token op = null;
 	boolean match2 = false;
 }
 {
 	(tipo = Expresion_simple() (op = Operador_relacional() tipo2 = Expresion_simple() {match2=true;})?)
 	{
-		if (match2) {
-			if (tipo != tipo2) {
-				tipo = Symbol.Types.UNDEFINED; 
-			}
-		}
-		if (tipo != Symbol.Types.UNDEFINED) {
-			if (match2 && (op.image.equals("=") || op.image.equals("/="))) {
-				if (tipo == Symbol.Types.STRING || tipo == Symbol.Types.ARRAY) {
-					tipo = Symbol.Types.UNDEFINED;
-				}
-				else {
-					tipo = Symbol.Types.BOOL;
-				}
-			}
-			else if (match2 && (!op.image.equals("=") || !op.image.equals("/="))) {
-				if (tipo != Symbol.Types.INT || tipo == Symbol.Types.CHAR) {
-					tipo = Symbol.Types.UNDEFINED;
-				}
-				else {
-					tipo = Symbol.Types.BOOL;
-				}
-			}
-		}
-		return tipo;
+		return sf.Relacion(tipo, tipo2, op, match2);
 	}
 }
+
 
 Token Operador_relacional() :
 {
@@ -313,6 +266,7 @@ Token Operador_relacional() :
 	}
 }
 
+
 void Operador_multiplicativo() :
 {
 }
@@ -320,111 +274,68 @@ void Operador_multiplicativo() :
     <tOPMULT> | <tOPMOD> | <tOPDIV>
 }
 
-Symbol.Types Expresion_simple() :
+
+Par Expresion_simple() :
 {
-	Symbol.Types tipo = Symbol.Types.UNDEFINED;
-	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	Par tipo;
+	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
 	boolean match1 = false;
 	boolean match2 = false;
 }
 {
-   ((<tOPMAS> {match1=true;} | <tOPMENOS> {match1=true;})?   tipo = Termino() ((<tOPMAS> | <tOPMENOS>)  tipo2 = Termino() {match2=true;})*)
-   {
-		if ((match1 && tipo != Symbol.Types.INT) || (match2 && (tipo != Symbol.Types.INT || tipo2 != Symbol.Types.INT))) {
-			tipo = Symbol.Types.UNDEFINED;
-		}
-		return tipo;
+	((<tOPMAS> {match1=true;} | <tOPMENOS> {match1=true;})? tipo = Termino() ((<tOPMAS> | <tOPMENOS>)  tipo2 = Termino() {match2=true;})*)
+	{
+		return sf.Expresion_simple(tipo, tipo2, match1, match2);
 	}
 }
 
-Symbol.Types Termino() :
+
+Par Termino() :
 {
-	Symbol.Types tipo = Symbol.Types.UNDEFINED;
-	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	Par tipo;
+	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
 	boolean match2 = false;
 }
 {
     (tipo = Factor() (Operador_multiplicativo() tipo2 = Factor() {match2 = true;})*)
 	{
-		if (match2 && (tipo != Symbol.Types.INT || tipo2 != Symbol.Types.INT)) { 
-			tipo = Symbol.Types.UNDEFINED;
-		}
-		return tipo;
+		return sf.Termino(tipo, tipo2, match2);
 	}
 }
 
-Symbol.Types Factor() :
+
+Par Factor() :
 {
-	Symbol.Types tipo = Symbol.Types.UNDEFINED;
-	Symbol.Types tipo2 = Symbol.Types.UNDEFINED;
+	Par tipo = new Par(Symbol.Types.UNDEFINED, false);
+	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
 	boolean match2 = false;
 }
 {
-    (tipo = Primario() | <tNOT> tipo2 = Primario() {match2 = true;})
+	(tipo = Primario() | <tNOT> tipo2 = Primario() {match2 = true;})
 	{
-		if (match2 && tipo2 != Symbol.Types.BOOL) { 
-			tipo = Symbol.Types.UNDEFINED;
-		}
-		else if (match2) {
-			tipo = tipo2;
-		}
-		return tipo;
+		return sf.Factor(tipo, tipo2, match2);
 	}
 }
 
-Symbol.Types Primario() :
+
+Par Primario() :
 {
 	Token t;
-	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	Par tipo = new Par(Symbol.Types.UNDEFINED, false);
 	Symbol simbolo = null;
 }
 {
     (<tAP> tipo = Expresion() <tCP>
-|	LOOKAHEAD(2) <tID> <tAP> Expresion() (<tCOMA> Expresion())* <tCP>
+|	LOOKAHEAD(2) t = <tID> <tAP> Expresion() (<tCOMA> Expresion())* <tCP>	//////////////////////////////////////////////////
 |	t = <tID>
 	{
-		try {
-			simbolo = st.getSymbol(t.image);
-
-			if (simbolo.type == Symbol.Types.INT) {
-				tipo = Symbol.Types.INT;
-			}
-			else if (simbolo.type == Symbol.Types.BOOL) {
-				tipo = Symbol.Types.BOOL;
-			}
-			else if (simbolo.type == Symbol.Types.CHAR) {
-				tipo = Symbol.Types.CHAR;
-			}
-			else if (simbolo.type == Symbol.Types.ARRAY) {
-				tipo = Symbol.Types.ARRAY;
-			}
-			else if (simbolo.type == Symbol.Types.FUNCTION) {
-				SymbolFunction s = (SymbolFunction) simbolo;
-				// Se verifica que la función no tiene parámetros
-				if (s.parList.isEmpty()) {
-					tipo = s.returnType;
-					// Se sube el tipo que retorna la función
-				}
-				else {
-					System.out.println("ERROR: La función " + t.image + " tiene parámetros");
-					// Se ha utilizado una función que tiene parámetros como
-					// una que no los tiene
-				}
-			}
-			else {
-				System.out.println("ERROR: El tipo de " + t.image + " no es correcto");
-				// El ID es un procedimiento, error
-			}
-		}
-		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El símbolo " + t.image + " no está definido");
-		}
+		sf.Primario_ID(t, tipo, simbolo, st);
 	}
-|	t = <tNUM> {tipo = Symbol.Types.INT;}
-|	t = <tCONSTCHAR> {tipo = Symbol.Types.CHAR;}
-|	t = <tSTRING> {tipo = Symbol.Types.STRING;}
-|	t = <tTRUE> {tipo = Symbol.Types.BOOL;}
-|	t = <tFALSE> {tipo = Symbol.Types.BOOL;})
+|	t = <tNUM> {tipo.primero = Symbol.Types.INT;}
+|	t = <tCONSTCHAR> {tipo.primero = Symbol.Types.CHAR;}
+|	t = <tSTRING> {tipo.primero = Symbol.Types.STRING;}
+|	t = <tTRUE> {tipo.primero = Symbol.Types.BOOL;}
+|	t = <tFALSE> {tipo.primero = Symbol.Types.BOOL;})
 	{return tipo;}
 }
 ///////////////////////////////////////////////////////
@@ -436,24 +347,13 @@ Symbol.Types Primario() :
 void Asignacion() :
 {
 	Token id;
-	Symbol.Types tipo_asignacion;
-	Symbol simbolo_asignacion;
+	Par tipo_asignacion;
+	Symbol simbolo_asignacion = null;
 }
 {
 	id = <tID> <tASIG> tipo_asignacion = Expresion()
 	{
-		try {
-			simbolo_asignacion = st.getSymbol(id.image);
-
-			Symbol.Types tipo_id = simbolo_asignacion.type;
-			if (!((tipo_id == tipo_asignacion) &&
-				((tipo_id != Symbol.Types.FUNCTION) || (tipo_id != Symbol.Types.PROCEDURE) || tipo_id != Symbol.Types.ARRAY))) {
-				System.out.println("ERROR: Se esperaba un tipo " + tipo_id);
-			}
-		}
-		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El simbolo " + id.image + " no está definido");
-		}
+		sf.Asignacion(id, tipo_asignacion, simbolo_asignacion, st);
 	}
 }
 
@@ -468,34 +368,7 @@ void Instruccion_sin_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		// Si se entra al if, es que se ha llamado a un procedimiento/función
-		if (llamada_funcion_simple) {
-			try {
-				Symbol simbolo_proc_func = st.getSymbol(id.image);
-
-				if ((simbolo_proc_func.type != Symbol.Types.FUNCTION) && (simbolo_proc_func.type != Symbol.Types.PROCEDURE)) {
-					System.out.println("ERROR: Se esperaba un procedimiento o función");
-				}
-				else {
-					// El ID que se ha escrito es un procedimiento/función, verificar que no tiene parámetros
-					if (simbolo_proc_func.type == Symbol.Types.FUNCTION) {
-						SymbolFunction s = (SymbolFunction) simbolo_proc_func;
-						if (!s.parList.isEmpty()) {
-							System.out.println("ERROR: Los parámetros de la función " + id.image + " no son correctos");
-						}
-					}
-					else {
-						SymbolProcedure s = (SymbolProcedure) simbolo_proc_func;
-						if (!s.parList.isEmpty()) {
-							System.out.println("ERROR: Los parámetros del procedimiento " + id.image + " no son correctos");
-						}
-					}
-				}
-			}
-			catch (SymbolNotFoundException s) {
-				System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
-			}
-		}
+		sf.Instruccion(id, llamada_funcion_simple, st);
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tNULL>) <tPC>
@@ -512,34 +385,7 @@ void Instruccion_con_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		// Si se entra al if, es que se ha llamado a un procedimiento/función
-		if (llamada_funcion_simple) {
-			try {
-				Symbol simbolo_proc_func = st.getSymbol(id.image);
-
-				if ((simbolo_proc_func.type != Symbol.Types.FUNCTION) && (simbolo_proc_func.type != Symbol.Types.PROCEDURE)) {
-					System.out.println("ERROR: Se esperaba un procedimiento o función");
-				}
-				else {
-					// El ID que se ha escrito es un procedimiento/función, verificar que no tiene parámetros
-					if (simbolo_proc_func.type == Symbol.Types.FUNCTION) {
-						SymbolFunction s = (SymbolFunction) simbolo_proc_func;
-						if (!s.parList.isEmpty()) {
-							System.out.println("ERROR: Los parámetros de la función " + id.image + " no son correctos");
-						}
-					}
-					else {
-						SymbolProcedure s = (SymbolProcedure) simbolo_proc_func;
-						if (!s.parList.isEmpty()) {
-							System.out.println("ERROR: Los parámetros del procedimiento " + id.image + " no son correctos");
-						}
-					}
-				}
-			}
-			catch (SymbolNotFoundException s) {
-				System.out.println("ERROR: El procedimiento o función " + id.image + " no está definido");
-			}
-		}
+		sf.Instruccion(id, llamada_funcion_simple, st);
 	}
 	| Instr_condicional_con_return() | Instr_iterativa_con_return()
 	| <tNULL>
@@ -550,7 +396,7 @@ void Instruccion_con_return() :
 
 void Instr_funcion_vector(String id) :
 {
-	Symbol.Types tipo;
+	Par tipo;
 }
 {
 	<tAP> tipo = Expresion() Instr_funcion_vector_2(id, tipo)
@@ -558,50 +404,75 @@ void Instr_funcion_vector(String id) :
 
 
 
-void Instr_funcion_vector_2(String id, Symbol.Types tipo) :
+void Instr_funcion_vector_2(String id, Par tipo) :
 {
+	Par parametro;
+	boolean primer_parametro = true;
+	int iterador = 0;
+	boolean id_encontrado = false;
+	Symbol simbolo = null;
 }
 {
 	<tCP> Instr_funcion_vector_3(id, tipo)
-	| (<tCOMA> Expresion())+ <tCP> // Matching de las llamadas a funciones con más de un parámetro
-
+	|	// Matching de las llamadas a funciones con más de un parámetro
+	{
+		if (st.containsSymbol(id)) {
+			try {
+				simbolo = st.getSymbol(id);
+				if (simbolo.type != Symbol.Types.PROCEDURE && simbolo.type != Symbol.Types.FUNCTION) 
+					System.out.println("ERROR: El símbolo " + id + " no es un procedimiento/funcion");
+				else {
+					if (simbolo.type == Symbol.Types.PROCEDURE) {
+						SymbolProcedure p = (SymbolProcedure) simbolo;
+						sf.verificar_parametro_procedimiento(p, tipo, iterador);
+					}
+					else {
+						SymbolFunction f = (SymbolFunction) simbolo;
+						sf.verificar_parametro_funcion(f, tipo, iterador);
+					}
+					iterador++;
+					id_encontrado = true;
+				}
+			}
+			catch (SymbolNotFoundException s) {}
+		}
+		else System.out.println("ERROR: El símbolo " + id + " no existe");
+	}
+	(<tCOMA> parametro = Expresion()
+	{
+		if (id_encontrado && simbolo.type == Symbol.Types.PROCEDURE) {
+			SymbolProcedure p = (SymbolProcedure) simbolo;
+			sf.verificar_parametro_procedimiento(p, parametro, iterador);
+			iterador++;
+		}
+		else if (id_encontrado && simbolo.type == Symbol.Types.FUNCTION) {
+			SymbolFunction f = (SymbolFunction) simbolo;
+			sf.verificar_parametro_funcion(f, parametro, iterador);
+			iterador++;
+		}
+	}
+	)+ <tCP>
 	// recordar caso put_line(), tiene parametros indefinidos de cualquier tipo, incluido strings
 }
 
 
 
-void Instr_funcion_vector_3(String id, Symbol.Types tipo_primera_expresion) :
+void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
 {
-	Symbol.Types tipo_asignacion;
+	Par tipo_asignacion;
 }
 {
-	// Matching de asignacion a componente de array (tipo_primera_expresion) es el tipo del índice
+	// Matching de asignacion a componente de array "tipo_primera_expresion" es el tipo del índice
 	<tASIG> tipo_asignacion = Expresion()
 	{
-		try {
-			Symbol simbolo = st.getSymbol(id);
-			SymbolArray simbolo_array = (SymbolArray) simbolo;
-
-			if (tipo_primera_expresion != Symbol.Types.INT) {
-				System.out.println("ERROR: Se esperaba una expresión de tipo INT");
-			}
-			else {
-				if (tipo_asignacion != simbolo_array.baseType) {
-					// No se verifica que la expresión a la derecha pueda ser string, función, array o procedimiento
-					// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
-					System.out.println("ERROR: Se esperaba una expresión de tipo " + simbolo_array.baseType);
-				}
-			}
-		}
-		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El símbolo " + id + " no está definido");
-		}
-		catch (ClassCastException e) {	// Excepción que saltará si se intenta meter un simbolo que no es un array en un SymbolArray
-			System.out.println("ERROR: El símbolo " + id + " no es un array");
-		}
+		sf.Instr_funcion_vector_3(id, tipo_primera_expresion, tipo_asignacion, st);
 	}
 
-	| {}				// Matching de llamada a funcion con un solo parametro
+	| {}
+	{
+		Symbol funcion = st.getSymbol(id);
+
+	}				// Matching de llamada a funcion con un solo parametro	///////////////////////////////////////////////////
 }
 
 
@@ -741,12 +612,12 @@ void Funcion() :
 
 void Instr_iterativa_sin_return():
 {
-	Symbol.Types tipo;
+	Par tipo;
 }
 {
 	<tWHILE> tipo = Expresion() <tLOOP>
 	{
-		if (tipo != Symbol.Types.BOOL) {
+		if (tipo.primero != Symbol.Types.BOOL) {
 			System.out.println("Se esperaba una expresión booleana");
 		}
 	}
@@ -758,12 +629,12 @@ void Instr_iterativa_sin_return():
 
 void Instr_condicional_sin_return():
 {
-	Symbol.Types tipo;
+	Par tipo;
 }
 {
 	<tIF> tipo = Expresion() <tTHEN>
 	{
-		if (tipo != Symbol.Types.BOOL) {
+		if (tipo.primero != Symbol.Types.BOOL) {
 			System.out.println("Se esperaba una expresión booleana");
 		}
 	}
@@ -776,12 +647,12 @@ void Instr_condicional_sin_return():
 
 void MasIF():
 {
-	Symbol.Types tipo;
+	Par tipo;
 }
 {
 	<tELSIF> tipo = Expresion() <tTHEN>
 	{
-		if (tipo != Symbol.Types.BOOL) {
+		if (tipo.primero != Symbol.Types.BOOL) {
 			System.out.println("Se esperaba una expresión booleana");
 		}
 	}
@@ -795,12 +666,12 @@ void MasIF():
 
 void Instr_iterativa_con_return():
 {
-	Symbol.Types tipo;
+	Par tipo;
 }
 {
 	<tWHILE> tipo = Expresion() <tLOOP>
 	{
-		if (tipo != Symbol.Types.BOOL) {
+		if (tipo.primero != Symbol.Types.BOOL) {
 			System.out.println("Se esperaba una expresión booleana");
 		}
 	}
@@ -812,12 +683,12 @@ void Instr_iterativa_con_return():
 
 void Instr_condicional_con_return():
 {
-	Symbol.Types tipo;
+	Par tipo;
 }
 {
 	<tIF> tipo = Expresion() <tTHEN>
 	{
-		if (tipo != Symbol.Types.BOOL) {
+		if (tipo.primero != Symbol.Types.BOOL) {
 			System.out.println("Se esperaba una expresión booleana");
 		}
 	}
@@ -830,12 +701,12 @@ void Instr_condicional_con_return():
 
 void MasIF_return():
 {
-	Symbol.Types tipo;
+	Par tipo;
 }
 {
 	<tELSIF> tipo = Expresion() <tTHEN>
 	{
-		if (tipo != Symbol.Types.BOOL) {
+		if (tipo.primero != Symbol.Types.BOOL) {
 			System.out.println("Se esperaba una expresión booleana");
 		}
 	}
