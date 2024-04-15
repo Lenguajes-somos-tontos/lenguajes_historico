@@ -123,7 +123,7 @@ public class SemanticFunction {
 		}
 		return tipo;
 	}
-*/
+
     public Par Relacion(Par tipo, Par tipo2, Token op, boolean match2) {     
 		if (match2) {
 			if (tipo.primero != tipo2.primero) {

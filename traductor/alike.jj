@@ -240,7 +240,6 @@ Par Expresion() :
 		if (tipo.primero != Symbol.Types.BOOL || tipo2.primero != Symbol.Types.BOOL) {
 			tipo.primero = Symbol.Types.UNDEFINED;
 		}
-
 	})*
 	{
 		System.out.println("Expresion: " + tipo.primero + " " + tipo.segundo);
@@ -255,12 +254,29 @@ Par Relacion() :
 	Par tipo;
 	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
 	Token op = null;
-	boolean match2 = false;
+	boolean match = false;
 }
 {
-	tipo = Expresion_simple() (op = Operador_relacional() tipo2 = Expresion_simple() {match2=true;})?
+	tipo = Expresion_simple() (op = Operador_relacional() tipo2 = Expresion_simple() {match=true;})?
 	{
-		return sf.Relacion(tipo, tipo2, op, match2);
+		if (match) {
+			tipo.segundo = false;
+			String operador = op.image;
+			if (operador.equals("<") || operador.equals(">") || operador.equals("<=") || operador.equals(">=")) {
+				if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
+					tipo.primero = Symbol.Types.UNDEFINED;
+				}
+				else tipo.primero = Symbol.Types.BOOL;
+			}
+			else {
+				if (tipo.primero != tipo2.primero) {
+					tipo.primero = Symbol.Types.UNDEFINED;
+				}
+				else tipo.primero = Symbol.Types.BOOL;
+			}
+		}
+		return tipo;
+		//return sf.Relacion(tipo, tipo2, op, match2);
 	}
 }
 

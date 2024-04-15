@@ -4,7 +4,7 @@ procedure test_1 is
     v: ARRAY(1..1000) OF integer;
 ------------------------------------------------------
 function inicializar(n: boolean; vi: ref array(1..777) of boolean; i: integer) return boolean is
-    i: integer;
+    otra: integer;
 begin
     null;
 end;
@@ -17,5 +17,8 @@ begin
 end;
 ------------------------------------------------------
 begin
-    inicializar(true and 2 and not true, v + 'c', (n*81)-21);
+    --inicializar(true and k and not true, v, (n*81)-21);
+    if n <= 2 or k and not k then
+        null;
+    end if;
 end;
