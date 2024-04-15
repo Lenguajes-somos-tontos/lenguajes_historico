@@ -659,7 +659,7 @@ void Instr_iterativa_sin_return():
 	<tWHILE> tipo = Expresion() <tLOOP>
 	{
 		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("Se esperaba una expresión booleana");
+			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
 	(Instruccion_sin_return())+
@@ -676,7 +676,7 @@ void Instr_condicional_sin_return():
 	<tIF> tipo = Expresion() <tTHEN>
 	{
 		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("Se esperaba una expresión booleana");
+			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
 	(Instruccion_sin_return())+
@@ -694,7 +694,7 @@ void MasIF():
 	<tELSIF> tipo = Expresion() <tTHEN>
 	{
 		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("Se esperaba una expresión booleana");
+			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
 	(Instruccion_sin_return())+
@@ -713,7 +713,7 @@ void Instr_iterativa_con_return():
 	<tWHILE> tipo = Expresion() <tLOOP>
 	{
 		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("Se esperaba una expresión booleana");
+			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
 	(Instruccion_con_return())+
@@ -730,7 +730,7 @@ void Instr_condicional_con_return():
 	<tIF> tipo = Expresion() <tTHEN>
 	{
 		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("Se esperaba una expresión booleana");
+			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
 	(Instruccion_con_return())+
@@ -748,7 +748,7 @@ void MasIF_return():
 	<tELSIF> tipo = Expresion() <tTHEN>
 	{
 		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("Se esperaba una expresión booleana");
+			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
 
