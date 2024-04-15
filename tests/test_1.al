@@ -17,5 +17,5 @@ begin
 end;
 ------------------------------------------------------
 begin
-    inicializar(true and not true, v, (n*81)-21);
+    inicializar(true and 2 and not true, v + 'c', (n*81)-21);
 end;

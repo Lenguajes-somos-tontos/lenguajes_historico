@@ -233,9 +233,19 @@ Par Expresion() :
 	boolean match2 = false;
 }
 {
-	(tipo = Relacion() (((<tAND> | <tOR>) tipo2 = Relacion())+ {match2 = true;} )?)
+	//tipo = Relacion() (((<tAND> | <tOR>) tipo2 = Relacion())+)?
+	tipo = Relacion() ((<tAND> | <tOR>) tipo2 = Relacion()
 	{
-		return sf.Expresion(tipo, tipo2, match2);
+		tipo.segundo = false;
+		if (tipo.primero != Symbol.Types.BOOL || tipo2.primero != Symbol.Types.BOOL) {
+			tipo.primero = Symbol.Types.UNDEFINED;
+		}
+
+	})*
+	{
+		System.out.println("Expresion: " + tipo.primero + " " + tipo.segundo);
+		return tipo;
+		//return sf.Expresion(tipo, tipo2, match2);
 	}
 }
 
@@ -248,7 +258,7 @@ Par Relacion() :
 	boolean match2 = false;
 }
 {
-	(tipo = Expresion_simple() (op = Operador_relacional() tipo2 = Expresion_simple() {match2=true;})?)
+	tipo = Expresion_simple() (op = Operador_relacional() tipo2 = Expresion_simple() {match2=true;})?
 	{
 		return sf.Relacion(tipo, tipo2, op, match2);
 	}
@@ -280,26 +290,41 @@ Par Expresion_simple() :
 	Par tipo;
 	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
 	boolean match1 = false;
-	boolean match2 = false;
 }
 {
-	((<tOPMAS> {match1=true;} | <tOPMENOS> {match1=true;})? tipo = Termino() ((<tOPMAS> | <tOPMENOS>)  tipo2 = Termino() {match2=true;})*)
+	(<tOPMAS> {match1=false;} | <tOPMENOS> {match1=false;})?
+	tipo = Termino() ((<tOPMAS> | <tOPMENOS>)  tipo2 = Termino()
 	{
-		return sf.Expresion_simple(tipo, tipo2, match1, match2);
+		tipo.segundo = false;
+		if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
+			tipo.primero = Symbol.Types.UNDEFINED;
+		}
+	})*
+	{
+		if (match1) tipo.segundo = false;
+		return tipo;
+		//return sf.Expresion_simple(tipo, tipo2, match1, match2);
 	}
 }
 
 
 Par Termino() :
 {
-	Par tipo;
+	Par tipo = new Par(Symbol.Types.UNDEFINED, false);
 	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
-	boolean match2 = false;
 }
 {
-    (tipo = Factor() (Operador_multiplicativo() tipo2 = Factor() {match2 = true;})*)
+    tipo = Factor() (Operador_multiplicativo() tipo2 = Factor()
 	{
-		return sf.Termino(tipo, tipo2, match2);
+		// Se ha hecho matching con un operador SÓLO numérico, la expresión ya NO es sólo una variable
+		tipo.segundo = false;
+		if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
+			tipo.primero = Symbol.Types.UNDEFINED;
+		}
+	})*
+	{
+		return tipo;
+		//return sf.Termino(tipo, tipo2, match2);
 	}
 }
 

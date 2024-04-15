@@ -91,17 +91,19 @@ public class SemanticFunction {
 		}
     }
 
+
     public Par Factor(Par tipo, Par tipo2, boolean match2) {     
-		if (match2 && tipo2.primero != Symbol.Types.BOOL) {		// Caso de error
+		if (match2 && tipo2.primero != Symbol.Types.BOOL) {
 			tipo.primero = Symbol.Types.UNDEFINED;
 		}
 		else if (match2) {
-			tipo.primero = tipo2.primero;
+			tipo.primero = tipo2.primero;	// tipo.primero = BOOL
 			tipo.segundo = false;
 		}
 		return tipo;
 	}
 
+/*
     public Par Termino(Par tipo, Par tipo2, boolean match2) {     
 		if (match2 && (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT)) { 
 			tipo.primero = Symbol.Types.UNDEFINED;
@@ -121,7 +123,7 @@ public class SemanticFunction {
 		}
 		return tipo;
 	}
-
+*/
     public Par Relacion(Par tipo, Par tipo2, Token op, boolean match2) {     
 		if (match2) {
 			if (tipo.primero != tipo2.primero) {
@@ -149,7 +151,7 @@ public class SemanticFunction {
 		}
 		return tipo;
 	}
-
+/*
     public Par Expresion(Par tipo, Par tipo2, boolean match2) {     
 		if (match2 && (tipo.primero != Symbol.Types.BOOL || tipo2.primero != Symbol.Types.BOOL)) {
 			tipo.primero = Symbol.Types.UNDEFINED;
@@ -160,7 +162,7 @@ public class SemanticFunction {
 		System.out.println("Expresion: " + tipo.primero + " " + tipo.segundo);
 		return tipo;
 	}
-
+*/
 	public void Asignacion(Token id, Par tipo_asignacion, Symbol simbolo_asignacion, SymbolTable st) {
 		try {
 			simbolo_asignacion = st.getSymbol(id.image);
