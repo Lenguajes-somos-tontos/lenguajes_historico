@@ -91,7 +91,7 @@ public class SemanticFunction {
 		}
     }
 
-
+/*
     public Par Factor(Par tipo, Par tipo2, boolean match2) {     
 		if (match2 && tipo2.primero != Symbol.Types.BOOL) {
 			tipo.primero = Symbol.Types.UNDEFINED;
@@ -103,7 +103,7 @@ public class SemanticFunction {
 		return tipo;
 	}
 
-/*
+
     public Par Termino(Par tipo, Par tipo2, boolean match2) {     
 		if (match2 && (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT)) { 
 			tipo.primero = Symbol.Types.UNDEFINED;

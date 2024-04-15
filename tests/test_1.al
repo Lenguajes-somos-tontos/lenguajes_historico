@@ -18,7 +18,7 @@ end;
 ------------------------------------------------------
 begin
     --inicializar(true and k and not true, v, (n*81)-21);
-    if n <= 2 or k and not k then
+    if n <= 2 or k and not 3 then
         null;
     end if;
 end;
