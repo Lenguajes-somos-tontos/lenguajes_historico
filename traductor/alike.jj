@@ -270,7 +270,7 @@ Par Relacion() :
 				}
 				else tipo.primero = Symbol.Types.BOOL;
 			}
-			else if (tipo2.primero != Symbol.Types.ARRAY || tipo2.primero != Symbol.Types.FUNCTION || tipo2.primero != Symbol.Types.PROCEDURE) {
+			else if (tipo2.primero != Symbol.Types.ARRAY || tipo2.primero != Symbol.Types.FUNCTION || tipo2.primero != Symbol.Types.PROCEDURE || tipo2.primero != Symbol.Types.STRING) {
 				if (tipo.primero != tipo2.primero) {
 					tipo.primero = Symbol.Types.UNDEFINED;
 					System.out.println("ERROR: Se esperaba un tipo " + tipo.primero);
