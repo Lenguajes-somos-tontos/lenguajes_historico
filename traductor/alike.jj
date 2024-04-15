@@ -541,6 +541,7 @@ void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
 		Symbol funcion = st.getSymbol(id);
 
 	}				// Matching de llamada a funcion con un solo parametro	///////////////////////////////////////////////////
+					// recordar casos get(), put() y put_line()
 }
 
 
