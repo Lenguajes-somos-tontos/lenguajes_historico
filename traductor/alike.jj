@@ -423,6 +423,7 @@ void Instruccion_sin_return() :
 	{
 		if (llamada_funcion_simple)
 			sf.Instruccion(id.image, st);		// Llamada a función/procedimiento sin parámetros
+			// Recordar casos skip_line y put_line()
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tNULL>) <tPC>
@@ -441,6 +442,7 @@ void Instruccion_con_return() :
 	{
 		if (llamada_funcion_simple)
 			sf.Instruccion(id.image, st);		// Llamada a función/procedimiento sin parámetros
+			// Recordar casos skip_line y put_line()
 	}
 	| Instr_condicional_con_return() | Instr_iterativa_con_return()
 	| <tNULL>
@@ -507,7 +509,7 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 		}
 	}
 	)+ <tCP>
-	// recordar caso put_line(), tiene parametros indefinidos de cualquier tipo, incluido strings
+	// recordar casos get(), put() y put_line()
 }
 
 
