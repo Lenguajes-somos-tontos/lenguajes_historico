@@ -386,10 +386,7 @@ Par Primario() :
 {
     (<tAP> tipo = Expresion() <tCP>
 |	LOOKAHEAD(2) t = <tID> <tAP> Expresion() (<tCOMA> Expresion())* <tCP>	//////////////////////////////////////////////////
-|	t = <tID>
-	{
-		sf.Primario_ID(t, tipo, simbolo, st);
-	}
+|	t = <tID> {sf.Primario_ID(t, tipo, simbolo, st);}
 |	t = <tNUM> {tipo.primero = Symbol.Types.INT;}
 |	t = <tCONSTCHAR> {tipo.primero = Symbol.Types.CHAR;}
 |	t = <tSTRING> {tipo.primero = Symbol.Types.STRING;}
@@ -407,13 +404,10 @@ void Asignacion() :
 {
 	Token id;
 	Par tipo_asignacion;
-	Symbol simbolo_asignacion = null;
 }
 {
 	id = <tID> <tASIG> tipo_asignacion = Expresion()
-	{
-		sf.Asignacion(id, tipo_asignacion, simbolo_asignacion, st);
-	}
+	{sf.Asignacion(id.image, tipo_asignacion, st);}
 }
 
 
@@ -427,7 +421,8 @@ void Instruccion_sin_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		sf.Instruccion(id, llamada_funcion_simple, st);
+		if (llamada_funcion_simple)
+			sf.Instruccion(id.image, st);		// Llamada a función/procedimiento sin parámetros
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tNULL>) <tPC>
@@ -444,7 +439,8 @@ void Instruccion_con_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		sf.Instruccion(id, llamada_funcion_simple, st);
+		if (llamada_funcion_simple)
+			sf.Instruccion(id.image, st);		// Llamada a función/procedimiento sin parámetros
 	}
 	| Instr_condicional_con_return() | Instr_iterativa_con_return()
 	| <tNULL>
