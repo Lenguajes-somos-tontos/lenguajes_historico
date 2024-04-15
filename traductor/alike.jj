@@ -163,9 +163,7 @@ void Declaracion() : // Cada linea de declaracion dispara esta produccion
 
 	(Lista_IDS(array_nombres_variables) <tDOSP> tipo_variables = Tipos_variables())
 
-	{
-		sf.Declaracion(array_nombres_variables, tipo_variables, st);
-	}
+	{sf.Declaracion(array_nombres_variables, tipo_variables, st);}
 }
 
 
@@ -201,9 +199,7 @@ Symbol Tipo_variable() :
 }
 {
 	(t = <tBOOL> | t = <tINT> | t = <tCHAR>)
-	{
-		return sf.Tipo_variable(t, result);
-	}
+	{return sf.Tipo_variable(t, result);}
 }
 
 
@@ -216,9 +212,7 @@ Symbol Tipo_array() :
 }
 {
 	<tARRAY> <tAP> indMin = <tNUM> <tPUNTOS> indMax = <tNUM> <tCP> <tOF> tipo_base = Tipo_variable()
-	{
-		return sf.Tipo_array(indMin, indMax, tipo_base);
-	}
+	{return sf.Tipo_array(indMin, indMax, tipo_base);}
 }
 
 
@@ -464,51 +458,68 @@ void Instr_funcion_vector(String id) :
 void Instr_funcion_vector_2(String id, Par tipo) :
 {
 	Par parametro;
-	boolean primer_parametro = true;
-	int iterador = 0;
-	boolean id_encontrado = false;
-	Symbol simbolo = null;
+	ArrayList<Par> lista_parametros_llamada = null;
 }
 {
 	<tCP> Instr_funcion_vector_3(id, tipo)
 	|	// Matching de las llamadas a funciones con más de un parámetro
 	{
-		if (st.containsSymbol(id)) {
-			try {
-				simbolo = st.getSymbol(id);
-				if (simbolo.type != Symbol.Types.PROCEDURE && simbolo.type != Symbol.Types.FUNCTION) 
-					System.out.println("ERROR: El símbolo " + id + " no es un procedimiento/funcion");
-				else {
-					if (simbolo.type == Symbol.Types.PROCEDURE) {
-						SymbolProcedure p = (SymbolProcedure) simbolo;
-						sf.verificar_parametro_procedimiento(p, tipo, iterador);
-					}
-					else {
-						SymbolFunction f = (SymbolFunction) simbolo;
-						sf.verificar_parametro_funcion(f, tipo, iterador);
-					}
-					iterador++;
-					id_encontrado = true;
-				}
-			}
-			catch (SymbolNotFoundException s) {}
-		}
-		else System.out.println("ERROR: El símbolo " + id + " no existe");
+		// Se crea la lista de parámetros y se añade el primero ya leído
+		lista_parametros_llamada = new ArrayList<>();
+		lista_parametros_llamada.add(tipo);
 	}
 	(<tCOMA> parametro = Expresion()
 	{
-		if (id_encontrado && simbolo.type == Symbol.Types.PROCEDURE) {
-			SymbolProcedure p = (SymbolProcedure) simbolo;
-			sf.verificar_parametro_procedimiento(p, parametro, iterador);
-			iterador++;
+		// Se recogen los parámetros que se leen
+		lista_parametros_llamada.add(parametro);
+	})+ <tCP>
+	{
+		// Se verifican los parámetros
+		try {
+			Symbol simbolo_llamada = st.getSymbol(id);
+
+			if (simbolo_llamada.type == Symbol.Types.FUNCTION || simbolo_llamada.type == Symbol.Types.PROCEDURE) {
+				ArrayList<Symbol> lista_parametros;
+				if (simbolo_llamada.type == Symbol.Types.FUNCTION) {
+					SymbolFunction s = (SymbolFunction) simbolo_llamada;
+					lista_parametros = s.parList;
+				}
+				else {
+					SymbolProcedure s = (SymbolProcedure) simbolo_llamada;
+					lista_parametros = s.parList;
+				}
+
+				for (int i = 0; i < lista_parametros.size(); i++) {
+					Symbol simbolo_parametro = lista_parametros.get(i);
+					Par argumento = lista_parametros_llamada.get(i);
+					if (argumento.primero != simbolo_parametro.type) {
+						System.out.println("ERROR: Se esperaba un tipo " + simbolo_parametro.type);
+					}
+					if (simbolo_parametro.parClass == Symbol.ParameterClass.REF && !argumento.segundo) {
+						System.out.println("ERROR: El parámetro " + simbolo_parametro.name + " es un parámetro por referencia");
+					}
+					/*	CASO ESPECIAL DE ARRAYS
+					if (simbolo_parametro.type == Symbol.Types.ARRAY) {
+						SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento));
+						SymbolArray array_parametro = (SymbolArray) ();
+						if () {
+							System.out.println("ERROR: Los índices del array parámetro " + simbolo_parametro.name + " no coinciden");
+						}
+						if () {
+							System.out.println("ERROR: Los tipos base del array parámetro " + simbolo_parametro.name + " no coinciden");
+						}
+					}
+					*/
+				}
+			}
+			else {
+				System.out.println("ERROR: Se esperaba un tipo procedimiento/función");
+			}
 		}
-		else if (id_encontrado && simbolo.type == Symbol.Types.FUNCTION) {
-			SymbolFunction f = (SymbolFunction) simbolo;
-			sf.verificar_parametro_funcion(f, parametro, iterador);
-			iterador++;
+		catch (SymbolNotFoundException s) {
+			System.out.println("ERROR: El símbolo " + id + " no existe");
 		}
 	}
-	)+ <tCP>
 	// recordar casos get(), put() y put_line()
 }
 
