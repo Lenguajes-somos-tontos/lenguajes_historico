@@ -366,7 +366,10 @@ Par Primario() :
 }
 {
     (<tAP> tipo = Expresion() <tCP>
-|	LOOKAHEAD(2) t = <tID> <tAP> Expresion() (<tCOMA> Expresion())* <tCP>	//////////////////////////////////////////////////
+|	LOOKAHEAD(2) t = <tID> <tAP> Expresion() (<tCOMA> Expresion())* <tCP>
+	{
+		//////////////////////////////////////////////////
+	}
 |	t = <tID> {sf.Primario_ID(t, tipo, simbolo, st);}
 |	t = <tNUM> {tipo.primero = Symbol.Types.INT;}
 |	t = <tCONSTCHAR> {tipo.primero = Symbol.Types.CHAR;}
@@ -404,7 +407,6 @@ void Instruccion_sin_return() :
 	{
 		if (llamada_funcion_simple)
 			sf.Instruccion(id.image, st);		// Llamada a función/procedimiento sin parámetros
-			// Recordar casos skip_line y put_line()
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tNULL>) <tPC>
@@ -423,7 +425,6 @@ void Instruccion_con_return() :
 	{
 		if (llamada_funcion_simple)
 			sf.Instruccion(id.image, st);		// Llamada a función/procedimiento sin parámetros
-			// Recordar casos skip_line y put_line()
 	}
 	| Instr_condicional_con_return() | Instr_iterativa_con_return()
 	| <tNULL>
