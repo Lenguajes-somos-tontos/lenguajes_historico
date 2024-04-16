@@ -128,28 +128,11 @@ void Programa() :
 {
 }
 {
-
-	////////////////////////////////////////////////////////////////////////////
-	// LISTA DE AVANCES
-	////////////////////////////////////////////////////////////////////////////
-	/*
-	 * - La produccion Declaracion() ya mete automaticamente los simbolos en la tabla,
-	 *   no mete los que ya estan definidos a ese nivel, y saca mensajes de error por pantalla
-	 *   en caso de que una variable ya este definida o en caso de que un array tenga mal los indices (ind_menor > ind_mayor).
-	 *
-	 * - La producción Parametros() devuelve la lista de símbolos leídos de parámetros sin checkear repetidos
-	 *   o índices de array incorrectos y los inserta en la tabla de simbolos.
-	 *
-	 * - Procedimiento() y Funcion() funcionan igual, se mete el símbolo al mismo nivel de lo anterior, nuevo
-	 *   bloque para variables globales y parámetros, si hay cualquier problema (nombre de variable, parámetro o función
-	 *   ya repetido, o índices de algún array por parámetro incorrectos), se inserta lo que se pueda en la tabla de símbolos
-	 *   (da igual lo que se meta porque el procedimiento o función está mal) y se asigna el array de parámetros.
-	 */
 	{
 		st.insertBlock();
 		/*
-			int2char
-			char2int
+			int2char(int i)
+			char2int(char c)
 			skip_line
 			put_line (sin parámetros)
 		*/
@@ -262,6 +245,7 @@ Par Relacion() :
 	tipo = Expresion_simple() (op = Operador_relacional() tipo2 = Expresion_simple() {match=true;})?
 	{
 		if (match) {
+			// Esto en una función
 			tipo.segundo = false;
 			String operador = op.image;
 			if (operador.equals("<") || operador.equals(">") || operador.equals("<=") || operador.equals(">=")) {
@@ -461,23 +445,23 @@ void Instr_funcion_vector(String id) :
 void Instr_funcion_vector_2(String id, Par tipo) :
 {
 	Par parametro;
-	ArrayList<Par> lista_parametros_llamada = null;
+	ArrayList<Par> lista_argumentos = null;
 }
 {
 	<tCP> Instr_funcion_vector_3(id, tipo)
 	|	// Matching de las llamadas a funciones con más de un parámetro
 	{
 		// Se crea la lista de parámetros y se añade el primero ya leído
-		lista_parametros_llamada = new ArrayList<>();
-		lista_parametros_llamada.add(tipo);
+		lista_argumentos = new ArrayList<>();
+		lista_argumentos.add(tipo);
 	}
 	(<tCOMA> parametro = Expresion()
 	{
 		// Se recogen los parámetros que se leen
-		lista_parametros_llamada.add(parametro);
+		lista_argumentos.add(parametro);
 	})+ <tCP>
 	{
-		// Se verifican los parámetros
+		// Llamada a método de comprobación de llamada a funciones con uno o más parámetros recibe (String id, ArrayList<Par> lista_argumentos)
 		try {
 			id = id.toLowerCase();
 			sf.comprobar_funciones_especiales(id);
@@ -494,10 +478,10 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 					SymbolProcedure s = (SymbolProcedure) simbolo_llamada;
 					lista_parametros = s.parList;
 				}
-				if (lista_parametros.size() == lista_parametros_llamada.size()) {
+				if (lista_parametros.size() == lista_argumentos.size()) {
 					for (int i = 0; i < lista_parametros.size(); i++) {
 						Symbol simbolo_parametro = lista_parametros.get(i);
-						Par argumento = lista_parametros_llamada.get(i);
+						Par argumento = lista_argumentos.get(i);
 						if (argumento.primero != simbolo_parametro.type) {
 							System.out.println("ERROR: Se esperaba un tipo " + simbolo_parametro.type + " en la llamada a " + id);
 						}
@@ -528,8 +512,8 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 			System.out.println("ERROR: El símbolo " + id + " no existe");
 		}
 		catch (SpecialFunctionFound g) {
-			for (int i = 0; i < lista_parametros_llamada.size(); i++) {
-				Par argumento = lista_parametros_llamada.get(i);
+			for (int i = 0; i < lista_argumentos.size(); i++) {
+				Par argumento = lista_argumentos.get(i);
 				if (id.equals("get") && (argumento.primero != Symbol.Types.INT && argumento.primero != Symbol.Types.CHAR)) {
 					System.out.println("ERROR: Se esperaba un tipo INT/CHAR en la llamada a get");
 				}
@@ -557,10 +541,11 @@ void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
 
 	| {}
 	{
-		//Symbol funcion = st.getSymbol(id);
+		ArrayList<Par> lista_argumentos = new ArrayList<>();
+		lista_argumentos.add(tipo_primera_expresion);
+		// Llamada a método compartido de llamadas a funciones
 	}				
 	// Matching de llamada a funcion con un solo parametro	///////////////////////////////////////////////////
-	// recordar casos get(), put() y put_line()
 }
 
 
