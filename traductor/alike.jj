@@ -132,7 +132,7 @@ void Programa() :
 		st.insertBlock();
 		try {
 			ArrayList<Symbol> lista_int =  new ArrayList<>();
-			lista_int.add(new SymbolInt("c", Symbol.ParameterClass.VAL));
+			lista_int.add(new SymbolInt("i", Symbol.ParameterClass.VAL));
 			st.insertSymbol(new SymbolFunction("int2char", lista_int, Symbol.Types.CHAR));
 		
 			ArrayList<Symbol> lista_char =  new ArrayList<>();
