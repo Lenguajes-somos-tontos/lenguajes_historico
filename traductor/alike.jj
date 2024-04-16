@@ -245,7 +245,7 @@ Par Expresion() :
 		}
 	})*
 	{
-		System.out.println("Expresion: " + tipo.primero + " " + tipo.segundo);
+		//System.out.println("Expresion: " + tipo.primero + " " + tipo.segundo);
 		return tipo;
 	}
 }
@@ -479,7 +479,7 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 	{
 		// Se verifican los parámetros
 		try {
-
+			id = id.toLowerCase();
 			sf.comprobar_funciones_especiales(id);
 
 			Symbol simbolo_llamada = st.getSymbol(id);
@@ -494,26 +494,30 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 					SymbolProcedure s = (SymbolProcedure) simbolo_llamada;
 					lista_parametros = s.parList;
 				}
-
-				for (int i = 0; i < lista_parametros.size(); i++) {
-					Symbol simbolo_parametro = lista_parametros.get(i);
-					Par argumento = lista_parametros_llamada.get(i);
-					if (argumento.primero != simbolo_parametro.type) {
-						System.out.println("ERROR: Se esperaba un tipo " + simbolo_parametro.type);
-					}
-					if (simbolo_parametro.parClass == Symbol.ParameterClass.REF && !argumento.segundo) {
-						System.out.println("ERROR: El parámetro " + simbolo_parametro.name + " es un parámetro por referencia");
-					}
-					if (simbolo_parametro.type == Symbol.Types.ARRAY) {
-						SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.tercero));
-						SymbolArray array_parametro = (SymbolArray) (simbolo_parametro);
-						if (array_argumento.minInd != array_parametro.maxInd) {
-							System.out.println("ERROR: Los índices del array parámetro " + simbolo_parametro.name + " no coinciden");
+				if (lista_parametros.size() == lista_parametros_llamada.size()) {
+					for (int i = 0; i < lista_parametros.size(); i++) {
+						Symbol simbolo_parametro = lista_parametros.get(i);
+						Par argumento = lista_parametros_llamada.get(i);
+						if (argumento.primero != simbolo_parametro.type) {
+							System.out.println("ERROR: Se esperaba un tipo " + simbolo_parametro.type + " en la llamada a " + id);
 						}
-						if (array_argumento.baseType != array_parametro.baseType) {
-							System.out.println("ERROR: Los tipos base del array parámetro " + simbolo_parametro.name + " no coinciden");
+						if (simbolo_parametro.parClass == Symbol.ParameterClass.REF && !argumento.segundo) {
+							System.out.println("ERROR: El parámetro " + simbolo_parametro.name + " es un parámetro por referencia");
+						}
+						if (simbolo_parametro.type == Symbol.Types.ARRAY) {
+							SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.tercero));
+							SymbolArray array_parametro = (SymbolArray) (simbolo_parametro);
+							if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
+								System.out.println("ERROR: Los índices del array parámetro " + simbolo_parametro.name + " no coinciden");
+							}
+							if (array_argumento.baseType != array_parametro.baseType) {
+								System.out.println("ERROR: Los tipos base del array parámetro " + simbolo_parametro.name + " no coinciden");
+							}
 						}
 					}
+				}
+				else {
+					System.out.println("ERROR: El número de parámetros en la llamada a " + id + " no coinciden");
 				}
 			}
 			else {
@@ -523,11 +527,17 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 		catch (SymbolNotFoundException s) {
 			System.out.println("ERROR: El símbolo " + id + " no existe");
 		}
-		catch (GetFunctionFound g) {
-			// La función es get()
-		}
-		catch (PutFunctionFound p) {
-			// La función es put() o put_line()
+		catch (SpecialFunctionFound g) {
+			for (int i = 0; i < lista_parametros_llamada.size(); i++) {
+				Par argumento = lista_parametros_llamada.get(i);
+				if (id.equals("get") && (argumento.primero != Symbol.Types.INT && argumento.primero != Symbol.Types.CHAR)) {
+					System.out.println("ERROR: Se esperaba un tipo INT/CHAR en la llamada a get");
+				}
+				else if ((id.equals("put") || id.equals("put_line")) && (argumento.primero != Symbol.Types.INT &&
+						argumento.primero != Symbol.Types.BOOL && argumento.primero != Symbol.Types.CHAR && argumento.primero != Symbol.Types.STRING)) {
+					System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR/STRING en la llamada a " + id);
+				}
+			}
 		}
 	}
 }
@@ -565,7 +575,6 @@ void Programa_completo() :
 	<tBEGIN>
 	{System.out.println(st.toString());}
 	(Instruccion_sin_return())+
-	//{System.out.println(st.toString());}
 	<tEND> <tPC>
 }
 

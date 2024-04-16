@@ -170,13 +170,10 @@ public class SemanticFunction {
 
 
 
-	public void comprobar_funciones_especiales(String id_funcion) throws GetFunctionFound, PutFunctionFound {
+	public void comprobar_funciones_especiales(String id_funcion) throws SpecialFunctionFound {
 		String id = id_funcion.toLowerCase();
-		if (id.equals("put_line") || id.equals("put")) {
-			throw new PutFunctionFound();
-		}
-		else if (id.equals("get")) {
-			throw new GetFunctionFound();
+		if (id.equals("put_line") || id.equals("put") || id.equals("get")) {
+			throw new SpecialFunctionFound();
 		}
 	}
 }
