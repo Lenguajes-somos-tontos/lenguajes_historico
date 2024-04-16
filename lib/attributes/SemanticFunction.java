@@ -60,18 +60,22 @@ public class SemanticFunction {
 			if (simbolo.type == Symbol.Types.INT) {
 				tipo.primero = Symbol.Types.INT;
 				tipo.segundo = true;
+				tipo.tercero = t.image;
 			}
 			else if (simbolo.type == Symbol.Types.BOOL) {
 				tipo.primero = Symbol.Types.BOOL;
 				tipo.segundo = true;
+				tipo.tercero = t.image;
 			}
 			else if (simbolo.type == Symbol.Types.CHAR) {
 				tipo.primero = Symbol.Types.CHAR;
 				tipo.segundo = true;
+				tipo.tercero = t.image;
 			}
 			else if (simbolo.type == Symbol.Types.ARRAY) {
 				tipo.primero = Symbol.Types.ARRAY;
 				tipo.segundo = true;
+				tipo.tercero = t.image;
 			}
 			else if (simbolo.type == Symbol.Types.FUNCTION) {
 				SymbolFunction s = (SymbolFunction) simbolo;
@@ -165,22 +169,14 @@ public class SemanticFunction {
 	}
 
 
-	public void verificar_parametro_procedimiento(SymbolProcedure p, Par par, int iterador) {
-		if (p.parList.get(iterador).type != par.primero) {
-			System.out.println("ERROR: Se esperaba un tipo " + p.parList.get(iterador).type + " en la llamada a " + p.name); // Y la línea
-		}
-		else if (p.parList.get(iterador).parClass == Symbol.ParameterClass.REF && !par.segundo) {
-			System.out.println("ERROR: El tipo " + p.parList.get(iterador).type + " en la llamada a " + p.name + " debe ser una variable"); // Y la línea
-		}
-	}
 
-
-	public void verificar_parametro_funcion(SymbolFunction p, Par par, int iterador) {
-		if (p.parList.get(iterador).type != par.primero) {
-			System.out.println("ERROR: Se esperaba un tipo " + p.parList.get(iterador).type + " en la llamada a " + p.name); // Y la línea
+	public void comprobar_funciones_especiales(String id_funcion) throws GetFunctionFound, PutFunctionFound {
+		String id = id_funcion.toLowerCase();
+		if (id.equals("put_line") || id.equals("put")) {
+			throw new PutFunctionFound();
 		}
-		else if (p.parList.get(iterador).parClass == Symbol.ParameterClass.REF && !par.segundo) {
-			System.out.println("ERROR: El tipo " + p.parList.get(iterador).type + " en la llamada a " + p.name + " debe ser una variable"); // Y la línea
+		else if (id.equals("get")) {
+			throw new GetFunctionFound();
 		}
 	}
 }

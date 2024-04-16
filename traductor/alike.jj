@@ -145,7 +145,15 @@ void Programa() :
 	 *   ya repetido, o índices de algún array por parámetro incorrectos), se inserta lo que se pueda en la tabla de símbolos
 	 *   (da igual lo que se meta porque el procedimiento o función está mal) y se asigna el array de parámetros.
 	 */
-	{st.insertBlock();}
+	{
+		st.insertBlock();
+		/*
+			int2char
+			char2int
+			skip_line
+			put_line (sin parámetros)
+		*/
+	}
 	Programa_completo()
 	{st.removeBlock();}
 	<EOF>
@@ -223,7 +231,7 @@ Symbol Tipo_array() :
 Par Expresion() :
 {
 	Par tipo;
-	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
+	Par tipo2 = new Par();
 	boolean match2 = false;
 }
 {
@@ -239,7 +247,6 @@ Par Expresion() :
 	{
 		System.out.println("Expresion: " + tipo.primero + " " + tipo.segundo);
 		return tipo;
-		//return sf.Expresion(tipo, tipo2, match2);
 	}
 }
 
@@ -247,7 +254,7 @@ Par Expresion() :
 Par Relacion() :
 {
 	Par tipo;
-	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
+	Par tipo2 = new Par();
 	Token op = null;
 	boolean match = false;
 }
@@ -277,7 +284,6 @@ Par Relacion() :
 			}
 		}
 		return tipo;
-		//return sf.Relacion(tipo, tipo2, op, match2);
 	}
 }
 
@@ -305,7 +311,7 @@ void Operador_multiplicativo() :
 Par Expresion_simple() :
 {
 	Par tipo;
-	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
+	Par tipo2 = new Par();
 	boolean match1 = false;
 }
 {
@@ -321,15 +327,14 @@ Par Expresion_simple() :
 	{
 		if (match1) tipo.segundo = false;
 		return tipo;
-		//return sf.Expresion_simple(tipo, tipo2, match1, match2);
 	}
 }
 
 
 Par Termino() :
 {
-	Par tipo = new Par(Symbol.Types.UNDEFINED, false);
-	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
+	Par tipo = new Par();
+	Par tipo2 = new Par();
 }
 {
     tipo = Factor() (Operador_multiplicativo() tipo2 = Factor()
@@ -343,15 +348,14 @@ Par Termino() :
 	})*
 	{
 		return tipo;
-		//return sf.Termino(tipo, tipo2, match2);
 	}
 }
 
 
 Par Factor() :
 {
-	Par tipo = new Par(Symbol.Types.UNDEFINED, false);
-	Par tipo2 = new Par(Symbol.Types.UNDEFINED, false);
+	Par tipo = new Par();
+	Par tipo2 = new Par();
 	boolean match = false;
 }
 {
@@ -366,7 +370,6 @@ Par Factor() :
 			else tipo.primero = Symbol.Types.BOOL;
 		}
 		return tipo;
-		//return sf.Factor(tipo, tipo2, match2);
 	}
 }
 
@@ -374,7 +377,7 @@ Par Factor() :
 Par Primario() :
 {
 	Token t;
-	Par tipo = new Par(Symbol.Types.UNDEFINED, false);
+	Par tipo = new Par();
 	Symbol simbolo = null;
 }
 {
@@ -476,6 +479,9 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 	{
 		// Se verifican los parámetros
 		try {
+
+			sf.comprobar_funciones_especiales(id);
+
 			Symbol simbolo_llamada = st.getSymbol(id);
 
 			if (simbolo_llamada.type == Symbol.Types.FUNCTION || simbolo_llamada.type == Symbol.Types.PROCEDURE) {
@@ -498,18 +504,16 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 					if (simbolo_parametro.parClass == Symbol.ParameterClass.REF && !argumento.segundo) {
 						System.out.println("ERROR: El parámetro " + simbolo_parametro.name + " es un parámetro por referencia");
 					}
-					/*	CASO ESPECIAL DE ARRAYS
 					if (simbolo_parametro.type == Symbol.Types.ARRAY) {
-						SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento));
-						SymbolArray array_parametro = (SymbolArray) ();
-						if () {
+						SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.tercero));
+						SymbolArray array_parametro = (SymbolArray) (simbolo_parametro);
+						if (array_argumento.minInd != array_parametro.maxInd) {
 							System.out.println("ERROR: Los índices del array parámetro " + simbolo_parametro.name + " no coinciden");
 						}
-						if () {
+						if (array_argumento.baseType != array_parametro.baseType) {
 							System.out.println("ERROR: Los tipos base del array parámetro " + simbolo_parametro.name + " no coinciden");
 						}
 					}
-					*/
 				}
 			}
 			else {
@@ -519,8 +523,13 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 		catch (SymbolNotFoundException s) {
 			System.out.println("ERROR: El símbolo " + id + " no existe");
 		}
+		catch (GetFunctionFound g) {
+			// La función es get()
+		}
+		catch (PutFunctionFound p) {
+			// La función es put() o put_line()
+		}
 	}
-	// recordar casos get(), put() y put_line()
 }
 
 
@@ -538,10 +547,10 @@ void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
 
 	| {}
 	{
-		Symbol funcion = st.getSymbol(id);
-
-	}				// Matching de llamada a funcion con un solo parametro	///////////////////////////////////////////////////
-					// recordar casos get(), put() y put_line()
+		//Symbol funcion = st.getSymbol(id);
+	}				
+	// Matching de llamada a funcion con un solo parametro	///////////////////////////////////////////////////
+	// recordar casos get(), put() y put_line()
 }
 
 
