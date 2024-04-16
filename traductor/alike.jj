@@ -130,12 +130,20 @@ void Programa() :
 {
 	{
 		st.insertBlock();
-		/*
-			int2char(int i)
-			char2int(char c)
-			skip_line
-			put_line (sin parámetros)
-		*/
+		try {
+			ArrayList<Symbol> lista_int =  new ArrayList<>();
+			lista_int.add(new SymbolInt("c", Symbol.ParameterClass.VAL));
+			st.insertSymbol(new SymbolFunction("int2char", lista_int, Symbol.Types.CHAR));
+		
+			ArrayList<Symbol> lista_char =  new ArrayList<>();
+			lista_char.add(new SymbolChar("c", Symbol.ParameterClass.VAL));
+			st.insertSymbol(new SymbolFunction("char2int", lista_char, Symbol.Types.INT));
+		
+			st.insertSymbol(new SymbolProcedure("skip_line", new ArrayList<Symbol>()));
+			st.insertSymbol(new SymbolProcedure("put_line", new ArrayList<Symbol>()));
+		}
+		catch (AlreadyDefinedSymbolException a) {}
+		catch (IndexArrayNotCorrect a) {}
 	}
 	Programa_completo()
 	{st.removeBlock();}
