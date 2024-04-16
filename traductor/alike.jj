@@ -646,7 +646,6 @@ void Procedimiento() :
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
 	(Instruccion_sin_return())+
-	//{System.out.println(st.toString());}
 	{st.removeBlock();}
 	<tEND> <tPC>
 }
@@ -675,7 +674,6 @@ void Funcion() :
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
 	(Instruccion_con_return())+
-	//{System.out.println(st.toString());}
 	{st.removeBlock();}
 	<tEND> <tPC>
 }
@@ -782,7 +780,6 @@ void MasIF_return():
 			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
-
 	(Instruccion_con_return())+
 	MasIF_return()
 	| <tELSE> (Instruccion_con_return())+
