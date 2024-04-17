@@ -20,4 +20,7 @@ begin
     --inicializar(true and k and not true, v, (n*81)-21);
     calcular(n, n+2*5, v);
     put("Hola", 5, true, false, 'c');
+    int2char(45);
+    skip_linee;
+
 end;

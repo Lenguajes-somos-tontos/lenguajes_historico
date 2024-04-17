@@ -182,4 +182,75 @@ public class SemanticFunction {
 			throw new SpecialFunctionFound();
 		}
 	}
+
+
+	public Par llamada_funcion(String id, ArrayList<Par> lista_argumentos, SymbolTable st) {
+		Par resultado = new Par();
+		try {
+			id = id.toLowerCase();
+			comprobar_funciones_especiales(id);
+
+			Symbol simbolo_llamada = st.getSymbol(id);
+
+			if (simbolo_llamada.type == Symbol.Types.FUNCTION || simbolo_llamada.type == Symbol.Types.PROCEDURE) {
+				ArrayList<Symbol> lista_parametros;
+				if (simbolo_llamada.type == Symbol.Types.FUNCTION) {
+					SymbolFunction s = (SymbolFunction) simbolo_llamada;
+					lista_parametros = s.parList;
+					resultado.primero = s.returnType;
+				}
+				else {
+					SymbolProcedure s = (SymbolProcedure) simbolo_llamada;
+					lista_parametros = s.parList;
+				}
+				if (lista_parametros.size() == lista_argumentos.size()) {
+					for (int i = 0; i < lista_parametros.size(); i++) {
+						Symbol simbolo_parametro = lista_parametros.get(i);
+						Par argumento = lista_argumentos.get(i);
+						
+						if (argumento.primero != simbolo_parametro.type) {
+							System.out.println("ERROR: Se esperaba un tipo " + simbolo_parametro.type + " en la llamada a " + id);
+						}
+						if (simbolo_parametro.parClass == Symbol.ParameterClass.REF && !argumento.segundo) {
+							System.out.println("ERROR: El parámetro " + simbolo_parametro.name + " es un parámetro por referencia");
+						}
+						// Caso ARRAY
+						if (simbolo_parametro.type == Symbol.Types.ARRAY) {
+							SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.tercero));
+							SymbolArray array_parametro = (SymbolArray) (simbolo_parametro);
+
+							if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
+								System.out.println("ERROR: Los índices del array parámetro " + simbolo_parametro.name + " no coinciden");
+							}
+							if (array_argumento.baseType != array_parametro.baseType) {
+								System.out.println("ERROR: Los tipos base del array parámetro " + simbolo_parametro.name + " no coinciden");
+							}
+						}
+					}
+				}
+				else {
+					System.out.println("ERROR: El número de parámetros en la llamada a " + id + " no coinciden");
+				}
+			}
+			else {
+				System.out.println("ERROR: Se esperaba un tipo procedimiento/función");
+			}
+		}
+		catch (SymbolNotFoundException s) {
+			System.out.println("ERROR: El símbolo " + id + " no está definido");
+		}
+		catch (SpecialFunctionFound g) {
+			for (int i = 0; i < lista_argumentos.size(); i++) {
+				Par argumento = lista_argumentos.get(i);
+				if (id.equals("get") && (argumento.primero != Symbol.Types.INT && argumento.primero != Symbol.Types.CHAR)) {
+					System.out.println("ERROR: Se esperaba un tipo INT/CHAR en la llamada a get");
+				}
+				else if ((id.equals("put") || id.equals("put_line")) && (argumento.primero != Symbol.Types.INT &&
+						argumento.primero != Symbol.Types.BOOL && argumento.primero != Symbol.Types.CHAR && argumento.primero != Symbol.Types.STRING)) {
+					System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR/STRING en la llamada a " + id);
+				}
+			}
+		}
+		return resultado;
+	}
 }
