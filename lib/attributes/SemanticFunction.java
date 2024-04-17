@@ -270,4 +270,27 @@ public class SemanticFunction {
 			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
+
+
+	public void verificar_relacion(String operador, Par tipo, Par tipo2) {
+		tipo.segundo = false;
+		if (operador.equals("<") || operador.equals(">") || operador.equals("<=") || operador.equals(">=")) {
+			if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
+				tipo.primero = Symbol.Types.UNDEFINED;
+				System.out.println("ERROR: Se esperaba un tipo INT");
+			}
+			else tipo.primero = Symbol.Types.BOOL;
+		}
+		else if (tipo2.primero != Symbol.Types.ARRAY || tipo2.primero != Symbol.Types.FUNCTION ||
+				tipo2.primero != Symbol.Types.PROCEDURE || tipo2.primero != Symbol.Types.STRING) {
+			if (tipo.primero != tipo2.primero) {
+				tipo.primero = Symbol.Types.UNDEFINED;
+				System.out.println("ERROR: Se esperaba un tipo " + tipo.primero);
+			}
+			else tipo.primero = Symbol.Types.BOOL;
+		}
+		else {
+			System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR");
+		}
+	}
 }

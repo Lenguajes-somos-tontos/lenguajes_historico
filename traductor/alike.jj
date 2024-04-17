@@ -252,29 +252,8 @@ Par Relacion() :
 {
 	tipo = Expresion_simple() (op = Operador_relacional() tipo2 = Expresion_simple() {match=true;})?
 	{
-		if (match) {
-			// Esto en una función
-			tipo.segundo = false;
-			String operador = op.image;
-			if (operador.equals("<") || operador.equals(">") || operador.equals("<=") || operador.equals(">=")) {
-				if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
-					tipo.primero = Symbol.Types.UNDEFINED;
-					System.out.println("ERROR: Se esperaba un tipo INT");
-				}
-				else tipo.primero = Symbol.Types.BOOL;
-			}
-			else if (tipo2.primero != Symbol.Types.ARRAY || tipo2.primero != Symbol.Types.FUNCTION ||
-					tipo2.primero != Symbol.Types.PROCEDURE || tipo2.primero != Symbol.Types.STRING) {
-				if (tipo.primero != tipo2.primero) {
-					tipo.primero = Symbol.Types.UNDEFINED;
-					System.out.println("ERROR: Se esperaba un tipo " + tipo.primero);
-				}
-				else tipo.primero = Symbol.Types.BOOL;
-			}
-			else {
-				System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR");
-			}
-		}
+		if (match)
+			sf.verificar_relacion(op.image, tipo, tipo2);
 		return tipo;
 	}
 }
