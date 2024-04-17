@@ -351,9 +351,9 @@ public class SemanticFunction {
 		alike.codigo_error();
 	}
 
+	
 	public void simbolo_no_es(String id, String tipo) {
 		System.out.println("ERROR: El simbolo " + id + " no es un " + tipo);
 		alike.codigo_error();
 	}
-
 }
