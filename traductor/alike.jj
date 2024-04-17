@@ -378,14 +378,8 @@ void Instruccion_sin_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		/*
-		Llamada a función/procedimiento sin parámetros, se llama al método
-		si se sabe que no tiene ningún parámetro (no ha hecho matching
-		con la regla "Instr_funcion_vector")
-		*/
-		if (llamada_funcion_simple) {
-			sf.verificar_llamada(id.image, new ArrayList<Par>(), st);
-		}
+		// Llamada a función/procedimiento sin parámetros
+		if (llamada_funcion_simple) sf.verificar_llamada(id.image, new ArrayList<Par>(), st);
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tEXIT>
@@ -405,13 +399,8 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		/*
-		Llamada a función/procedimiento sin parámetros, se llama al método
-		si se sabe que no tiene ningún parámetro (no ha hecho matching
-		con la regla "Instr_funcion_vector")
-		*/
-		if (llamada_funcion_simple)
-			sf.verificar_llamada(id.image, new ArrayList<Par>(), st);
+		// Llamada a función/procedimiento sin parámetros
+		if (llamada_funcion_simple) sf.verificar_llamada(id.image, new ArrayList<Par>(), st);
 	}
 	| Instr_condicional_con_return(tipo_a_retornar, nivel+1) | Instr_iterativa_con_return(tipo_a_retornar, nivel+1)
 	| <tNULL>
