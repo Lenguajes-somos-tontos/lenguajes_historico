@@ -21,9 +21,11 @@ public class SemanticFunction {
 			try {st.insertSymbol(tipo_variables.clone());}	// Se inserta una copia del puntero
 			catch (AlreadyDefinedSymbolException e) {
 				System.out.println("Simbolo " + variable + " ya definido");
+				alike.codigo_error();
 			}
 			catch (IndexArrayNotCorrect i) {	// Caso de simbolo array con indices incorrectos
 				System.out.println("Los indices del array " + variable + " no son correctos");
+				alike.codigo_error();
 			}
 		}
     }
@@ -85,12 +87,13 @@ public class SemanticFunction {
 				}
 				else {
 					System.out.println("ERROR: Los parámetros de la llamada a " + t.image + " no son correctos");
+					alike.codigo_error();
 					// Se ha utilizado una función que tiene parámetros como una que no los tiene
 				}
 			}
 		}
 		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El símbolo " + t.image + " no está definido");
+			simbolo_no_definido(t.image);
 		}
     }
 
@@ -103,10 +106,11 @@ public class SemanticFunction {
 			if (tipo_id != tipo_asignacion.primero || tipo_id == Symbol.Types.FUNCTION
 				|| tipo_id == Symbol.Types.PROCEDURE || tipo_id == Symbol.Types.ARRAY || tipo_id == Symbol.Types.STRING) {
 				System.out.println("ERROR: Se esperaba un tipo " + tipo_id);
+				alike.codigo_error();
 			}
 		}
 		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El simbolo " + id + " no está definido");
+			simbolo_no_definido(id);
 		}
 	}
 
@@ -118,20 +122,23 @@ public class SemanticFunction {
 
 			if (tipo_primera_expresion.primero != Symbol.Types.INT) {
 				System.out.println("ERROR: Se esperaba una expresión de tipo INT para el índice del array " + id);
+				alike.codigo_error();
 			}
 			else {
 				if (tipo_asignacion.primero != simbolo_array.baseType) {
 					// No se verifica que la expresión a la derecha pueda ser string, función, array o procedimiento
 					// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
 					System.out.println("ERROR: Se esperaba una expresión de tipo " + simbolo_array.baseType + "en la asignación al array " + id);
+					alike.codigo_error();
 				}
 			}
 		}
 		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El símbolo " + id + " no está definido");
+			simbolo_no_definido(id);
 		}
 		catch (ClassCastException e) {	// Excepción que saltará si se intenta meter un simbolo que no es un array en un SymbolArray
 			System.out.println("ERROR: El símbolo " + id + " no es un array");
+			alike.codigo_error();
 		}
 	}
 
@@ -168,9 +175,11 @@ public class SemanticFunction {
 				
 				if (argumento.primero != simbolo_parametro.type) {
 					System.out.println("ERROR: Se esperaba un tipo " + simbolo_parametro.type + " en la llamada a " + id);
+					alike.codigo_error();
 				}
 				if (simbolo_parametro.parClass == Symbol.ParameterClass.REF && !argumento.segundo) {
 					System.out.println("ERROR: El parámetro " + simbolo_parametro.name + " es un parámetro por referencia");
+					alike.codigo_error();
 				}
 				// Caso ARRAY
 				if (simbolo_parametro.type == Symbol.Types.ARRAY) {
@@ -179,15 +188,18 @@ public class SemanticFunction {
 
 					if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
 						System.out.println("ERROR: Los índices del array parámetro " + simbolo_parametro.name + " no coinciden");
+						alike.codigo_error();
 					}
 					if (array_argumento.baseType != array_parametro.baseType) {
 						System.out.println("ERROR: Los tipos base del array parámetro " + simbolo_parametro.name + " no coinciden");
+						alike.codigo_error();
 					}
 				}
 			}
 		}
 		else {
 			System.out.println("ERROR: El número de parámetros en la llamada a " + id + " no coinciden, se esperaban " + numero_parametros + " parametros");
+			alike.codigo_error();
 		}
 		return resultado;
 	}
@@ -198,6 +210,7 @@ public class SemanticFunction {
 
 		if (indice.primero != Symbol.Types.INT) {
 			System.out.println("ERROR: Se esperaba una expresión de tipo INT");
+			alike.codigo_error();
 		}
 		else {
 			resultado.primero = simbolo_array.baseType;
@@ -222,12 +235,14 @@ public class SemanticFunction {
 					resultado = indice_array(simbolo_array, lista_argumentos.get(0));
 				else
 					System.out.println("ERROR: Se esperaba un único índice en el array " + id);
+					alike.codigo_error();
 			}
 			else
 				System.out.println("ERROR: Se esperaba un tipo FUNCTION/PROCEDURE");
+				alike.codigo_error();
 		}
 		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El simbolo " + id + " no está definido");
+			simbolo_no_definido(id);
 		}
 		catch (SpecialFunctionFound g) {}
 		return resultado;
@@ -243,21 +258,26 @@ public class SemanticFunction {
 
 			if (simbolo.type == Symbol.Types.FUNCTION || simbolo.type == Symbol.Types.PROCEDURE)
 				resultado = llamada_funcion(simbolo, lista_argumentos, st);
-			else
+			else {
 				System.out.println("ERROR: Se esperaba un tipo FUNCTION/PROCEDURE");
+				alike.codigo_error();
+			}
 		}
 		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El simbolo " + id + " no está definido");
+			
+			simbolo_no_definido(id);
 		}
 		catch (SpecialFunctionFound g) {
 			for (int i = 0; i < lista_argumentos.size(); i++) {
 				Par argumento = lista_argumentos.get(i);
 				if (id.equals("get") && (argumento.primero != Symbol.Types.INT && argumento.primero != Symbol.Types.CHAR)) {
 					System.out.println("ERROR: Se esperaba un tipo INT/CHAR en la llamada a get");
+					alike.codigo_error();
 				}
 				else if ((id.equals("put") || id.equals("put_line")) && (argumento.primero != Symbol.Types.INT &&
-						argumento.primero != Symbol.Types.BOOL && argumento.primero != Symbol.Types.CHAR && argumento.primero != Symbol.Types.STRING)) {
-					System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR/STRING en la llamada a " + id);
+					argumento.primero != Symbol.Types.BOOL && argumento.primero != Symbol.Types.CHAR && argumento.primero != Symbol.Types.STRING)) {
+						System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR/STRING en la llamada a " + id);
+						alike.codigo_error();
 				}
 			}
 		}
@@ -268,6 +288,7 @@ public class SemanticFunction {
 	public void verificar_bool(Symbol.Types tipo) {
 		if (tipo != Symbol.Types.BOOL) {
 			System.out.println("ERROR: Se esperaba una expresión booleana");
+			alike.codigo_error();
 		}
 	}
 
@@ -278,6 +299,7 @@ public class SemanticFunction {
 			if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
 				tipo.primero = Symbol.Types.UNDEFINED;
 				System.out.println("ERROR: Se esperaba un tipo INT");
+				alike.codigo_error();
 			}
 			else tipo.primero = Symbol.Types.BOOL;
 		}
@@ -286,11 +308,13 @@ public class SemanticFunction {
 			if (tipo.primero != tipo2.primero) {
 				tipo.primero = Symbol.Types.UNDEFINED;
 				System.out.println("ERROR: Se esperaba un tipo " + tipo.primero);
+				alike.codigo_error();
 			}
 			else tipo.primero = Symbol.Types.BOOL;
 		}
 		else {
 			System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR");
+			alike.codigo_error();
 		}
 	}
 
@@ -301,6 +325,13 @@ public class SemanticFunction {
 		if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
 			System.out.println("ERROR: Se esperaba un tipo INT");
 			tipo.primero = Symbol.Types.UNDEFINED;
+			alike.codigo_error();
 		}
+	}
+
+
+	public static void simbolo_no_definido(String id) {
+		System.out.println("ERROR: El simbolo " + id + " no está definido");
+		alike.codigo_error();
 	}
 }

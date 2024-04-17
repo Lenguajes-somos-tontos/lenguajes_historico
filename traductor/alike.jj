@@ -227,6 +227,7 @@ Par Expresion() :
 		if (tipo.primero != Symbol.Types.BOOL || tipo2.primero != Symbol.Types.BOOL) {
 			System.out.println("ERROR: Se esperaba un tipo BOOL");
 			tipo.primero = Symbol.Types.UNDEFINED;
+			codigo_error();
 		}
 	})*
 	{return tipo;}
@@ -310,6 +311,7 @@ Par Factor() :
 			if (tipo2.primero != Symbol.Types.BOOL) {
 				System.out.println("ERROR: Se esperaba un tipo BOOL");
 				tipo.primero = Symbol.Types.UNDEFINED;
+				codigo_error();
 			}
 			else tipo.primero = Symbol.Types.BOOL;
 		}
@@ -394,6 +396,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 		if (es_return) {
 			if (tipo_a_retornar != tipo_return.primero) {
 				System.out.println("ERROR: Se esperaba un tipo " + tipo_a_retornar);
+				codigo_error();
 			}
 			else if (nivel == 1) {
 				return_valido = true;
@@ -515,8 +518,14 @@ ArrayList<Symbol> Parametros() :
 	{
 		for (Symbol simbolo : lista_parametros) {
 			try {st.insertSymbol(simbolo);}
-			catch (AlreadyDefinedSymbolException a) {System.out.println("El simbolo " + simbolo.name + " ya esta definido (NO)");}
-			catch (IndexArrayNotCorrect i) {System.out.println("Los indices del array " + simbolo.name + " no son correctos");}
+			catch (AlreadyDefinedSymbolException a) {
+				System.out.println("El simbolo " + simbolo.name + " ya esta definido");
+				codigo_error();
+			}
+			catch (IndexArrayNotCorrect i) {
+				System.out.println("Los indices del array " + simbolo.name + " no son correctos");
+				codigo_error();
+			}
 		}
 		return lista_parametros;
 	}
@@ -535,7 +544,10 @@ void Procedimiento() :
 		// Se crea el simbolo procedimiento sin parametros, que van un nivel por debajo
 		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>());
 		try {st.insertSymbol(simbolo_procedimiento);}
-		catch (AlreadyDefinedSymbolException a) {System.out.println("El procedimiento " + nombre_procedimiento.image + " ya esta definido");}
+		catch (AlreadyDefinedSymbolException a) {
+			System.out.println("El procedimiento " + nombre_procedimiento.image + " ya esta definido");
+			codigo_error();
+		}
 		catch (IndexArrayNotCorrect i) {}	// Se sabe que el simbolo no es un array
 		st.insertBlock();
 	}
@@ -563,7 +575,10 @@ void Funcion() :
 	{
 		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED);
 		try {st.insertSymbol(simbolo_funcion);}
-		catch (AlreadyDefinedSymbolException a) {System.out.println("La funcion " + nombre_funcion.image.toLowerCase() + " ya esta definida");}
+		catch (AlreadyDefinedSymbolException a) {
+			System.out.println("La funcion " + nombre_funcion.image.toLowerCase() + " ya esta definida");
+			codigo_error();
+		}
 		catch (IndexArrayNotCorrect i) {}
 		st.insertBlock();
 	}
