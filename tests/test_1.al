@@ -6,7 +6,15 @@ procedure test_1 is
 function inicializar(n: boolean; vi: ref array(1..777) of boolean; i: integer) return boolean is
     otra: integer;
 begin
-    null;
+    if k then
+        return k;
+    else
+        if k then
+            return true;
+        else
+            return true;
+       end if;
+    end if;
 end;
 ------------------------------------------------------
 procedure calcular(n, num: integer; v: ref array(1..1000) of CHARACTER) is
@@ -20,7 +28,7 @@ begin
     --inicializar(true and k and not true, v, (n*81)-21);
     calcular(n, n+2*5, v);
     put("Hola", 5, true, false, 'c');
-    int2char(45);
-    skip_line(3, 'c');
+    --int2char(45);
+    skip_line;
 
 end;
