@@ -23,9 +23,12 @@ public class alike {
 	static SymbolTable st;
 	static SemanticFunction sf;
 
+	static int codigo_estado;
+
 	public static void main(String[] args) {
 		st = new SymbolTable();
 		sf = new SemanticFunction();
+		codigo_estado = 0;
 
 	   alike parser = null;
 		try {
@@ -50,6 +53,7 @@ public class alike {
 	    catch (Exception e) {
 			System.err.println("Finalizo traducción por detección de error no controlado: \n\t" + e.getMessage());
   		}
+		System.exit(codigo_estado);
 	}
 }
 
