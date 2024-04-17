@@ -36,7 +36,7 @@ public class alike {
 			   parser = new alike(new java.io.FileInputStream(args[0]));
 		    }
 		   parser.Programa();
-		   System.out.println("***** Análisis terminado *****");
+		   //System.out.println("***** Análisis terminado *****");
 	    }
 	    catch (java.io.FileNotFoundException e) {
 		   System.err.println ("Fichero " + args[0] + " no encontrado.");
@@ -107,6 +107,7 @@ TOKEN : {
 |	<tDOSP: ":">
 |	<tRETURN: "return">
 |	<tNULL: "null">
+|	<tEXIT: "exit">
 |	<tNUM: (<tDIGITO>)+>
 |	<tID: (<tLETRA > | <tBARRAB>) (<tLETRA> | <tDIGITO> | <tBARRAB>)*>
 |	<tSTRING: "\""(<tCARACTER>)*"\"">
@@ -403,6 +404,7 @@ void Instruccion_sin_return() :
 		}
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
+	| <tEXIT>
 	| <tNULL>) <tPC>
 }
 
@@ -430,6 +432,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 	}
 	| Instr_condicional_con_return(tipo_a_retornar, nivel+1) | Instr_iterativa_con_return(tipo_a_retornar, nivel+1)
 	| <tNULL>
+	| <tEXIT>
 	| <tRETURN> tipo_return = Expresion() {es_return = true;})
 	<tPC>
 	{
@@ -517,7 +520,7 @@ void Programa_completo() :
 	(Declaracion() <tPC>)*
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
-	{System.out.println(st.toString());}
+	//{System.out.println(st.toString());}
 	(Instruccion_sin_return())+
 	<tEND> <tPC>
 }
