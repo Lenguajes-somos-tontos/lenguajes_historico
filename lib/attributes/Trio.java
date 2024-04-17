@@ -12,4 +12,8 @@ public class Trio {
         this.referencia = false;
         this.nombre = "";
     }
+
+    public String toString() {
+        return tipo +  " " + Boolean.toString(referencia) + " " + nombre;
+    }
 }

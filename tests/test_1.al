@@ -24,7 +24,7 @@ begin
 end;
 ----------------------------------------------------------
 begin
-    k := inicializar(prueba_sin, v, v(n*21+45));
+    --k := inicializar(prueba_sin, v, v(n*21+45));
     calcular(n, n+2*5, v);
     put("Hola", 5, true, false, 'c');
     c :=int2char(45);
