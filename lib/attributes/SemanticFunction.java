@@ -56,9 +56,9 @@ public class SemanticFunction {
 
 
 
-    public void Primario_ID(Token t, Par tipo, Symbol simbolo, SymbolTable st) {
+    public void Primario_ID(Token t, Par tipo, SymbolTable st) {
     	try {
-			simbolo = st.getSymbol(t.image);
+			Symbol simbolo = st.getSymbol(t.image);
 
 			if (simbolo.type == Symbol.Types.INT) {
 				tipo.primero = Symbol.Types.INT;
@@ -87,13 +87,9 @@ public class SemanticFunction {
 					// Se sube el tipo que retorna la función
 				}
 				else {
-					System.out.println("ERROR: La función " + t.image + " tiene parámetros");
+					System.out.println("ERROR: Los parámetros de la llamada a " + t.image + " no son correctos");
 					// Se ha utilizado una función que tiene parámetros como una que no los tiene
 				}
-			}
-			else {
-				System.out.println("ERROR: El tipo de " + t.image + " no es correcto");
-				// El ID es un procedimiento, error
 			}
 		}
 		catch (SymbolNotFoundException s) {
@@ -154,61 +150,111 @@ public class SemanticFunction {
 	}
 
 
-	public Par llamada_funcion(String id, ArrayList<Par> lista_argumentos, SymbolTable st) {
+	public Par llamada_funcion(Symbol simbolo_llamada, ArrayList<Par> lista_argumentos, SymbolTable st) {
 		Par resultado = new Par();
-		try {
-			id = id.toLowerCase();
-			comprobar_funciones_especiales(id);
+		String id = "";
+		id = simbolo_llamada.name;
 
-			Symbol simbolo_llamada = st.getSymbol(id);
+		ArrayList<Symbol> lista_parametros;
+		if (simbolo_llamada.type == Symbol.Types.FUNCTION) {
+			SymbolFunction s = (SymbolFunction) simbolo_llamada;
+			lista_parametros = s.parList;
+			resultado.primero = s.returnType;
+		}
+		else {
+			SymbolProcedure s = (SymbolProcedure) simbolo_llamada;
+			lista_parametros = s.parList;
+		}
 
-			if (simbolo_llamada.type == Symbol.Types.FUNCTION || simbolo_llamada.type == Symbol.Types.PROCEDURE) {
-				ArrayList<Symbol> lista_parametros;
-				if (simbolo_llamada.type == Symbol.Types.FUNCTION) {
-					SymbolFunction s = (SymbolFunction) simbolo_llamada;
-					lista_parametros = s.parList;
-					resultado.primero = s.returnType;
+		int numero_parametros = lista_parametros.size();
+		if (numero_parametros == lista_argumentos.size()) {
+			for (int i = 0; i < lista_parametros.size(); i++) {
+				Symbol simbolo_parametro = lista_parametros.get(i);
+				Par argumento = lista_argumentos.get(i);
+				
+				if (argumento.primero != simbolo_parametro.type) {
+					System.out.println("ERROR: Se esperaba un tipo " + simbolo_parametro.type + " en la llamada a " + id);
 				}
-				else {
-					SymbolProcedure s = (SymbolProcedure) simbolo_llamada;
-					lista_parametros = s.parList;
+				if (simbolo_parametro.parClass == Symbol.ParameterClass.REF && !argumento.segundo) {
+					System.out.println("ERROR: El parámetro " + simbolo_parametro.name + " es un parámetro por referencia");
 				}
-				int numero_parametros = lista_parametros.size();
-				if (numero_parametros == lista_argumentos.size()) {
-					for (int i = 0; i < lista_parametros.size(); i++) {
-						Symbol simbolo_parametro = lista_parametros.get(i);
-						Par argumento = lista_argumentos.get(i);
-						
-						if (argumento.primero != simbolo_parametro.type) {
-							System.out.println("ERROR: Se esperaba un tipo " + simbolo_parametro.type + " en la llamada a " + id);
-						}
-						if (simbolo_parametro.parClass == Symbol.ParameterClass.REF && !argumento.segundo) {
-							System.out.println("ERROR: El parámetro " + simbolo_parametro.name + " es un parámetro por referencia");
-						}
-						// Caso ARRAY
-						if (simbolo_parametro.type == Symbol.Types.ARRAY) {
-							SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.tercero));
-							SymbolArray array_parametro = (SymbolArray) (simbolo_parametro);
+				// Caso ARRAY
+				if (simbolo_parametro.type == Symbol.Types.ARRAY) {
+					SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.tercero));
+					SymbolArray array_parametro = (SymbolArray) (simbolo_parametro);
 
-							if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
-								System.out.println("ERROR: Los índices del array parámetro " + simbolo_parametro.name + " no coinciden");
-							}
-							if (array_argumento.baseType != array_parametro.baseType) {
-								System.out.println("ERROR: Los tipos base del array parámetro " + simbolo_parametro.name + " no coinciden");
-							}
-						}
+					if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
+						System.out.println("ERROR: Los índices del array parámetro " + simbolo_parametro.name + " no coinciden");
+					}
+					if (array_argumento.baseType != array_parametro.baseType) {
+						System.out.println("ERROR: Los tipos base del array parámetro " + simbolo_parametro.name + " no coinciden");
 					}
 				}
-				else {
-					System.out.println("ERROR: El número de parámetros en la llamada a " + id + " no coinciden, se esperaban " + numero_parametros + " parametros");
-				}
-			}
-			else {
-				System.out.println("ERROR: Se esperaba un tipo procedimiento/función");
 			}
 		}
+		else {
+			System.out.println("ERROR: El número de parámetros en la llamada a " + id + " no coinciden, se esperaban " + numero_parametros + " parametros");
+		}
+		return resultado;
+	}
+
+
+	public Par indice_array(SymbolArray simbolo_array, Par indice) {
+		Par resultado = new Par();
+
+		if (indice.primero != Symbol.Types.INT) {
+			System.out.println("ERROR: Se esperaba una expresión de tipo INT");
+		}
+		else {
+			resultado.primero = simbolo_array.baseType;
+		}
+		return resultado;
+	}
+
+
+	public Par verificar_expresion(String id, ArrayList<Par> lista_argumentos, SymbolTable st) {
+		Par resultado = new Par();
+		try {
+			comprobar_funciones_especiales(id);
+
+			Symbol simbolo = st.getSymbol(id);
+
+			if (simbolo.type == Symbol.Types.FUNCTION || simbolo.type == Symbol.Types.PROCEDURE) {
+				resultado = llamada_funcion(simbolo, lista_argumentos, st);
+			}
+			else if (simbolo.type == Symbol.Types.ARRAY) {
+				SymbolArray simbolo_array = (SymbolArray) simbolo;
+				if (lista_argumentos.size() == 1)
+					resultado = indice_array(simbolo_array, lista_argumentos.get(0));
+				else
+					System.out.println("ERROR: Se esperaba un único índice en el array " + id);
+			}
+			else
+				System.out.println("ERROR: Se esperaba un tipo FUNCTION/PROCEDURE");
+		}
 		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El símbolo " + id + " no está definido");
+			System.out.println("ERROR: El simbolo " + id + " no está definido");
+		}
+		catch (SpecialFunctionFound g) {}
+		return resultado;
+	}
+
+
+
+	public Par verificar_llamada(String id, ArrayList<Par> lista_argumentos, SymbolTable st) {
+		Par resultado = new Par();
+		try {
+			comprobar_funciones_especiales(id);
+
+			Symbol simbolo = st.getSymbol(id);
+
+			if (simbolo.type == Symbol.Types.FUNCTION || simbolo.type == Symbol.Types.PROCEDURE)
+				resultado = llamada_funcion(simbolo, lista_argumentos, st);
+			else
+				System.out.println("ERROR: Se esperaba un tipo FUNCTION/PROCEDURE");
+		}
+		catch (SymbolNotFoundException s) {
+			System.out.println("ERROR: El simbolo " + id + " no está definido");
 		}
 		catch (SpecialFunctionFound g) {
 			for (int i = 0; i < lista_argumentos.size(); i++) {

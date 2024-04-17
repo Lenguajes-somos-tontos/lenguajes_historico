@@ -371,15 +371,14 @@ Par Primario() :
 	Token t;
 	Par tipo = new Par();
 	Symbol simbolo = null;
+	ArrayList<Par> lista_argumentos = new ArrayList<>();
+	Par argumento;
 }
 {
     (<tAP> tipo = Expresion() <tCP>
-|	LOOKAHEAD(2) t = <tID> <tAP> Expresion() (<tCOMA> Expresion())* <tCP>
-	{
-		// id, lista_argumentos
-		//////////////////////////////////////////////////
-	}
-|	t = <tID> {sf.Primario_ID(t, tipo, simbolo, st);}
+|	LOOKAHEAD(2) t = <tID> <tAP> argumento = Expresion() {lista_argumentos.add(argumento);} (<tCOMA> argumento = Expresion() {lista_argumentos.add(argumento);})* <tCP>
+	{tipo = sf.verificar_expresion(t.image, lista_argumentos, st);}
+|	t = <tID> {sf.Primario_ID(t, tipo, st);}
 |	t = <tNUM> {tipo.primero = Symbol.Types.INT;}
 |	t = <tCONSTCHAR> {tipo.primero = Symbol.Types.CHAR;}
 |	t = <tSTRING> {tipo.primero = Symbol.Types.STRING;}
@@ -416,11 +415,12 @@ void Instruccion_sin_return() :
 	{
 		/*
 		Llamada a función/procedimiento sin parámetros, se llama al método
-		si se sabe que no tiene ningún parámetro (no ha hecho matching)
-		con la regla "Instr_funcion_vector"
+		si se sabe que no tiene ningún parámetro (no ha hecho matching
+		con la regla "Instr_funcion_vector")
 		*/
-		if (llamada_funcion_simple)
-			sf.llamada_funcion(id.image, new ArrayList<Par>(), st);
+		if (llamada_funcion_simple) {
+			sf.verificar_llamada(id.image, new ArrayList<Par>(), st);
+		}
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tNULL>) <tPC>
@@ -442,11 +442,11 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 	{
 		/*
 		Llamada a función/procedimiento sin parámetros, se llama al método
-		si se sabe que no tiene ningún parámetro (no ha hecho matching)
-		con la regla "Instr_funcion_vector"
+		si se sabe que no tiene ningún parámetro (no ha hecho matching
+		con la regla "Instr_funcion_vector")
 		*/
 		if (llamada_funcion_simple)
-			sf.llamada_funcion(id.image, new ArrayList<Par>(), st);
+			sf.verificar_llamada(id.image, new ArrayList<Par>(), st);
 	}
 	| Instr_condicional_con_return(tipo_a_retornar, nivel+1) | Instr_iterativa_con_return(tipo_a_retornar, nivel+1)
 	| <tNULL>
@@ -496,8 +496,8 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 		lista_argumentos.add(parametro);
 	})+ <tCP>
 	{
-		sf.llamada_funcion(id, lista_argumentos, st);
-		// Llamada a método de comprobación de llamada a funciones con uno o más parámetros recibe (String id, ArrayList<Par> lista_argumentos)
+		sf.verificar_llamada(id, lista_argumentos, st);
+		// Llamada a método de comprobación de llamada a funciones
 	}
 }
 
@@ -516,14 +516,14 @@ void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
 
 	| {}
 	/*
-	Matching de llamada a funcion con un solo parametro,
+	Matching de llamada a funcion con UN solo parametro,
 	se utiliza el método de llamadas a funciones, en este caso
 	con una lista con un solo elemento
 	*/
 	{
 		ArrayList<Par> lista_argumentos = new ArrayList<>();
 		lista_argumentos.add(tipo_primera_expresion);
-		sf.llamada_funcion(id, lista_argumentos, st);
+		sf.verificar_llamada(id, lista_argumentos, st);
 	}
 }
 
@@ -577,7 +577,7 @@ void Parametro(ArrayList<Symbol> lista_parametros) :
 		// Misma lógica que Declaracion(), se recoge un puntero a símbolo sin nombre y una lista de Strings,
 		// se le asigna un nombre al puntero y se mete una copia en el array de simbolos
 		for (String nombre_parametro : array_nombres_variables) {
-			tipo_parametros.name = nombre_parametro;
+			tipo_parametros.name = nombre_parametro.toLowerCase();
 			lista_parametros.add(tipo_parametros.clone());
 		}
 	}
@@ -614,7 +614,7 @@ void Procedimiento() :
 	// Antes de leer la lista de parametros se inserta el simbolo procedimiento y se crea el bloque de parametros y variables locales
 	{
 		// Se crea el simbolo procedimiento sin parametros, que van un nivel por debajo
-		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image, new ArrayList<Symbol>());
+		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>());
 		try {st.insertSymbol(simbolo_procedimiento);}
 		catch (AlreadyDefinedSymbolException a) {System.out.println("El procedimiento " + nombre_procedimiento.image + " ya esta definido");}
 		catch (IndexArrayNotCorrect i) {}	// Se sabe que el simbolo no es un array
@@ -645,7 +645,7 @@ void Funcion() :
 	{
 		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED);
 		try {st.insertSymbol(simbolo_funcion);}
-		catch (AlreadyDefinedSymbolException a) {System.out.println("La funcion " + nombre_funcion.image + " ya esta definida");}
+		catch (AlreadyDefinedSymbolException a) {System.out.println("La funcion " + nombre_funcion.image.toLowerCase() + " ya esta definida");}
 		catch (IndexArrayNotCorrect i) {}
 		st.insertBlock();
 	}
