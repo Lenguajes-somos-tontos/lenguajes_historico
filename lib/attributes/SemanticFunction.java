@@ -173,7 +173,8 @@ public class SemanticFunction {
 					SymbolProcedure s = (SymbolProcedure) simbolo_llamada;
 					lista_parametros = s.parList;
 				}
-				if (lista_parametros.size() == lista_argumentos.size()) {
+				int numero_parametros = lista_parametros.size();
+				if (numero_parametros == lista_argumentos.size()) {
 					for (int i = 0; i < lista_parametros.size(); i++) {
 						Symbol simbolo_parametro = lista_parametros.get(i);
 						Par argumento = lista_argumentos.get(i);
@@ -199,7 +200,7 @@ public class SemanticFunction {
 					}
 				}
 				else {
-					System.out.println("ERROR: El número de parámetros en la llamada a " + id + " no coinciden, se esperaban " + lista_parametros.size() + " parametros");
+					System.out.println("ERROR: El número de parámetros en la llamada a " + id + " no coinciden, se esperaban " + numero_parametros + " parametros");
 				}
 			}
 			else {
