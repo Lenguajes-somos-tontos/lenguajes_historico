@@ -376,6 +376,7 @@ Par Primario() :
     (<tAP> tipo = Expresion() <tCP>
 |	LOOKAHEAD(2) t = <tID> <tAP> Expresion() (<tCOMA> Expresion())* <tCP>
 	{
+		// id, lista_argumentos
 		//////////////////////////////////////////////////
 	}
 |	t = <tID> {sf.Primario_ID(t, tipo, simbolo, st);}
