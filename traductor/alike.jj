@@ -225,7 +225,7 @@ Par Expresion() :
 	{
 		tipo.segundo = false;
 		if (tipo.primero != Symbol.Types.BOOL || tipo2.primero != Symbol.Types.BOOL) {
-			System.out.println("ERROR: Se esperaba un tipo BOOL");
+			sf.esperaba_tipo(Symbol.Types.BOOL);
 			tipo.primero = Symbol.Types.UNDEFINED;
 			codigo_error();
 		}
@@ -309,8 +309,8 @@ Par Factor() :
 		if (match) {
 			tipo.segundo = false;
 			if (tipo2.primero != Symbol.Types.BOOL) {
-				System.out.println("ERROR: Se esperaba un tipo BOOL");
 				tipo.primero = Symbol.Types.UNDEFINED;
+				sf.esperaba_tipo(Symbol.Types.BOOL);
 				codigo_error();
 			}
 			else tipo.primero = Symbol.Types.BOOL;
@@ -395,7 +395,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 	{
 		if (es_return) {
 			if (tipo_a_retornar != tipo_return.primero) {
-				System.out.println("ERROR: Se esperaba un tipo " + tipo_a_retornar);
+				sf.esperaba_tipo(tipo_a_retornar);
 				codigo_error();
 			}
 			else if (nivel == 1) {
@@ -519,7 +519,7 @@ ArrayList<Symbol> Parametros() :
 		for (Symbol simbolo : lista_parametros) {
 			try {st.insertSymbol(simbolo);}
 			catch (AlreadyDefinedSymbolException a) {
-				System.out.println("El simbolo " + simbolo.name + " ya esta definido");
+				sf.simbolo_definido(simbolo.name);
 				codigo_error();
 			}
 			catch (IndexArrayNotCorrect i) {
@@ -545,7 +545,7 @@ void Procedimiento() :
 		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>());
 		try {st.insertSymbol(simbolo_procedimiento);}
 		catch (AlreadyDefinedSymbolException a) {
-			System.out.println("El procedimiento " + nombre_procedimiento.image + " ya esta definido");
+			sf.simbolo_definido(nombre_procedimiento.image);
 			codigo_error();
 		}
 		catch (IndexArrayNotCorrect i) {}	// Se sabe que el simbolo no es un array
@@ -576,7 +576,7 @@ void Funcion() :
 		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED);
 		try {st.insertSymbol(simbolo_funcion);}
 		catch (AlreadyDefinedSymbolException a) {
-			System.out.println("La funcion " + nombre_funcion.image.toLowerCase() + " ya esta definida");
+			sf.simbolo_definido(nombre_funcion.image);
 			codigo_error();
 		}
 		catch (IndexArrayNotCorrect i) {}
