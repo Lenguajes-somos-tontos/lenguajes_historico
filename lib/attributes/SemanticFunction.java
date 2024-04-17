@@ -120,7 +120,8 @@ public class SemanticFunction {
 
 
 
-	public void Instr_funcion_vector_3(String id, Par tipo_primera_expresion, Par tipo_asignacion, SymbolTable st) {
+	public Par Instr_funcion_vector_3(String id, Par tipo_primera_expresion, Par tipo_asignacion, SymbolTable st) {
+		Par resultado = new Par();
 		try {
 			Symbol simbolo = st.getSymbol(id);
 			SymbolArray simbolo_array = (SymbolArray) simbolo;
@@ -134,6 +135,7 @@ public class SemanticFunction {
 					// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
 					System.out.println("ERROR: Se esperaba una expresión de tipo " + simbolo_array.baseType + "en la asignación al array " + id);
 				}
+				else resultado.primero = simbolo_array.baseType;
 			}
 		}
 		catch (SymbolNotFoundException s) {
@@ -142,6 +144,7 @@ public class SemanticFunction {
 		catch (ClassCastException e) {	// Excepción que saltará si se intenta meter un simbolo que no es un array en un SymbolArray
 			System.out.println("ERROR: El símbolo " + id + " no es un array");
 		}
+		return resultado;
 	}
 
 
