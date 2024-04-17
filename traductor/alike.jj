@@ -36,7 +36,6 @@ public class alike {
 			   parser = new alike(new java.io.FileInputStream(args[0]));
 		    }
 		   parser.Programa();
-		   //System.out.println("***** Análisis terminado *****");
 	    }
 	    catch (java.io.FileNotFoundException e) {
 		   System.err.println ("Fichero " + args[0] + " no encontrado.");
@@ -124,7 +123,6 @@ SKIP :
 }
 
 
-
 void Programa() : 
 {
 }
@@ -152,7 +150,6 @@ void Programa() :
 }
 
 
-
 void Declaracion() : // Cada linea de declaracion dispara esta produccion
 {
 	ArrayList<String> array_nombres_variables;	// Estas variables son del mismo tipo
@@ -167,7 +164,6 @@ void Declaracion() : // Cada linea de declaracion dispara esta produccion
 }
 
 
-
 // Devuelve UN simbolo sin nombre del tipo correspondiente
 Symbol Tipos_variables() :
 {
@@ -179,7 +175,6 @@ Symbol Tipos_variables() :
 }
 
 
-
 // Array por referencia de IDs leidos
 void Lista_IDS(ArrayList<String> array_nombres_variables) :
 {
@@ -188,7 +183,6 @@ void Lista_IDS(ArrayList<String> array_nombres_variables) :
 {
 	t = <tID> {array_nombres_variables.add(t.image.toLowerCase());} (<tCOMA> Lista_IDS(array_nombres_variables))?
 }
-
 
 
 // Devuelve un puntero a símbolo sin nombre
@@ -203,7 +197,6 @@ Symbol Tipo_variable() :
 }
 
 
-
 // Simbolo de tipo array sin nombre
 Symbol Tipo_array() :
 {
@@ -216,10 +209,6 @@ Symbol Tipo_array() :
 }
 
 
-
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
 Par Expresion() :
 {
 	Par tipo;
@@ -367,10 +356,6 @@ Par Primario() :
 |	t = <tFALSE> {tipo.primero = Symbol.Types.BOOL;})
 	{return tipo;}
 }
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-
 
 
 void Asignacion() :
@@ -382,7 +367,6 @@ void Asignacion() :
 	id = <tID> <tASIG> tipo_asignacion = Expresion()
 	{sf.Asignacion(id.image, tipo_asignacion, st);}
 }
-
 
 
 void Instruccion_sin_return() :
@@ -407,7 +391,6 @@ void Instruccion_sin_return() :
 	| <tEXIT>
 	| <tNULL>) <tPC>
 }
-
 
 
 boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
@@ -449,7 +432,6 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 }
 
 
-
 void Instr_funcion_vector(String id) :
 {
 	Par tipo;
@@ -457,7 +439,6 @@ void Instr_funcion_vector(String id) :
 {
 	<tAP> tipo = Expresion() Instr_funcion_vector_2(id, tipo)
 }
-
 
 
 void Instr_funcion_vector_2(String id, Par tipo) :
@@ -480,10 +461,8 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 	})+ <tCP>
 	{
 		sf.verificar_llamada(id, lista_argumentos, st);
-		// Llamada a método de comprobación de llamada a funciones
 	}
 }
-
 
 
 void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
@@ -497,19 +476,13 @@ void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
 		sf.Instr_funcion_vector_3(id, tipo_primera_expresion, tipo_asignacion, st);
 	}
 
-	| {}
-	/*
-	Matching de llamada a funcion con UN solo parametro,
-	se utiliza el método de llamadas a funciones, en este caso
-	con una lista con un solo elemento
-	*/
+	| {}	// Matching de llamada a funcion con UN solo parametro
 	{
 		ArrayList<Par> lista_argumentos = new ArrayList<>();
 		lista_argumentos.add(tipo_primera_expresion);
 		sf.verificar_llamada(id, lista_argumentos, st);
 	}
 }
-
 
 
 void Programa_completo() :
@@ -520,11 +493,9 @@ void Programa_completo() :
 	(Declaracion() <tPC>)*
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
-	//{System.out.println(st.toString());}
 	(Instruccion_sin_return())+
 	<tEND> <tPC>
 }
-
 
 
 // Devuelve un Symbol del tipo en cuestión, por valor o por referencia y sin nombre
@@ -536,16 +507,11 @@ Symbol Parametro_aux() :
 {
 	({por_referencia = true;} <tREF> | {por_referencia = false;} {}) tipo_parametro = Tipos_variables() // Tipos_variables() devuelve UN symbol sin nombre de un tipo
 	{
-		if (por_referencia) {	// Se modifica el Symbol para indicar que es un parametro por referencia o por valor
-			tipo_parametro.parClass = Symbol.ParameterClass.REF;
-		}
-		else {
-			tipo_parametro.parClass = Symbol.ParameterClass.VAL;
-		}
+		if (por_referencia) tipo_parametro.parClass = Symbol.ParameterClass.REF;
+		else tipo_parametro.parClass = Symbol.ParameterClass.VAL;
 		return tipo_parametro;
 	}
 }
-
 
 
 // Array por referencia con los símbolos leídos de parámetros
@@ -567,7 +533,6 @@ void Parametro(ArrayList<Symbol> lista_parametros) :
 }
 
 
-
 // Similar a Declaracion(), inserta en la tabla de simbolos un array de símbolos (la lista de parametros) y lo retorna
 ArrayList<Symbol> Parametros() :
 {
@@ -584,7 +549,6 @@ ArrayList<Symbol> Parametros() :
 		return lista_parametros;
 	}
 }
-
 
 
 void Procedimiento() :
@@ -611,7 +575,6 @@ void Procedimiento() :
 	<tEND> <tPC>
 	{st.removeBlock();}
 }
-
 
 
 // Igual a Procedimiento(), sólo cambia el return
@@ -649,7 +612,6 @@ void Funcion() :
 }
 
 
-
 void Instr_iterativa_sin_return():
 {
 	Par tipo;
@@ -660,7 +622,6 @@ void Instr_iterativa_sin_return():
 	(Instruccion_sin_return())+
 	<tEND> <tLOOP>
 }
-
 
 
 void Instr_condicional_sin_return():
@@ -674,7 +635,6 @@ void Instr_condicional_sin_return():
 	MasIF()
 	<tEND> <tIF>
 }
-
 
 
 void MasIF():
@@ -691,7 +651,6 @@ void MasIF():
 }
 
 
-
 void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar, int nivel):
 {
 	Par tipo;
@@ -702,7 +661,6 @@ void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar, int nivel):
 	(Instruccion_con_return(tipo_a_retornar, nivel))+
 	<tEND> <tLOOP>
 }
-
 
 
 void Instr_condicional_con_return(Symbol.Types tipo_a_retornar, int nivel):
@@ -716,7 +674,6 @@ void Instr_condicional_con_return(Symbol.Types tipo_a_retornar, int nivel):
 	MasIF_return(tipo_a_retornar, nivel)
 	<tEND> <tIF>
 }
-
 
 
 void MasIF_return(Symbol.Types tipo_a_retornar, int nivel):
