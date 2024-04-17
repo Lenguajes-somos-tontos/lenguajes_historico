@@ -270,4 +270,13 @@ public class SemanticFunction {
 		}
 		return resultado;
 	}
+
+
+
+	public void verificar_bool(Symbol.Types tipo) {
+		if (tipo != Symbol.Types.BOOL) {
+			System.out.println("ERROR: Se esperaba una expresión booleana");
+		}
+	}
+
 }

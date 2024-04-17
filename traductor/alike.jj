@@ -376,7 +376,8 @@ Par Primario() :
 }
 {
     (<tAP> tipo = Expresion() <tCP>
-|	LOOKAHEAD(2) t = <tID> <tAP> argumento = Expresion() {lista_argumentos.add(argumento);} (<tCOMA> argumento = Expresion() {lista_argumentos.add(argumento);})* <tCP>
+|	LOOKAHEAD(2) t = <tID> <tAP> argumento = Expresion() {lista_argumentos.add(argumento);}
+	(<tCOMA> argumento = Expresion() {lista_argumentos.add(argumento);})* <tCP>
 	{tipo = sf.verificar_expresion(t.image, lista_argumentos, st);}
 |	t = <tID> {sf.Primario_ID(t, tipo, st);}
 |	t = <tNUM> {tipo.primero = Symbol.Types.INT;}
@@ -673,11 +674,7 @@ void Instr_iterativa_sin_return():
 }
 {
 	<tWHILE> tipo = Expresion() <tLOOP>
-	{
-		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("ERROR: Se esperaba una expresión booleana");
-		}
-	}
+	{sf.verificar_bool(tipo.primero);}
 	(Instruccion_sin_return())+
 	<tEND> <tLOOP>
 }
@@ -690,11 +687,7 @@ void Instr_condicional_sin_return():
 }
 {
 	<tIF> tipo = Expresion() <tTHEN>
-	{
-		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("ERROR: Se esperaba una expresión booleana");
-		}
-	}
+	{sf.verificar_bool(tipo.primero);}
 	(Instruccion_sin_return())+
 	MasIF()
 	<tEND> <tIF>
@@ -708,11 +701,7 @@ void MasIF():
 }
 {
 	<tELSIF> tipo = Expresion() <tTHEN>
-	{
-		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("ERROR: Se esperaba una expresión booleana");
-		}
-	}
+	{sf.verificar_bool(tipo.primero);}
 	(Instruccion_sin_return())+
 	MasIF()
 	| <tELSE> (Instruccion_sin_return())+
@@ -727,11 +716,7 @@ void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar, int nivel):
 }
 {
 	<tWHILE> tipo = Expresion() <tLOOP>
-	{
-		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("ERROR: Se esperaba una expresión booleana");
-		}
-	}
+	{sf.verificar_bool(tipo.primero);}
 	(Instruccion_con_return(tipo_a_retornar, nivel))+
 	<tEND> <tLOOP>
 }
@@ -744,11 +729,7 @@ void Instr_condicional_con_return(Symbol.Types tipo_a_retornar, int nivel):
 }
 {
 	<tIF> tipo = Expresion() <tTHEN>
-	{
-		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("ERROR: Se esperaba una expresión booleana");
-		}
-	}
+	{sf.verificar_bool(tipo.primero);}
 	(Instruccion_con_return(tipo_a_retornar, nivel))+
 	MasIF_return(tipo_a_retornar, nivel)
 	<tEND> <tIF>
@@ -762,11 +743,7 @@ void MasIF_return(Symbol.Types tipo_a_retornar, int nivel):
 }
 {
 	<tELSIF> tipo = Expresion() <tTHEN>
-	{
-		if (tipo.primero != Symbol.Types.BOOL) {
-			System.out.println("ERROR: Se esperaba una expresión booleana");
-		}
-	}
+	{sf.verificar_bool(tipo.primero);}
 	(Instruccion_con_return(tipo_a_retornar, nivel))+
 	MasIF_return(tipo_a_retornar, nivel)
 	| <tELSE> (Instruccion_con_return(tipo_a_retornar, nivel))+
