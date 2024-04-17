@@ -2,12 +2,12 @@ package lib.attributes;
 
 import lib.symbolTable.Symbol;
 
-public class Par {
+public class Trio {
     public Symbol.Types primero;
     public boolean segundo;
     public String tercero;
 
-    public Par() {
+    public Trio() {
         this.primero = Symbol.Types.UNDEFINED;
         this.segundo = false;
         this.tercero = "";

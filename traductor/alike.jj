@@ -214,10 +214,10 @@ Symbol Tipo_array() :
 }
 
 
-Par Expresion() :
+Trio Expresion() :
 {
-	Par tipo;
-	Par tipo2 = new Par();
+	Trio tipo;
+	Trio tipo2 = new Trio();
 	boolean match2 = false;
 }
 {
@@ -233,10 +233,10 @@ Par Expresion() :
 }
 
 
-Par Relacion() :
+Trio Relacion() :
 {
-	Par tipo;
-	Par tipo2 = new Par();
+	Trio tipo;
+	Trio tipo2 = new Trio();
 	Token op = null;
 	boolean match = false;
 }
@@ -267,10 +267,10 @@ void Operador_multiplicativo() :
 }
 
 
-Par Expresion_simple() :
+Trio Expresion_simple() :
 {
-	Par tipo;
-	Par tipo2 = new Par();
+	Trio tipo;
+	Trio tipo2 = new Trio();
 	boolean match1 = false;
 }
 {
@@ -284,10 +284,10 @@ Par Expresion_simple() :
 }
 
 
-Par Termino() :
+Trio Termino() :
 {
-	Par tipo = new Par();
-	Par tipo2 = new Par();
+	Trio tipo = new Trio();
+	Trio tipo2 = new Trio();
 }
 {
     tipo = Factor() (Operador_multiplicativo() tipo2 = Factor()
@@ -296,10 +296,10 @@ Par Termino() :
 }
 
 
-Par Factor() :
+Trio Factor() :
 {
-	Par tipo = new Par();
-	Par tipo2 = new Par();
+	Trio tipo = new Trio();
+	Trio tipo2 = new Trio();
 	boolean match = false;
 }
 {
@@ -318,13 +318,13 @@ Par Factor() :
 }
 
 
-Par Primario() :
+Trio Primario() :
 {
 	Token t;
-	Par tipo = new Par();
+	Trio tipo = new Trio();
 	Symbol simbolo = null;
-	ArrayList<Par> lista_argumentos = new ArrayList<>();
-	Par argumento;
+	ArrayList<Trio> lista_argumentos = new ArrayList<>();
+	Trio argumento;
 }
 {
     (<tAP> tipo = Expresion() <tCP>
@@ -344,7 +344,7 @@ Par Primario() :
 void Asignacion() :
 {
 	Token id;
-	Par tipo_asignacion;
+	Trio tipo_asignacion;
 }
 {
 	id = <tID> <tASIG> tipo_asignacion = Expresion()
@@ -362,7 +362,7 @@ void Instruccion_sin_return() :
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a función/procedimiento sin parámetros
-		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Par>(), st);
+		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Trio>(), st);
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tEXIT>
@@ -374,7 +374,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 {
 	Token id;
 	boolean llamada_funcion_simple = true;
-	Par tipo_return = null;
+	Trio tipo_return = null;
 	boolean es_return = false;
 	boolean return_valido = false;
 }
@@ -383,7 +383,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a función/procedimiento sin parámetros
-		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Par>(), st);
+		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Trio>(), st);
 	}
 	| Instr_condicional_con_return(tipo_a_retornar, nivel+1) | Instr_iterativa_con_return(tipo_a_retornar, nivel+1)
 	| <tNULL>
@@ -406,17 +406,17 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 
 void Instr_funcion_vector(String id) :
 {
-	Par tipo;
+	Trio tipo;
 }
 {
 	<tAP> tipo = Expresion() Instr_funcion_vector_2(id, tipo)
 }
 
 
-void Instr_funcion_vector_2(String id, Par tipo) :
+void Instr_funcion_vector_2(String id, Trio tipo) :
 {
-	Par parametro;
-	ArrayList<Par> lista_argumentos = null;
+	Trio parametro;
+	ArrayList<Trio> lista_argumentos = null;
 }
 {
 	<tCP> Instr_funcion_vector_3(id, tipo)
@@ -437,9 +437,9 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 }
 
 
-void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
+void Instr_funcion_vector_3(String id, Trio tipo_primera_expresion) :
 {
-	Par tipo_asignacion;
+	Trio tipo_asignacion;
 }
 {
 	// Matching de asignacion a componente de array "tipo_primera_expresion" es el tipo del índice
@@ -450,7 +450,7 @@ void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
 
 	| {}	// Matching de llamada a funcion con UN solo parametro
 	{
-		ArrayList<Par> lista_argumentos = new ArrayList<>();
+		ArrayList<Trio> lista_argumentos = new ArrayList<>();
 		lista_argumentos.add(tipo_primera_expresion);
 		sf.llamada_procedimiento(id, lista_argumentos, st);
 	}
@@ -595,7 +595,7 @@ void Funcion() :
 
 void Instr_iterativa_sin_return():
 {
-	Par tipo;
+	Trio tipo;
 }
 {
 	<tWHILE> tipo = Expresion() <tLOOP>
@@ -607,7 +607,7 @@ void Instr_iterativa_sin_return():
 
 void Instr_condicional_sin_return():
 {
-	Par tipo;
+	Trio tipo;
 }
 {
 	<tIF> tipo = Expresion() <tTHEN>
@@ -620,7 +620,7 @@ void Instr_condicional_sin_return():
 
 void MasIF():
 {
-	Par tipo;
+	Trio tipo;
 }
 {
 	<tELSIF> tipo = Expresion() <tTHEN>
@@ -634,7 +634,7 @@ void MasIF():
 
 void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar, int nivel):
 {
-	Par tipo;
+	Trio tipo;
 }
 {
 	<tWHILE> tipo = Expresion() <tLOOP>
@@ -646,7 +646,7 @@ void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar, int nivel):
 
 void Instr_condicional_con_return(Symbol.Types tipo_a_retornar, int nivel):
 {
-	Par tipo;
+	Trio tipo;
 }
 {
 	<tIF> tipo = Expresion() <tTHEN>
@@ -659,7 +659,7 @@ void Instr_condicional_con_return(Symbol.Types tipo_a_retornar, int nivel):
 
 void MasIF_return(Symbol.Types tipo_a_retornar, int nivel):
 {
-	Par tipo;
+	Trio tipo;
 }
 {
 	<tELSIF> tipo = Expresion() <tTHEN>

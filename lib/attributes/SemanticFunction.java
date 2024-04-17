@@ -54,7 +54,7 @@ public class SemanticFunction {
     }
 
 
-    public void Primario_ID(Token t, Par tipo, SymbolTable st) {
+    public void Primario_ID(Token t, Trio tipo, SymbolTable st) {
     	try {
 			Symbol simbolo = st.getSymbol(t.image);
 
@@ -99,7 +99,7 @@ public class SemanticFunction {
     }
 
 
-	public void Asignacion(String id, Par tipo_asignacion, SymbolTable st) {
+	public void Asignacion(String id, Trio tipo_asignacion, SymbolTable st) {
 		try {
 			Symbol simbolo_asignacion = st.getSymbol(id);
 			Symbol.Types tipo_id = simbolo_asignacion.type;
@@ -115,7 +115,7 @@ public class SemanticFunction {
 	}
 
 
-	public void Instr_funcion_vector_3(String id, Par tipo_primera_expresion, Par tipo_asignacion, SymbolTable st) {
+	public void Instr_funcion_vector_3(String id, Trio tipo_primera_expresion, Trio tipo_asignacion, SymbolTable st) {
 		try {
 			Symbol simbolo = st.getSymbol(id);
 			SymbolArray simbolo_array = (SymbolArray) simbolo;
@@ -148,8 +148,8 @@ public class SemanticFunction {
 	}
 
 
-	public Par llamada_funcion(SymbolFunction simbolo_funcion, ArrayList<Par> lista_argumentos, SymbolTable st) {
-		Par resultado = new Par();
+	public Trio llamada_funcion(SymbolFunction simbolo_funcion, ArrayList<Trio> lista_argumentos, SymbolTable st) {
+		Trio resultado = new Trio();
 		resultado.primero = simbolo_funcion.returnType;
 		ArrayList<Symbol> lista_parametros = simbolo_funcion.parList;
 		verificar_argumentos(lista_parametros, lista_argumentos, st);
@@ -157,8 +157,8 @@ public class SemanticFunction {
 	}
 
 
-	public Par indice_array(SymbolArray simbolo_array, Par indice) {
-		Par resultado = new Par();
+	public Trio indice_array(SymbolArray simbolo_array, Trio indice) {
+		Trio resultado = new Trio();
 
 		// La expresión para calcular el índice no es de tipo INT
 		if (indice.primero != Symbol.Types.INT) {
@@ -172,8 +172,8 @@ public class SemanticFunction {
 	}
 
 
-	public Par verificar_expresion(String id, ArrayList<Par> lista_argumentos, SymbolTable st) {
-		Par resultado = new Par();
+	public Trio verificar_expresion(String id, ArrayList<Trio> lista_argumentos, SymbolTable st) {
+		Trio resultado = new Trio();
 		try {
 			comprobar_funciones_especiales(id);
 
@@ -204,13 +204,13 @@ public class SemanticFunction {
 	}
 
 
-	public void verificar_argumentos(ArrayList<Symbol> lista_parametros, ArrayList<Par> lista_argumentos, SymbolTable st) {
+	public void verificar_argumentos(ArrayList<Symbol> lista_parametros, ArrayList<Trio> lista_argumentos, SymbolTable st) {
 		int numero_parametros = lista_parametros.size();
 		if (numero_parametros == lista_argumentos.size()) {
 			for (int i = 0; i < numero_parametros; i++) {
 
 				Symbol parametro = lista_parametros.get(i);
-				Par argumento = lista_argumentos.get(i);
+				Trio argumento = lista_argumentos.get(i);
 
 				// Tipos no coinciden
 				if (argumento.primero != parametro.type) {
@@ -249,7 +249,7 @@ public class SemanticFunction {
 	}
 
 
-	public void llamada_procedimiento(String id, ArrayList<Par> lista_argumentos, SymbolTable st) {
+	public void llamada_procedimiento(String id, ArrayList<Trio> lista_argumentos, SymbolTable st) {
 		try {
 			comprobar_funciones_especiales(id);
 
@@ -268,7 +268,7 @@ public class SemanticFunction {
 		}
 		catch (SpecialFunctionFound g) {
 			for (int i = 0; i < lista_argumentos.size(); i++) {
-				Par argumento = lista_argumentos.get(i);
+				Trio argumento = lista_argumentos.get(i);
 				if (id.equals("get") && (argumento.primero != Symbol.Types.INT && argumento.primero != Symbol.Types.CHAR)) {
 					System.out.println("ERROR: Se esperaba un tipo INT/CHAR");
 					alike.codigo_error();
@@ -290,7 +290,7 @@ public class SemanticFunction {
 	}
 
 
-	public void verificar_relacion(String operador, Par tipo, Par tipo2) {
+	public void verificar_relacion(String operador, Trio tipo, Trio tipo2) {
 		tipo.segundo = false;
 		if (operador.equals("<") || operador.equals(">") || operador.equals("<=") || operador.equals(">=")) {
 			if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
@@ -314,7 +314,7 @@ public class SemanticFunction {
 	}
 
 
-	public void verificar_int(Par tipo, Par tipo2) {
+	public void verificar_int(Trio tipo, Trio tipo2) {
 		// Si se ha hecho matching con ()*, la expresión ya NO es sólo una variable
 		tipo.segundo = false;
 		if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
