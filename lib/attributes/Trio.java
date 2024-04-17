@@ -3,13 +3,13 @@ package lib.attributes;
 import lib.symbolTable.Symbol;
 
 public class Trio {
-    public Symbol.Types primero;
-    public boolean segundo;
-    public String tercero;
+    public Symbol.Types tipo;
+    public boolean referencia;
+    public String nombre;
 
     public Trio() {
-        this.primero = Symbol.Types.UNDEFINED;
-        this.segundo = false;
-        this.tercero = "";
+        this.tipo = Symbol.Types.UNDEFINED;
+        this.referencia = false;
+        this.nombre = "";
     }
 }

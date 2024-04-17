@@ -59,24 +59,24 @@ public class SemanticFunction {
 			Symbol simbolo = st.getSymbol(t.image);
 
 			if (simbolo.type == Symbol.Types.INT) {
-				tipo.primero = Symbol.Types.INT;
-				tipo.segundo = true;
-				tipo.tercero = t.image;
+				tipo.tipo = Symbol.Types.INT;
+				tipo.referencia = true;
+				tipo.nombre = t.image;
 			}
 			else if (simbolo.type == Symbol.Types.BOOL) {
-				tipo.primero = Symbol.Types.BOOL;
-				tipo.segundo = true;
-				tipo.tercero = t.image;
+				tipo.tipo = Symbol.Types.BOOL;
+				tipo.referencia = true;
+				tipo.nombre = t.image;
 			}
 			else if (simbolo.type == Symbol.Types.CHAR) {
-				tipo.primero = Symbol.Types.CHAR;
-				tipo.segundo = true;
-				tipo.tercero = t.image;
+				tipo.tipo = Symbol.Types.CHAR;
+				tipo.referencia = true;
+				tipo.nombre = t.image;
 			}
 			else if (simbolo.type == Symbol.Types.ARRAY) {
-				tipo.primero = Symbol.Types.ARRAY;
-				tipo.segundo = true;
-				tipo.tercero = t.image;
+				tipo.tipo = Symbol.Types.ARRAY;
+				tipo.referencia = true;
+				tipo.nombre = t.image;
 			}
 			else if (simbolo.type == Symbol.Types.FUNCTION) {
 				SymbolFunction s = (SymbolFunction) simbolo;
@@ -84,7 +84,7 @@ public class SemanticFunction {
 				// Se verifica que la función no tiene parámetros
 				if (s.parList.isEmpty()) {
 					// Se asigna el tipo que retorna la función
-					tipo.primero = s.returnType;
+					tipo.tipo = s.returnType;
 				}
 				else {
 					// Se ha utilizado una función que tiene parámetros como una que no los tiene
@@ -104,7 +104,7 @@ public class SemanticFunction {
 			Symbol simbolo_asignacion = st.getSymbol(id);
 			Symbol.Types tipo_id = simbolo_asignacion.type;
 
-			if (tipo_id != tipo_asignacion.primero || tipo_id == Symbol.Types.FUNCTION || tipo_id == Symbol.Types.PROCEDURE
+			if (tipo_id != tipo_asignacion.tipo || tipo_id == Symbol.Types.FUNCTION || tipo_id == Symbol.Types.PROCEDURE
 				|| tipo_id == Symbol.Types.STRING || tipo_id == Symbol.Types.UNDEFINED || tipo_id == Symbol.Types.ARRAY) {
 					esperaba_tipo(tipo_id);
 			}
@@ -120,13 +120,13 @@ public class SemanticFunction {
 			Symbol simbolo = st.getSymbol(id);
 			SymbolArray simbolo_array = (SymbolArray) simbolo;
 
-			if (tipo_primera_expresion.primero != Symbol.Types.INT) {
+			if (tipo_primera_expresion.tipo != Symbol.Types.INT) {
 				esperaba_tipo(Symbol.Types.INT);
 			}
 			else {
 				// No se verifica que la expresión a la derecha pueda ser string, función, array o procedimiento
 				// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
-				if (tipo_asignacion.primero != simbolo_array.baseType) {
+				if (tipo_asignacion.tipo != simbolo_array.baseType) {
 					esperaba_tipo(simbolo_array.baseType);
 				}
 			}
@@ -150,7 +150,7 @@ public class SemanticFunction {
 
 	public Trio llamada_funcion(SymbolFunction simbolo_funcion, ArrayList<Trio> lista_argumentos, SymbolTable st) {
 		Trio resultado = new Trio();
-		resultado.primero = simbolo_funcion.returnType;
+		resultado.tipo = simbolo_funcion.returnType;
 		ArrayList<Symbol> lista_parametros = simbolo_funcion.parList;
 		verificar_argumentos(lista_parametros, lista_argumentos, st);
 		return resultado;
@@ -161,12 +161,12 @@ public class SemanticFunction {
 		Trio resultado = new Trio();
 
 		// La expresión para calcular el índice no es de tipo INT
-		if (indice.primero != Symbol.Types.INT) {
+		if (indice.tipo != Symbol.Types.INT) {
 			esperaba_tipo(Symbol.Types.INT);
 		}
 		else {
-			resultado.primero = simbolo_array.baseType;
-			resultado.segundo = true;
+			resultado.tipo = simbolo_array.baseType;
+			resultado.referencia = true;
 		}
 		return resultado;
 	}
@@ -213,19 +213,19 @@ public class SemanticFunction {
 				Trio argumento = lista_argumentos.get(i);
 
 				// Tipos no coinciden
-				if (argumento.primero != parametro.type) {
+				if (argumento.tipo != parametro.type) {
 					esperaba_tipo(parametro.type);
 				}
 
 				// Tipo por referencia y no es asignable
-				if (parametro.parClass == Symbol.ParameterClass.REF && !argumento.segundo) {
+				if (parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia) {
 					System.out.println("ERROR: El parámetro " + parametro.name + " es un parámetro por referencia");
 					alike.codigo_error();
 				}
 
 				// Caso ARRAY
 				if (parametro.type == Symbol.Types.ARRAY) {
-					SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.tercero));
+					SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.nombre));
 					SymbolArray array_parametro = (SymbolArray) (parametro);
 
 					// Índices no coinciden
@@ -269,12 +269,12 @@ public class SemanticFunction {
 		catch (SpecialFunctionFound g) {
 			for (int i = 0; i < lista_argumentos.size(); i++) {
 				Trio argumento = lista_argumentos.get(i);
-				if (id.equals("get") && (argumento.primero != Symbol.Types.INT && argumento.primero != Symbol.Types.CHAR)) {
+				if (id.equals("get") && (argumento.tipo != Symbol.Types.INT && argumento.tipo != Symbol.Types.CHAR)) {
 					System.out.println("ERROR: Se esperaba un tipo INT/CHAR");
 					alike.codigo_error();
 				}
-				else if ((id.equals("put") || id.equals("put_line")) && (argumento.primero != Symbol.Types.INT &&
-					argumento.primero != Symbol.Types.BOOL && argumento.primero != Symbol.Types.CHAR && argumento.primero != Symbol.Types.STRING)) {
+				else if ((id.equals("put") || id.equals("put_line")) && (argumento.tipo != Symbol.Types.INT &&
+					argumento.tipo != Symbol.Types.BOOL && argumento.tipo != Symbol.Types.CHAR && argumento.tipo != Symbol.Types.STRING)) {
 						System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR/STRING");
 						alike.codigo_error();
 				}
@@ -291,21 +291,21 @@ public class SemanticFunction {
 
 
 	public void verificar_relacion(String operador, Trio tipo, Trio tipo2) {
-		tipo.segundo = false;
+		tipo.referencia = false;
 		if (operador.equals("<") || operador.equals(">") || operador.equals("<=") || operador.equals(">=")) {
-			if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
-				tipo.primero = Symbol.Types.UNDEFINED;
+			if (tipo.tipo != Symbol.Types.INT || tipo2.tipo != Symbol.Types.INT) {
+				tipo.tipo = Symbol.Types.UNDEFINED;
 				esperaba_tipo(Symbol.Types.INT);
 			}
-			else tipo.primero = Symbol.Types.BOOL;
+			else tipo.tipo = Symbol.Types.BOOL;
 		}
-		else if (tipo2.primero != Symbol.Types.ARRAY || tipo2.primero != Symbol.Types.FUNCTION ||
-				tipo2.primero != Symbol.Types.PROCEDURE || tipo2.primero != Symbol.Types.STRING) {
-			if (tipo.primero != tipo2.primero) {
-				tipo.primero = Symbol.Types.UNDEFINED;
-				esperaba_tipo(tipo.primero);
+		else if (tipo2.tipo != Symbol.Types.ARRAY || tipo2.tipo != Symbol.Types.FUNCTION ||
+				tipo2.tipo != Symbol.Types.PROCEDURE || tipo2.tipo != Symbol.Types.STRING) {
+			if (tipo.tipo != tipo2.tipo) {
+				tipo.tipo = Symbol.Types.UNDEFINED;
+				esperaba_tipo(tipo.tipo);
 			}
-			else tipo.primero = Symbol.Types.BOOL;
+			else tipo.tipo = Symbol.Types.BOOL;
 		}
 		else {
 			System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR");
@@ -316,9 +316,9 @@ public class SemanticFunction {
 
 	public void verificar_int(Trio tipo, Trio tipo2) {
 		// Si se ha hecho matching con ()*, la expresión ya NO es sólo una variable
-		tipo.segundo = false;
-		if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
-			tipo.primero = Symbol.Types.UNDEFINED;
+		tipo.referencia = false;
+		if (tipo.tipo != Symbol.Types.INT || tipo2.tipo != Symbol.Types.INT) {
+			tipo.tipo = Symbol.Types.UNDEFINED;
 			esperaba_tipo(Symbol.Types.INT);
 		}
 	}

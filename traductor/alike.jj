@@ -223,10 +223,10 @@ Trio Expresion() :
 {
 	tipo = Relacion() ((<tAND> | <tOR>) tipo2 = Relacion()
 	{
-		tipo.segundo = false;
-		if (tipo.primero != Symbol.Types.BOOL || tipo2.primero != Symbol.Types.BOOL) {
+		tipo.referencia = false;
+		if (tipo.tipo != Symbol.Types.BOOL || tipo2.tipo != Symbol.Types.BOOL) {
 			sf.esperaba_tipo(Symbol.Types.BOOL);
-			tipo.primero = Symbol.Types.UNDEFINED;
+			tipo.tipo = Symbol.Types.UNDEFINED;
 		}
 	})*
 	{return tipo;}
@@ -278,7 +278,7 @@ Trio Expresion_simple() :
 	tipo = Termino() ((<tOPMAS> | <tOPMENOS>)  tipo2 = Termino()
 	{sf.verificar_int(tipo, tipo2);})*
 	{
-		if (match1) tipo.segundo = false;
+		if (match1) tipo.referencia = false;
 		return tipo;
 	}
 }
@@ -306,12 +306,12 @@ Trio Factor() :
 	(tipo = Primario() | <tNOT> tipo2 = Primario() {match = true;})
 	{
 		if (match) {
-			tipo.segundo = false;
-			if (tipo2.primero != Symbol.Types.BOOL) {
-				tipo.primero = Symbol.Types.UNDEFINED;
+			tipo.referencia = false;
+			if (tipo2.tipo != Symbol.Types.BOOL) {
+				tipo.tipo = Symbol.Types.UNDEFINED;
 				sf.esperaba_tipo(Symbol.Types.BOOL);
 			}
-			else tipo.primero = Symbol.Types.BOOL;
+			else tipo.tipo = Symbol.Types.BOOL;
 		}
 		return tipo;
 	}
@@ -332,11 +332,11 @@ Trio Primario() :
 	(<tCOMA> argumento = Expresion() {lista_argumentos.add(argumento);})* <tCP>
 	{tipo = sf.verificar_expresion(t.image, lista_argumentos, st);}
 |	t = <tID> {sf.Primario_ID(t, tipo, st);}
-|	t = <tNUM> {tipo.primero = Symbol.Types.INT;}
-|	t = <tCONSTCHAR> {tipo.primero = Symbol.Types.CHAR;}
-|	t = <tSTRING> {tipo.primero = Symbol.Types.STRING;}
-|	t = <tTRUE> {tipo.primero = Symbol.Types.BOOL;}
-|	t = <tFALSE> {tipo.primero = Symbol.Types.BOOL;})
+|	t = <tNUM> {tipo.tipo = Symbol.Types.INT;}
+|	t = <tCONSTCHAR> {tipo.tipo = Symbol.Types.CHAR;}
+|	t = <tSTRING> {tipo.tipo = Symbol.Types.STRING;}
+|	t = <tTRUE> {tipo.tipo = Symbol.Types.BOOL;}
+|	t = <tFALSE> {tipo.tipo = Symbol.Types.BOOL;})
 	{return tipo;}
 }
 
@@ -392,7 +392,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 	<tPC>
 	{
 		if (es_return) {
-			if (tipo_a_retornar != tipo_return.primero) {
+			if (tipo_a_retornar != tipo_return.tipo) {
 				sf.esperaba_tipo(tipo_a_retornar);
 			}
 			else if (nivel == 1) {
@@ -599,7 +599,7 @@ void Instr_iterativa_sin_return():
 }
 {
 	<tWHILE> tipo = Expresion() <tLOOP>
-	{sf.verificar_bool(tipo.primero);}
+	{sf.verificar_bool(tipo.tipo);}
 	(Instruccion_sin_return())+
 	<tEND> <tLOOP>
 }
@@ -611,7 +611,7 @@ void Instr_condicional_sin_return():
 }
 {
 	<tIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.primero);}
+	{sf.verificar_bool(tipo.tipo);}
 	(Instruccion_sin_return())+
 	MasIF()
 	<tEND> <tIF>
@@ -624,7 +624,7 @@ void MasIF():
 }
 {
 	<tELSIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.primero);}
+	{sf.verificar_bool(tipo.tipo);}
 	(Instruccion_sin_return())+
 	MasIF()
 	| <tELSE> (Instruccion_sin_return())+
@@ -638,7 +638,7 @@ void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar, int nivel):
 }
 {
 	<tWHILE> tipo = Expresion() <tLOOP>
-	{sf.verificar_bool(tipo.primero);}
+	{sf.verificar_bool(tipo.tipo);}
 	(Instruccion_con_return(tipo_a_retornar, nivel))+
 	<tEND> <tLOOP>
 }
@@ -650,7 +650,7 @@ void Instr_condicional_con_return(Symbol.Types tipo_a_retornar, int nivel):
 }
 {
 	<tIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.primero);}
+	{sf.verificar_bool(tipo.tipo);}
 	(Instruccion_con_return(tipo_a_retornar, nivel))+
 	MasIF_return(tipo_a_retornar, nivel)
 	<tEND> <tIF>
@@ -663,7 +663,7 @@ void MasIF_return(Symbol.Types tipo_a_retornar, int nivel):
 }
 {
 	<tELSIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.primero);}
+	{sf.verificar_bool(tipo.tipo);}
 	(Instruccion_con_return(tipo_a_retornar, nivel))+
 	MasIF_return(tipo_a_retornar, nivel)
 	| <tELSE> (Instruccion_con_return(tipo_a_retornar, nivel))+
