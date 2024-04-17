@@ -287,7 +287,7 @@ public class SemanticFunction {
 
 	public void verificar_bool(Symbol.Types tipo) {
 		if (tipo != Symbol.Types.BOOL) {
-			esperaba_tipo(Symbol.Types.INT);
+			esperaba_tipo(Symbol.Types.BOOL);
 			alike.codigo_error();
 		}
 	}
