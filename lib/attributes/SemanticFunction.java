@@ -207,7 +207,6 @@ public class SemanticFunction {
 
 
 	public void verificar_procedimiento(SymbolProcedure simbolo_procedimiento, ArrayList<Par> lista_argumentos, SymbolTable st) {
-		String id = simbolo_procedimiento.name;
 		ArrayList<Symbol> lista_parametros = simbolo_procedimiento.parList;
 		verificar_argumentos(lista_parametros, lista_argumentos, st);
 	}
@@ -351,7 +350,7 @@ public class SemanticFunction {
 		alike.codigo_error();
 	}
 
-	
+
 	public void simbolo_no_es(String id, String tipo) {
 		System.out.println("ERROR: El simbolo " + id + " no es un " + tipo);
 		alike.codigo_error();
