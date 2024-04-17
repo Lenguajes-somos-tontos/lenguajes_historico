@@ -6,7 +6,7 @@
 //*****************************************************************
 
 options {
-	IGNORE_CASE = true;			// Esto hace que las comparaciones de tokens sea case-insensitive
+	IGNORE_CASE = true;			// Comparaciones de tokens case-insensitive
 	COMMON_TOKEN_ACTION = false;
 }
 
