@@ -278,5 +278,4 @@ public class SemanticFunction {
 			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
-
 }
