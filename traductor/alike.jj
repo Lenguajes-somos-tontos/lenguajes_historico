@@ -413,7 +413,11 @@ void Instruccion_sin_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		// Llamada a función/procedimiento sin parámetros
+		/*
+		Llamada a función/procedimiento sin parámetros, se llama al método
+		si se sabe que no tiene ningún parámetro (no ha hecho matching)
+		con la regla "Instr_funcion_vector"
+		*/
 		if (llamada_funcion_simple)
 			sf.llamada_funcion(id.image, new ArrayList<Par>(), st);
 	}
@@ -490,7 +494,12 @@ void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
 		sf.Instr_funcion_vector_3(id, tipo_primera_expresion, tipo_asignacion, st);
 	}
 
-	| {}	// Matching de llamada a funcion con un solo parametro
+	| {}
+	/*
+	Matching de llamada a funcion con un solo parametro,
+	se utiliza el método de llamadas a funciones, en este caso
+	con una lista con un solo elemento
+	*/
 	{
 		ArrayList<Par> lista_argumentos = new ArrayList<>();
 		lista_argumentos.add(tipo_primera_expresion);
