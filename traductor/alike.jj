@@ -25,6 +25,8 @@ public class alike {
 
 	static int codigo_estado;
 
+	public static void codigo_error() {codigo_estado = 1;}
+
 	public static void main(String[] args) {
 		st = new SymbolTable();
 		sf = new SemanticFunction();
