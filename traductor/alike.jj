@@ -427,10 +427,11 @@ void Instruccion_sin_return() :
 
 
 
-void Instruccion_con_return() :
+void Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 {
 	Token id;
 	boolean llamada_funcion_simple = true;
+	Par tipo_return = null;
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
@@ -444,9 +445,15 @@ void Instruccion_con_return() :
 		if (llamada_funcion_simple)
 			sf.llamada_funcion(id.image, new ArrayList<Par>(), st);
 	}
-	| Instr_condicional_con_return() | Instr_iterativa_con_return()
+	| Instr_condicional_con_return(tipo_a_retornar) | Instr_iterativa_con_return(tipo_a_retornar)
 	| <tNULL>
-	| <tRETURN> Expresion()) <tPC>
+	| <tRETURN> tipo_return = Expresion()
+	{
+		if (tipo_a_retornar != tipo_return.primero) {
+			System.out.println("ERROR: Se esperaba un tipo " + tipo_a_retornar);
+		}
+	})
+	<tPC>
 }
 
 
@@ -636,7 +643,7 @@ void Funcion() :
 	(Declaracion() <tPC>)*
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
-	(Instruccion_con_return())+
+	(Instruccion_con_return(tipo_return.type))+
 	{st.removeBlock();}
 	<tEND> <tPC>
 }
@@ -697,7 +704,7 @@ void MasIF():
 
 
 
-void Instr_iterativa_con_return():
+void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar):
 {
 	Par tipo;
 }
@@ -708,13 +715,13 @@ void Instr_iterativa_con_return():
 			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
-	(Instruccion_con_return())+
+	(Instruccion_con_return(tipo_a_retornar))+
 	<tEND> <tLOOP>
 }
 
 
 
-void Instr_condicional_con_return():
+void Instr_condicional_con_return(Symbol.Types tipo_a_retornar):
 {
 	Par tipo;
 }
@@ -725,14 +732,14 @@ void Instr_condicional_con_return():
 			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
-	(Instruccion_con_return())+
-	MasIF_return()
+	(Instruccion_con_return(tipo_a_retornar))+
+	MasIF_return(tipo_a_retornar)
 	<tEND> <tIF>
 }
 
 
 
-void MasIF_return():
+void MasIF_return(Symbol.Types tipo_a_retornar):
 {
 	Par tipo;
 }
@@ -743,8 +750,8 @@ void MasIF_return():
 			System.out.println("ERROR: Se esperaba una expresión booleana");
 		}
 	}
-	(Instruccion_con_return())+
-	MasIF_return()
-	| <tELSE> (Instruccion_con_return())+
+	(Instruccion_con_return(tipo_a_retornar))+
+	MasIF_return(tipo_a_retornar)
+	| <tELSE> (Instruccion_con_return(tipo_a_retornar))+
 	| {}
 }
