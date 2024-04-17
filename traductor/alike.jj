@@ -33,7 +33,8 @@ public class alike {
 			   parser = new alike(System.in);
 			}
 		    else {
-			   parser = new alike(new java.io.FileInputStream(args[0] + ".al"));
+				args[0] += ".al";
+			   parser = new alike(new java.io.FileInputStream(args[0]));
 		    }
 		   parser.Programa();
 	    }
