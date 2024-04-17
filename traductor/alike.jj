@@ -436,7 +436,11 @@ void Instruccion_con_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		// Llamada a función/procedimiento sin parámetros
+		/*
+		Llamada a función/procedimiento sin parámetros, se llama al método
+		si se sabe que no tiene ningún parámetro (no ha hecho matching)
+		con la regla "Instr_funcion_vector"
+		*/
 		if (llamada_funcion_simple)
 			sf.llamada_funcion(id.image, new ArrayList<Par>(), st);
 	}
