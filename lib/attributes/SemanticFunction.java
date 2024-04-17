@@ -293,4 +293,14 @@ public class SemanticFunction {
 			System.out.println("ERROR: Se esperaba un tipo INT/BOOL/CHAR");
 		}
 	}
+
+
+	public void verificar_int(Par tipo, Par tipo2) {
+		// Si se ha hecho matching con ()*, la expresión ya NO es sólo una variable
+		tipo.segundo = false;
+		if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
+			System.out.println("ERROR: Se esperaba un tipo INT");
+			tipo.primero = Symbol.Types.UNDEFINED;
+		}
+	}
 }

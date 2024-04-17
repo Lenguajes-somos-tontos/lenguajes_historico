@@ -269,13 +269,7 @@ Par Expresion_simple() :
 {
 	(<tOPMAS> {match1=false;} | <tOPMENOS> {match1=false;})?
 	tipo = Termino() ((<tOPMAS> | <tOPMENOS>)  tipo2 = Termino()
-	{
-		tipo.segundo = false;
-		if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
-			System.out.println("ERROR: Se esperaba un tipo INT");
-			tipo.primero = Symbol.Types.UNDEFINED;
-		}
-	})*
+	{sf.verificar_int(tipo, tipo2);})*
 	{
 		if (match1) tipo.segundo = false;
 		return tipo;
@@ -290,17 +284,8 @@ Par Termino() :
 }
 {
     tipo = Factor() (Operador_multiplicativo() tipo2 = Factor()
-	{
-		// Se ha hecho matching con un operador SÓLO numérico, la expresión ya NO es sólo una variable
-		tipo.segundo = false;
-		if (tipo.primero != Symbol.Types.INT || tipo2.primero != Symbol.Types.INT) {
-			System.out.println("ERROR: Se esperaba un tipo INT");
-			tipo.primero = Symbol.Types.UNDEFINED;
-		}
-	})*
-	{
-		return tipo;
-	}
+	{sf.verificar_int(tipo, tipo2);})*
+	{return tipo;}
 }
 
 
