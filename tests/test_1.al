@@ -27,7 +27,7 @@ begin
     k := inicializar(true, v, v(n*21+45));
     calcular(n, n+2*5, v);
     put("Hola", 5, true, false, 'c');
-    c := int2char(45);
+    c :=int2char(45);
     n := char2int('c');
     skip_line;
     k := prueba_sin;

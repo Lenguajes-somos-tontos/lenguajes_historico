@@ -364,7 +364,7 @@ void Instruccion_sin_return() :
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a función/procedimiento sin parámetros
-		if (llamada_funcion_simple) sf.verificar_llamada(id.image, new ArrayList<Par>(), st);
+		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Par>(), st);
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tEXIT>
@@ -385,7 +385,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a función/procedimiento sin parámetros
-		if (llamada_funcion_simple) sf.verificar_llamada(id.image, new ArrayList<Par>(), st);
+		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Par>(), st);
 	}
 	| Instr_condicional_con_return(tipo_a_retornar, nivel+1) | Instr_iterativa_con_return(tipo_a_retornar, nivel+1)
 	| <tNULL>
@@ -435,7 +435,7 @@ void Instr_funcion_vector_2(String id, Par tipo) :
 		lista_argumentos.add(parametro);
 	})+ <tCP>
 	{
-		sf.verificar_llamada(id, lista_argumentos, st);
+		sf.llamada_procedimiento(id, lista_argumentos, st);
 	}
 }
 
@@ -455,7 +455,7 @@ void Instr_funcion_vector_3(String id, Par tipo_primera_expresion) :
 	{
 		ArrayList<Par> lista_argumentos = new ArrayList<>();
 		lista_argumentos.add(tipo_primera_expresion);
-		sf.verificar_llamada(id, lista_argumentos, st);
+		sf.llamada_procedimiento(id, lista_argumentos, st);
 	}
 }
 
