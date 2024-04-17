@@ -29,7 +29,6 @@ public class SemanticFunction {
     }
 
 
-
     public Symbol Tipo_variable(Token t, Symbol result) {
         switch (t.image.toLowerCase()) {
 			case "boolean":
@@ -46,14 +45,12 @@ public class SemanticFunction {
     }
 
 
-
     public Symbol Tipo_array(Token indMin, Token indMax, Symbol tipo_base) {
 		int indMin_i = Integer.parseInt(indMin.image);
 		int indMax_i = Integer.parseInt(indMax.image);
 		Symbol result = new SymbolArray("", indMin_i, indMax_i, tipo_base.type);
 		return result;
     }
-
 
 
     public void Primario_ID(Token t, Par tipo, SymbolTable st) {
@@ -98,7 +95,6 @@ public class SemanticFunction {
     }
 
 
-
 	public void Asignacion(String id, Par tipo_asignacion, SymbolTable st) {
 		try {
 			Symbol simbolo_asignacion = st.getSymbol(id);
@@ -113,7 +109,6 @@ public class SemanticFunction {
 			System.out.println("ERROR: El simbolo " + id + " no está definido");
 		}
 	}
-
 
 
 	public void Instr_funcion_vector_3(String id, Par tipo_primera_expresion, Par tipo_asignacion, SymbolTable st) {
@@ -139,7 +134,6 @@ public class SemanticFunction {
 			System.out.println("ERROR: El símbolo " + id + " no es un array");
 		}
 	}
-
 
 
 	public void comprobar_funciones_especiales(String id_funcion) throws SpecialFunctionFound {
@@ -240,7 +234,6 @@ public class SemanticFunction {
 	}
 
 
-
 	public Par verificar_llamada(String id, ArrayList<Par> lista_argumentos, SymbolTable st) {
 		Par resultado = new Par();
 		try {
@@ -270,7 +263,6 @@ public class SemanticFunction {
 		}
 		return resultado;
 	}
-
 
 
 	public void verificar_bool(Symbol.Types tipo) {
