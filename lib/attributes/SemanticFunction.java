@@ -104,8 +104,8 @@ public class SemanticFunction {
 			Symbol simbolo_asignacion = st.getSymbol(id);
 			Symbol.Types tipo_id = simbolo_asignacion.type;
 
-			if (tipo_id != tipo_asignacion.primero || tipo_id != Symbol.Types.INT ||
-				tipo_id != Symbol.Types.BOOL || tipo_id != Symbol.Types.CHAR) {
+			if (tipo_id != tipo_asignacion.primero || tipo_id == Symbol.Types.FUNCTION || tipo_id == Symbol.Types.PROCEDURE
+				|| tipo_id == Symbol.Types.STRING || tipo_id == Symbol.Types.UNDEFINED || tipo_id == Symbol.Types.ARRAY) {
 					esperaba_tipo(tipo_id);
 			}
 		}
@@ -166,6 +166,7 @@ public class SemanticFunction {
 		}
 		else {
 			resultado.primero = simbolo_array.baseType;
+			resultado.segundo = true;
 		}
 		return resultado;
 	}

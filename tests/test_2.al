@@ -1,22 +1,34 @@
-PROCEDURE test_2 is
-	n, i: INTEGER;
-    v: ARRAY(1..1000) OF integer;
 ------------------------------------------------------
-function inicializar(n, j: integer; vi: array(1..777) of boolean) return boolean is
-    i: integer;
-begin
-    I := 1;
-    while i < n loop
-        v(siguiente(i)) := siguiente(0);
-        i := i + 1;
-    end loop;
+procedure calcular_mcd is 
 
+    i, j: integer;
+------------------------------------------------------
+procedure dato (d: ref integer) is
+begin
+	d := 0;
+	while d <= 0 loop
+		put ("Escribe un numero (>0): ");
+		get (d);
+		if d <= 0 then
+			put_line("El numero debe ser > 0.");
+		end if;
+	end loop;
+end;
+------------------------------------------------------
+function mcd(a, b: integer) return integer is
+    i, j, k: integer;
+begin
+	j := a;
+	k := b;
+	i := a mod b;
+	while i /= 0 loop
+		j := k;
+		k := i;
+		i := j mod k;
+	end loop;
+	return k;
 end;
 ------------------------------------------------------
 begin
-    n := 1000;
-    INICIALIZAR(n, v);
-    --randomizar(n, v);
-
-    put_line("La media de esta distribucion es: ", media(n, v), " y la moda: ", moda(n, v));
+    null;
 end;
