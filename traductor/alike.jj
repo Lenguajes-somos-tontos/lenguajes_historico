@@ -157,9 +157,7 @@ void Declaracion() : // Cada linea de declaracion dispara esta produccion
 }
 {
 	{array_nombres_variables = new ArrayList<String>();}
-
 	(Lista_IDS(array_nombres_variables) <tDOSP> tipo_variables = Tipos_variables())
-
 	{sf.Declaracion(array_nombres_variables, tipo_variables, st);}
 }
 
@@ -216,7 +214,6 @@ Par Expresion() :
 	boolean match2 = false;
 }
 {
-	//tipo = Relacion() (((<tAND> | <tOR>) tipo2 = Relacion())+)?
 	tipo = Relacion() ((<tAND> | <tOR>) tipo2 = Relacion()
 	{
 		tipo.segundo = false;
@@ -225,10 +222,7 @@ Par Expresion() :
 			tipo.primero = Symbol.Types.UNDEFINED;
 		}
 	})*
-	{
-		//System.out.println("Expresion: " + tipo.primero + " " + tipo.segundo);
-		return tipo;
-	}
+	{return tipo;}
 }
 
 
@@ -242,8 +236,7 @@ Par Relacion() :
 {
 	tipo = Expresion_simple() (op = Operador_relacional() tipo2 = Expresion_simple() {match=true;})?
 	{
-		if (match)
-			sf.verificar_relacion(op.image, tipo, tipo2);
+		if (match) sf.verificar_relacion(op.image, tipo, tipo2);
 		return tipo;
 	}
 }
@@ -255,9 +248,7 @@ Token Operador_relacional() :
 }
 {
     (t = <tIGUAL> | t = <tMENOR> | t = <tMAYOR> | t = <tMENORIGUAL> | t = <tMAYORIGUAL> | t = <tDISTINTO>)
-	{
-		return t;
-	}
+	{return t;}
 }
 
 
