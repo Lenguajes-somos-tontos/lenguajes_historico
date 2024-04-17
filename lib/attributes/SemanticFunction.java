@@ -120,36 +120,6 @@ public class SemanticFunction {
 
 
 
-	public void Instruccion(String id, SymbolTable st) {
-		try {
-			Symbol simbolo_proc_func = st.getSymbol(id);
-
-			if (simbolo_proc_func.type != Symbol.Types.FUNCTION && simbolo_proc_func.type != Symbol.Types.PROCEDURE) {
-				System.out.println("ERROR: Se esperaba un procedimiento o función");
-			}
-			else {
-				// El ID que se ha escrito es un procedimiento/función, verificar que no tiene parámetros
-				ArrayList<Symbol> lista_parametros;
-				if (simbolo_proc_func.type == Symbol.Types.FUNCTION) {
-					SymbolFunction s = (SymbolFunction) simbolo_proc_func;
-					lista_parametros = s.parList;
-				}
-				else {
-					SymbolProcedure s = (SymbolProcedure) simbolo_proc_func;
-					lista_parametros = s.parList;
-				}
-				if (!lista_parametros.isEmpty()) {
-					System.out.println("ERROR: Los parámetros de la llamada a " + id + " no son correctos");
-				}
-			}
-		}
-		catch (SymbolNotFoundException s) {
-			System.out.println("ERROR: El procedimiento o función " + id + " no está definido");
-		}
-	}
-
-
-
 	public void Instr_funcion_vector_3(String id, Par tipo_primera_expresion, Par tipo_asignacion, SymbolTable st) {
 		try {
 			Symbol simbolo = st.getSymbol(id);
@@ -229,7 +199,7 @@ public class SemanticFunction {
 					}
 				}
 				else {
-					System.out.println("ERROR: El número de parámetros en la llamada a " + id + " no coinciden");
+					System.out.println("ERROR: El número de parámetros en la llamada a " + id + " no coinciden, se esperaban " + lista_parametros.size() + " parametros");
 				}
 			}
 			else {

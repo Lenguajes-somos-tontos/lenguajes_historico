@@ -21,6 +21,6 @@ begin
     calcular(n, n+2*5, v);
     put("Hola", 5, true, false, 'c');
     int2char(45);
-    skip_linee;
+    skip_line(3, 'c');
 
 end;

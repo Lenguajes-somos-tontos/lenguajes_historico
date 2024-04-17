@@ -413,8 +413,9 @@ void Instruccion_sin_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
+		// Llamada a función/procedimiento sin parámetros
 		if (llamada_funcion_simple)
-			sf.Instruccion(id.image, st);		// Llamada a función/procedimiento sin parámetros
+			sf.llamada_funcion(id.image, new ArrayList<Par>(), st);
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tNULL>) <tPC>
@@ -431,8 +432,9 @@ void Instruccion_con_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
+		// Llamada a función/procedimiento sin parámetros
 		if (llamada_funcion_simple)
-			sf.Instruccion(id.image, st);		// Llamada a función/procedimiento sin parámetros
+			sf.llamada_funcion(id.image, new ArrayList<Par>(), st);
 	}
 	| Instr_condicional_con_return() | Instr_iterativa_con_return()
 	| <tNULL>
