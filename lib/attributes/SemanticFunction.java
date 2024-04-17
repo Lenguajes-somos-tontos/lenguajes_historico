@@ -125,7 +125,7 @@ public class SemanticFunction {
 				// No se verifica que la expresión a la derecha pueda ser string, función, array o procedimiento
 				// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
 				if (tipo_asignacion.tipo != simbolo_array.baseType) {
-					esperaba_tipo(simbolo_array.baseType, t.beginLine, t.beginColumn);
+					esperaba_tipo(simbolo_array.baseType, t.beginLine, t.endColumn);
 				}
 			}
 		}

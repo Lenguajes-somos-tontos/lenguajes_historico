@@ -391,7 +391,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		// Llamada a función/procedimiento sin parámetros
+		// Llamada a procedimiento sin parámetros
 		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Trio>(), st, id);
 	}
 	| Instr_condicional_con_return(tipo_a_retornar, nivel+1) | Instr_iterativa_con_return(tipo_a_retornar, nivel+1)
@@ -403,9 +403,6 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 		if (es_return) {
 			if (tipo_a_retornar != tipo_return.tipo) {
 				sf.esperaba_tipo(tipo_a_retornar, t.beginLine, t.beginColumn);
-			}
-			else if (nivel == 1) {
-				return_valido = true;
 			}
 		}
 		return return_valido;
@@ -429,7 +426,7 @@ void Instr_funcion_vector_2(String id, Trio tipo) :
 	Token t = null;
 }
 {
-	t = <tCP> Instr_funcion_vector_3(id, tipo)
+	t = <tCP> Instr_funcion_vector_3(id, tipo, t)
 	|	// Matching de las llamadas a funciones con más de un parámetro
 	{
 		// Se crea la lista de parámetros y se añade el primero ya leído
@@ -447,10 +444,9 @@ void Instr_funcion_vector_2(String id, Trio tipo) :
 }
 
 
-void Instr_funcion_vector_3(String id, Trio tipo_primera_expresion) :
+void Instr_funcion_vector_3(String id, Trio tipo_primera_expresion, Token t) :
 {
 	Trio tipo_asignacion;
-	Token t = null;
 }
 {
 	// Matching de asignacion a componente de array "tipo_primera_expresion" es el tipo del índice
@@ -608,7 +604,7 @@ void Funcion() :
 void Instr_iterativa_sin_return():
 {
 	Trio tipo;
-	Token t = null;
+	Token t;
 }
 {
 	t = <tWHILE> tipo = Expresion() <tLOOP>
