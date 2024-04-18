@@ -222,17 +222,22 @@ public class SemanticFunction {
 
 				// Caso ARRAY
 				if (parametro.type == Symbol.Types.ARRAY) {
-					SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.nombre));
-					SymbolArray array_parametro = (SymbolArray) (parametro);
+					if (argumento.tipo == Symbol.Types.ARRAY) {
+						SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.nombre));
+						SymbolArray array_parametro = (SymbolArray) (parametro);
 
-					// Índices no coinciden
-					if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
-						error("Los índices del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
+						// Índices no coinciden
+						if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
+							error("Los índices del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
+						}
+
+						// Tipos no coinciden
+						if (array_argumento.baseType != array_parametro.baseType) {
+							error("Los tipos base del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
+						}
 					}
-
-					// Tipos no coinciden
-					if (array_argumento.baseType != array_parametro.baseType) {
-						error("Los tipos base del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
+					else {
+						esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
 					}
 				}
 			}
