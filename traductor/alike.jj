@@ -378,13 +378,13 @@ void Instruccion_sin_return() :
 }
 
 
-boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
+boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 {
 	Token id = null;
 	boolean llamada_funcion_simple = true;
 	Trio tipo_return = null;
 	boolean es_return = false;
-	boolean return_valido = false;
+	boolean return_if = false;
 	Token t = null;
 }
 {
@@ -394,19 +394,12 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar, int nivel) :
 		// Llamada a procedimiento sin parámetros
 		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Trio>(), st, id);
 	}
-	| Instr_condicional_con_return(tipo_a_retornar, nivel+1) | Instr_iterativa_con_return(tipo_a_retornar, nivel+1)
+	| return_if = Instr_condicional_con_return(tipo_a_retornar) | Instr_iterativa_con_return(tipo_a_retornar)
 	| <tNULL>
 	| <tEXIT>
 	| t = <tRETURN> tipo_return = Expresion() {es_return = true;})
 	<tPC>
-	{
-		if (es_return) {
-			if (tipo_a_retornar != tipo_return.tipo) {
-				sf.esperaba_tipo(tipo_a_retornar, t.beginLine, t.beginColumn);
-			}
-		}
-		return return_valido;
-	}
+	{return es_return || return_if;}
 }
 
 
@@ -589,13 +582,13 @@ void Funcion() :
 	(Declaracion() <tPC>)*
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
-	(instruccion = Instruccion_con_return(tipo_return.type, 1)
+	(instruccion = Instruccion_con_return(tipo_return.type)
 	{
-		if (!return_valido) return_valido = instruccion;
+		if (instruccion) return_valido = true;
 	})+
 	<tEND> t = <tPC>
 	{
-		if (!return_valido) System.out.println("AVISO: Es posible que la función no alcance ningún return");
+		if (!return_valido) System.out.println("AVISO ( " + Integer.toString(t.beginLine) + ", " + Integer.toString(t.endColumn) + "): Es posible que la función no alcance ningún return");
 		st.removeBlock();
 	}
 }
@@ -643,7 +636,7 @@ void MasIF():
 }
 
 
-void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar, int nivel):
+void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar):
 {
 	Trio tipo;
 	Token t;
@@ -651,35 +644,42 @@ void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar, int nivel):
 {
 	t = <tWHILE> tipo = Expresion() <tLOOP>
 	{sf.verificar_bool(tipo.tipo, t);}
-	(Instruccion_con_return(tipo_a_retornar, nivel))+
+	(Instruccion_con_return(tipo_a_retornar))+
 	<tEND> <tLOOP>
 }
 
 
-void Instr_condicional_con_return(Symbol.Types tipo_a_retornar, int nivel):
+boolean Instr_condicional_con_return(Symbol.Types tipo_a_retornar):
 {
 	Trio tipo;
 	Token t;
+	boolean es_return = false;
+	boolean return_leido = false;
 }
 {
 	t = <tIF> tipo = Expresion() <tTHEN>
 	{sf.verificar_bool(tipo.tipo, t);}
-	(Instruccion_con_return(tipo_a_retornar, nivel))+
-	MasIF_return(tipo_a_retornar, nivel)
+	(es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+
+	return_else = MasIF_return(tipo_a_retornar)
 	<tEND> <tIF>
+	{return return_leido && return_else;}
 }
 
 
-void MasIF_return(Symbol.Types tipo_a_retornar, int nivel):
+boolean MasIF_return(Symbol.Types tipo_a_retornar):
 {
 	Trio tipo;
 	Token t;
+	boolean es_return = false;
+	boolean return_leido = false;
 }
 {
-	t = <tELSIF> tipo = Expresion() <tTHEN>
+	(t = <tELSIF> tipo = Expresion() <tTHEN>
 	{sf.verificar_bool(tipo.tipo, t);}
-	(Instruccion_con_return(tipo_a_retornar, nivel))+
-	MasIF_return(tipo_a_retornar, nivel)
-	| <tELSE> (Instruccion_con_return(tipo_a_retornar, nivel))+
-	| {}
+	(es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+
+	es_return = MasIF_return(tipo_a_retornar)
+
+	| <tELSE> (es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+
+	| {} {return_leido = false;})
+	{return return_leido;}
 }

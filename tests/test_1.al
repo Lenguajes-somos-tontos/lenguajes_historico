@@ -7,7 +7,16 @@ procedure test_1 is
 function inicializar(n: boolean; vi: ref array(1..1000) of CHARACTER; i: CHARACTER) return boolean is
     otra: integer;
 begin
-    return false;
+    if () {
+        return
+    }
+    else if () {
+        return
+    }
+    else {
+        return
+    }
+    return
 end;
 ----------------------------------------------------------
 function prueba_sin return boolean is
