@@ -38,7 +38,7 @@ public class alike {
 			   parser = new alike(System.in);
 			}
 		    else {
-			   //args[0] += ".al";
+			   args[0] += ".al";
 			   parser = new alike(new java.io.FileInputStream(args[0]));
 		    }
 		   parser.Programa();
@@ -146,7 +146,7 @@ void Programa() :
 			st.insertSymbol(new SymbolFunction("char2int", lista_char, Symbol.Types.INT));
 		
 			st.insertSymbol(new SymbolProcedure("skip_line", new ArrayList<Symbol>()));
-			st.insertSymbol(new SymbolProcedure("put_line", new ArrayList<Symbol>()));
+			//st.insertSymbol(new SymbolProcedure("put_line", new ArrayList<Symbol>()));
 		}
 		catch (AlreadyDefinedSymbolException a) {}
 		catch (IndexArrayNotCorrect a) {}
