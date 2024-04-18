@@ -121,12 +121,11 @@ public class SemanticFunction {
 			if (tipo_primera_expresion.tipo != Symbol.Types.INT) {
 				esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);
 			}
-			else {
-				// No se verifica que la expresión a la derecha pueda ser string, función, array o procedimiento
-				// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
-				if (tipo_asignacion.tipo != simbolo_array.baseType) {
-					esperaba_tipo(simbolo_array.baseType, t.beginLine, t.endColumn);
-				}
+
+			// No se verifica que la expresión a la derecha pueda ser string, función, array o procedimiento
+			// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
+			if (tipo_asignacion.tipo != simbolo_array.baseType) {
+				esperaba_tipo(simbolo_array.baseType, t.beginLine, t.endColumn);
 			}
 		}
 		catch (SymbolNotFoundException s) {

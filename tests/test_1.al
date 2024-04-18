@@ -16,10 +16,11 @@ end;
 ----------------------------------------------------------
 begin
     put("Hola", 5, true, false, 'c');
-    k := inicializar(t(3), t, v(n*21+45));
+    k := inicializar(t(n+1), t, v(n*21+45));
     c :=int2char(45);
     n := char2int('c');
     put_line;
     get(n,c);
+    v(n) := 'c';
     null;
 end;

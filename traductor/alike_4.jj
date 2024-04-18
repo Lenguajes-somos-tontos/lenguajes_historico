@@ -146,7 +146,6 @@ void Programa() :
 			st.insertSymbol(new SymbolFunction("char2int", lista_char, Symbol.Types.INT));
 		
 			st.insertSymbol(new SymbolProcedure("skip_line", new ArrayList<Symbol>()));
-			//st.insertSymbol(new SymbolProcedure("put_line", new ArrayList<Symbol>()));
 		}
 		catch (AlreadyDefinedSymbolException a) {}
 		catch (IndexArrayNotCorrect a) {}
