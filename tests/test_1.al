@@ -13,7 +13,7 @@ end;
 function prueba_sin return boolean is
     otra: integer;
 begin
-    return true;
+    null;
 end;
 ----------------------------------------------------------
 procedure calcular(n, num: integer; v: ref array(1..1000) of CHARACTER) is
