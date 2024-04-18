@@ -139,7 +139,7 @@ public class SemanticFunction {
 
 
 	public void comprobar_funciones_especiales(String id_funcion) throws SpecialFunctionFound {
-		String id = id_funcion.toLowerCase();
+		String id = id_funcion;
 		if (id.equals("put_line") || id.equals("put") || id.equals("get")) {
 			throw new SpecialFunctionFound();
 		}
