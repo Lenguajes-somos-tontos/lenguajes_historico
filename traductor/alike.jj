@@ -38,7 +38,7 @@ public class alike {
 			   parser = new alike(System.in);
 			}
 		    else {
-			   args[0] += ".al";
+			   //args[0] += ".al";
 			   parser = new alike(new java.io.FileInputStream(args[0]));
 		    }
 		   parser.Programa();
@@ -356,7 +356,7 @@ void Asignacion() :
 }
 {
 	id = <tID> t = <tASIG> tipo_asignacion = Expresion()
-	{sf.Asignacion(id.image, tipo_asignacion, st, t);}
+	{sf.Asignacion(id.image.toLowerCase(), tipo_asignacion, st, t);}
 }
 
 

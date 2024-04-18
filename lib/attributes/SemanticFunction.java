@@ -17,7 +17,7 @@ public class SemanticFunction {
     public void Declaracion(ArrayList<String> array_nombres_variables, Symbol tipo_variables, SymbolTable st, Token linea) {
         // Se tiene un simbolo sin nombre y un array de Strings
 		for (String variable : array_nombres_variables) {
-			tipo_variables.name = variable;					// Se asigna el nombre
+			tipo_variables.name = variable.toLowerCase();
 			try {st.insertSymbol(tipo_variables.clone());}	// Se inserta una copia del puntero
 			catch (AlreadyDefinedSymbolException e) {
 				simbolo_definido(variable, linea.beginLine, linea.beginColumn);
@@ -55,7 +55,7 @@ public class SemanticFunction {
 
     public void Primario_ID(Token t, Trio tipo, SymbolTable st) {
     	try {
-			Symbol simbolo = st.getSymbol(t.image);
+			Symbol simbolo = st.getSymbol(t.image.toLowerCase());
 
 			if (simbolo.type == Symbol.Types.INT) {
 				tipo.tipo = Symbol.Types.INT;
@@ -171,7 +171,7 @@ public class SemanticFunction {
 
 
 	public Trio verificar_expresion(Token t, ArrayList<Trio> lista_argumentos, SymbolTable st) {
-		String id = t.image;
+		String id = t.image.toLowerCase();
 		Trio resultado = new Trio();
 		try {
 			comprobar_funciones_especiales(id);
