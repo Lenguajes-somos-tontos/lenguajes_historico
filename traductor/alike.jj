@@ -588,7 +588,7 @@ void Funcion() :
 	})+
 	<tEND> t = <tPC>
 	{
-		if (!return_valido) System.out.println("AVISO ( " + Integer.toString(t.beginLine) + ", " + Integer.toString(t.endColumn) + "): Es posible que la función no alcance ningún return");
+		if (!return_valido) System.out.println("AVISO (" + Integer.toString(t.beginLine) + ", " + Integer.toString(t.endColumn) + "): Es posible que la función no alcance ningún return");
 		st.removeBlock();
 	}
 }
@@ -655,6 +655,7 @@ boolean Instr_condicional_con_return(Symbol.Types tipo_a_retornar):
 	Token t;
 	boolean es_return = false;
 	boolean return_leido = false;
+	boolean return_else = false;
 }
 {
 	t = <tIF> tipo = Expresion() <tTHEN>
@@ -681,5 +682,5 @@ boolean MasIF_return(Symbol.Types tipo_a_retornar):
 
 	| <tELSE> (es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+
 	| {} {return_leido = false;})
-	{return return_leido;}
+	{return return_leido && es_return;}
 }

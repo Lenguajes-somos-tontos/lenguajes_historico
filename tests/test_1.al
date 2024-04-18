@@ -3,41 +3,23 @@ procedure test_1 is
     k: boolean;
     c: character;
     v: ARRAY(1..1000) OF CHARACTER;
+    t: ARRAY(1..1000) OF boolean;
 ------------------------------------------------------
-function inicializar(n: boolean; vi: ref array(1..1000) of CHARACTER; i: CHARACTER) return boolean is
+function inicializar(n: ref boolean; vi: ref array(1..1000) of boolean; i: CHARACTER) return boolean is
     otra: integer;
 begin
-    if () {
-        return
-    }
-    else if () {
-        return
-    }
-    else {
-        return
-    }
-    return
-end;
-----------------------------------------------------------
-function prueba_sin return boolean is
-    otra: integer;
-begin
-    null;
-end;
-----------------------------------------------------------
-procedure calcular(n, num: integer; v: ref array(1..1000) of CHARACTER) is
-    i: integer;
-    cuenta: integer;
-begin
-    null;
+    if true then
+        return true;
+    end if;
+    return true;
 end;
 ----------------------------------------------------------
 begin
-    --k := inicializar(prueba_sin, v, v(n*21+45));
-    calcular(n, n+2*5, v);
-    put("Hola", 5, true, false, 'c');
+    --put("Hola", 5, true, false, 'c');
+    --k := inicializar(t(3), t, v(n*21+45));
     c :=int2char(45);
     n := char2int('c');
-    skip_line;
-    k := prueba_sin;
+    put_line;
+    --get(3,'c');
+    null;
 end;

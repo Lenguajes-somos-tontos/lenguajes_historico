@@ -217,7 +217,7 @@ public class SemanticFunction {
 
 				// Tipo por referencia y no es asignable
 				if (parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia) {
-					error("El parámetro " + parametro.name + " es un parámetro por referencia", t.beginLine, t.beginColumn);
+					tipo_asignable(t.beginLine, t.beginColumn);
 				}
 
 				// Caso ARRAY
@@ -231,12 +231,13 @@ public class SemanticFunction {
 							error("Los índices del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
 						}
 
-						// Tipos no coinciden
+						// Tipos base no coinciden
 						if (array_argumento.baseType != array_parametro.baseType) {
 							error("Los tipos base del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
 						}
 					}
 					else {
+						// Se esperaba un array
 						esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
 					}
 				}
@@ -266,15 +267,24 @@ public class SemanticFunction {
 			simbolo_no_es(id, "procedimiento", t.beginLine, t.beginColumn);
 		}
 		catch (SpecialFunctionFound g) {
-			for (int i = 0; i < lista_argumentos.size(); i++) {
-				Trio argumento = lista_argumentos.get(i);
-				if (id.equals("get") && (argumento.tipo != Symbol.Types.INT && argumento.tipo != Symbol.Types.CHAR)) {
-					error("Se esperaba un tipo INT/CHAR", t.beginLine, t.beginColumn);
+			int numero_argumentos = lista_argumentos.size();
+			if (numero_argumentos > 0 || id.equals("put_line")) {
+				for (int i = 0; i < numero_argumentos; i++) {
+					Trio argumento = lista_argumentos.get(i);
+					if (id.equals("get") && (argumento.tipo != Symbol.Types.INT && argumento.tipo != Symbol.Types.CHAR)) {
+						error("Se esperaba un tipo INT/CHAR", t.beginLine, t.beginColumn);
+					}
+					else if (id.equals("get") && !argumento.referencia) {
+						tipo_asignable(t.beginLine, t.beginColumn);
+					}
+					else if ((id.equals("put") || id.equals("put_line")) && (argumento.tipo != Symbol.Types.INT &&
+						argumento.tipo != Symbol.Types.BOOL && argumento.tipo != Symbol.Types.CHAR && argumento.tipo != Symbol.Types.STRING)) {
+							error("Se esperaba un tipo INT/BOOL/CHAR/STRING", t.beginLine, t.beginColumn);
+					}
 				}
-				else if ((id.equals("put") || id.equals("put_line")) && (argumento.tipo != Symbol.Types.INT &&
-					argumento.tipo != Symbol.Types.BOOL && argumento.tipo != Symbol.Types.CHAR && argumento.tipo != Symbol.Types.STRING)) {
-						error("Se esperaba un tipo INT/BOOL/CHAR/STRING", t.beginLine, t.beginColumn);
-				}
+			}
+			else {
+				error("Los parámetros de la función " + id + " no son vacíos", t.beginLine, t.beginColumn);
 			}
 		}
 	}
@@ -346,4 +356,9 @@ public class SemanticFunction {
 	public void simbolo_no_es(String id, String tipo, int linea, int columna) {
 		error("El simbolo " + id + " no es un " + tipo, linea, columna);
 	}
+
+	public void tipo_asignable(int linea, int columna) {
+		error("Se esperaba un tipo asignable", linea, columna);
+	}
+
 }
