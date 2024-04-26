@@ -18,6 +18,7 @@ import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import java.util.*;
 import lib.attributes.*;
+import lib.tools.codeGeneration.*;
 
 public class alike {
 	static SymbolTable st;
@@ -460,11 +461,18 @@ void Programa_completo() :
 {
 }
 {
+	CodeBlock bloque = new CodeBlock();
+	bloque.addInst(PCodeInstruction.OpCode.ENP, "L0");
 	<tPROC> <tID> <tIS>
 	(Declaracion() <tPC>)*
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
+	bloque.addComment("Comienzo de main");
+	bloque.addLabel("L0");
 	(Instruccion_sin_return())+
+	bloque.addComment("Fin de main");
+	bloque.addInst(PCodeInstruction.OpCode.LVP);
+	bloque.clearBlock();
 	<tEND> <tPC>
 }
 
