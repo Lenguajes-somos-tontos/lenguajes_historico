@@ -2,7 +2,7 @@ procedure test_1 is
 	n: integer;
     k: boolean;
     c: character;
-    v: ARRAY(1..1000) OF CHARACTER;
+    v: ARRAY(-1..1000) OF CHARACTER;
     t: ARRAY(1..1000) OF boolean;
 ------------------------------------------------------
 function inicializar(n: ref boolean; vi: ref array(1..1000) of boolean; i: CHARACTER) return boolean is

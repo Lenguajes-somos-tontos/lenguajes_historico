@@ -207,10 +207,12 @@ Symbol Tipo_array() :
 {
 	Token indMin, indMax;
 	Symbol tipo_base;
+	Token ind_menor = null, ind_mayor = null;
 }
 {
-	<tARRAY> <tAP> indMin = <tNUM> <tPUNTOS> indMax = <tNUM> <tCP> <tOF> tipo_base = Tipo_variable()
-	{return sf.Tipo_array(indMin, indMax, tipo_base);}
+	<tARRAY> <tAP> (ind_menor = <tOPMAS> | ind_menor = <tOPMENOS>)? indMin = <tNUM> <tPUNTOS>
+	(ind_mayor = <tOPMAS> | ind_mayor = <tOPMENOS>)? indMax = <tNUM> <tCP> <tOF> tipo_base = Tipo_variable()
+	{return sf.Tipo_array(indMin, indMax, tipo_base, ind_menor, ind_mayor);}
 }
 
 

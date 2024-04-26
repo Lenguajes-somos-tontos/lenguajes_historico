@@ -45,8 +45,14 @@ public class SemanticFunction {
     }
 
 
-    public Symbol Tipo_array(Token indMin, Token indMax, Symbol tipo_base) {
-		int indMin_i = Integer.parseInt(indMin.image);
+    public Symbol Tipo_array(Token indMin, Token indMax, Symbol tipo_base, Token ind_menor, Token ind_mayor) {
+		int indMin_i;
+		if (ind_menor == null || ind_menor.image == "+") {
+			indMin_i = Integer.parseInt(indMin.image);
+		}
+		else {
+			indMin_i = -Integer.parseInt(indMin.image);
+		}
 		int indMax_i = Integer.parseInt(indMax.image);
 		Symbol result = new SymbolArray("", indMin_i, indMax_i, tipo_base.type);
 		return result;
