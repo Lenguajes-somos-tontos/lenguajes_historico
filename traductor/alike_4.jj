@@ -461,18 +461,25 @@ void Programa_completo() :
 {
 }
 {
-	CodeBlock bloque = new CodeBlock();
-	bloque.addInst(PCodeInstruction.OpCode.ENP, "L0");
+	{
+		CodeBlock bloque = new CodeBlock();
+		bloque.addInst(PCodeInstruction.OpCode.ENP, "L0");
+	}
 	<tPROC> <tID> <tIS>
 	(Declaracion() <tPC>)*
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
-	bloque.addComment("Comienzo de main");
-	bloque.addLabel("L0");
+	{
+		bloque.addComment("Comienzo de main");
+		bloque.addLabel("L0");
+	}
 	(Instruccion_sin_return())+
-	bloque.addComment("Fin de main");
-	bloque.addInst(PCodeInstruction.OpCode.LVP);
-	bloque.clearBlock();
+	{
+		bloque.addComment("Fin de main");
+		bloque.addInst(PCodeInstruction.OpCode.LVP);
+		System.out.println(bloque.toString());
+		bloque.clearBlock();
+	}
 	<tEND> <tPC>
 }
 
