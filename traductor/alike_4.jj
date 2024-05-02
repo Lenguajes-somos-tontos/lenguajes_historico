@@ -66,8 +66,12 @@ public class alike {
 	    catch (Exception e) {
 			System.err.println("Finalizo traducción por detección de error no controlado: \n\t" + e.getMessage());
   		}
-		if (codigo_estado == 0) System.out.println("Se ha compilado correctamente, se genera código");
-		else System.out.println("Se han producido errores semánticos, no se genera código");
+		if (codigo_estado == 0) {
+			System.out.println("Se ha compilado correctamente, se genera código");
+		}
+		else {
+			System.out.println("Se han producido errores semánticos, no se genera código");
+		}
 		System.exit(codigo_estado);
 	}
 }
