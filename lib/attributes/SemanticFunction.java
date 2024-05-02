@@ -45,9 +45,23 @@ public class SemanticFunction {
     }
 
 
-    public Symbol Tipo_array(Token indMin, Token indMax, Symbol tipo_base) {
-		int indMin_i = Integer.parseInt(indMin.image);
-		int indMax_i = Integer.parseInt(indMax.image);
+    public Symbol Tipo_array(Token indMin, Token indMax, Symbol tipo_base, Token ind_menor, Token ind_mayor) {
+		int indMin_i, indMax_i;
+
+		if (ind_menor == null || ind_menor.image == "+") {
+			indMin_i = Integer.parseInt(indMin.image);
+		}
+		else {
+			indMin_i = -Integer.parseInt(indMin.image);
+		}
+
+		if (ind_mayor == null || ind_mayor.image == "+") {
+			indMax_i = Integer.parseInt(indMax.image);
+		}
+		else {
+			indMax_i = -Integer.parseInt(indMax.image);
+		}
+
 		Symbol result = new SymbolArray("", indMin_i, indMax_i, tipo_base.type);
 		return result;
     }
@@ -292,6 +306,15 @@ public class SemanticFunction {
 	public void verificar_bool(Symbol.Types tipo, Token t) {
 		if (tipo != Symbol.Types.BOOL) {
 			esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.endColumn);
+		}
+	}
+
+
+	public void verificar_bool_expresion(Trio tipo, Trio tipo2, Token t) {
+		tipo.referencia = false;
+		if (tipo.tipo != Symbol.Types.BOOL || tipo2.tipo != Symbol.Types.BOOL) {
+			esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.endColumn);
+			tipo.tipo = Symbol.Types.UNDEFINED;
 		}
 	}
 

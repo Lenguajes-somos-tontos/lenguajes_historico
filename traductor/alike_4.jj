@@ -55,6 +55,8 @@ public class alike {
 	    catch (Exception e) {
 			System.err.println("Finalizo traducción por detección de error no controlado: \n\t" + e.getMessage());
   		}
+		if (codigo_estado == 0) System.out.println("Se ha compilado correctamente, se genera código");
+		else System.out.println("Se han producido errores semánticos, no se genera código");
 		System.exit(codigo_estado);
 	}
 }
@@ -207,10 +209,12 @@ Symbol Tipo_array() :
 {
 	Token indMin, indMax;
 	Symbol tipo_base;
+	Token ind_menor = null, ind_mayor = null;
 }
 {
-	<tARRAY> <tAP> indMin = <tNUM> <tPUNTOS> indMax = <tNUM> <tCP> <tOF> tipo_base = Tipo_variable()
-	{return sf.Tipo_array(indMin, indMax, tipo_base);}
+	<tARRAY> <tAP> (ind_menor = <tOPMAS> | ind_menor = <tOPMENOS>)? indMin = <tNUM> <tPUNTOS>
+	(ind_mayor = <tOPMAS> | ind_mayor = <tOPMENOS>)? indMax = <tNUM> <tCP> <tOF> tipo_base = Tipo_variable()
+	{return sf.Tipo_array(indMin, indMax, tipo_base, ind_menor, ind_mayor);}
 }
 
 
@@ -222,14 +226,14 @@ Trio Expresion() :
 	Token t = null;
 }
 {
-	tipo = Relacion() ((t = <tAND> | t = <tOR>) tipo2 = Relacion()
+	tipo = Relacion() ((t = <tAND> tipo2 = Relacion()
 	{
-		tipo.referencia = false;
-		if (tipo.tipo != Symbol.Types.BOOL || tipo2.tipo != Symbol.Types.BOOL) {
-			sf.esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.endColumn);
-			tipo.tipo = Symbol.Types.UNDEFINED;
-		}
-	})*
+		sf.verificar_bool_expresion(tipo, tipo2, t);
+	})+
+	| (t = <tOR> tipo2 = Relacion()
+	{
+		sf.verificar_bool_expresion(tipo, tipo2, t);
+	})+)?
 	{return tipo;}
 }
 
