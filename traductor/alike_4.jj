@@ -18,12 +18,16 @@ import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
 import java.util.*;
 import lib.attributes.*;
+import lib.tools.codeGeneration.*;
 
 public class alike {
 	static SymbolTable st;
 	static SemanticFunction sf;
 
-	static int codigo_estado;
+	public static int codigo_estado;
+	public static int nivel_bloque;
+
+	public static int[] sig;
 
 	public static void codigo_error() {codigo_estado = 1;}
 
@@ -31,6 +35,10 @@ public class alike {
 		st = new SymbolTable();
 		sf = new SemanticFunction();
 		codigo_estado = 0;
+		nivel_bloque = 0;
+
+		sig = new int[SymbolTable.ST_SIZE];
+		for (int i = 0; i < sig.length; i++) sig[i] = 3;
 
 	   alike parser = null;
 		try {
@@ -532,7 +540,12 @@ ArrayList<Symbol> Parametros() :
 	(t = <tAP> Parametro(lista_parametros) (<tPC> Parametro(lista_parametros))* <tCP>)?
 	{
 		for (Symbol simbolo : lista_parametros) {
-			try {st.insertSymbol(simbolo);}
+			try {
+				st.insertSymbol(simbolo);
+				simbolo.nivel = simbolo.nivel - 1;
+				simbolo.dir = sig[nivel_bloque];
+				sig[nivel_bloque]++;
+			}
 			catch (AlreadyDefinedSymbolException a) {
 				sf.simbolo_definido(simbolo.name, t.beginLine, t.endColumn);
 			}
@@ -562,6 +575,7 @@ void Procedimiento() :
 		}
 		catch (IndexArrayNotCorrect i) {}	// Se sabe que el simbolo no es un array
 		st.insertBlock();
+		nivel_bloque++;
 	}
 	simbolo_procedimiento.parList = Parametros() <tIS>	// Se asigna al simbolo del procedimiento la lista de parametros
 	(Declaracion() <tPC>)*
@@ -569,7 +583,11 @@ void Procedimiento() :
 	<tBEGIN>
 	(Instruccion_sin_return())+
 	<tEND> <tPC>
-	{st.removeBlock();}
+	{
+		st.removeBlock();
+		sig[nivel_bloque] = 3;
+		nivel_bloque--;
+	}
 }
 
 
@@ -593,6 +611,7 @@ void Funcion() :
 		}
 		catch (IndexArrayNotCorrect i) {}
 		st.insertBlock();
+		nivel_bloque++;
 	}
 	// Se asigna la lista de parámetros, se recoge el tipo que retorna la función y se asigna al simbolo función
 	simbolo_funcion.parList = Parametros() <tRETURN> tipo_return = Tipo_variable() <tIS> {simbolo_funcion.returnType = tipo_return.type;}
@@ -607,6 +626,8 @@ void Funcion() :
 	{
 		if (!return_valido) System.out.println("AVISO (" + Integer.toString(t.beginLine) + ", " + Integer.toString(t.endColumn) + "): Es posible que la función no alcance ningún return");
 		st.removeBlock();
+		sig[nivel_bloque] = 3;
+		nivel_bloque--;
 	}
 }
 
