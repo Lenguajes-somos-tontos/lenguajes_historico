@@ -8,6 +8,8 @@ package lib.attributes;
 
 import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
+import lib.tools.codeGeneration.PCodeInstruction;
+
 import java.util.*;
 import lib.attributes.*;
 import traductor.*;
@@ -276,7 +278,27 @@ public class SemanticFunction {
 					else if (id.equals("get") && !argumento.referencia) {
 						tipo_asignable(t.beginLine, t.beginColumn);
 					}
-					else if ((id.equals("put") || id.equals("put_line")) && (argumento.tipo != Symbol.Types.INT &&
+					else if (id.equals("get")) {
+						try {
+							Symbol simbolo = st.getSymbol(lista_argumentos.get(i).nombre);
+							int tipo;
+							if (simbolo.type == Symbol.Types.INT) {
+								tipo = 1;
+							}
+							else if (simbolo.type == Symbol.Types.CHAR) {
+								tipo = 0;
+							}
+							bloque.addComment("Leer");
+							bloque.addComment("Direccion de variable" + lista_argumentos.get(i).nombre);
+							bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, simbolo.dir);
+							bloque.addInst(PCodeInstruction.OpCode.RD, tipo);
+
+						} catch (SymbolNotFoundException e){
+							simbolo_no_definido(id, t.beginLine, t.beginColumn);
+						}
+
+					}
+					if ((id.equals("put") || id.equals("put_line")) && (argumento.tipo != Symbol.Types.INT &&
 						argumento.tipo != Symbol.Types.BOOL && argumento.tipo != Symbol.Types.CHAR && argumento.tipo != Symbol.Types.STRING)) {
 							error("Se esperaba un tipo INT/BOOL/CHAR/STRING", t.beginLine, t.beginColumn);
 					}
