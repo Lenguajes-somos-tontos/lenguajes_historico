@@ -14,6 +14,14 @@ begin
     return true;
 end;
 ----------------------------------------------------------
+procedure inicializar2(n: ref boolean; vi: ref array(1..1000) of boolean) is
+    otra: integer;
+begin
+    null;
+end;
+
+----------------------------------------------------------
 begin
     k := true and (false or k);
+    get(c);
 end;

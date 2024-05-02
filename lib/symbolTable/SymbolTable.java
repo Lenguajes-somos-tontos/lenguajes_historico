@@ -24,8 +24,8 @@ import lib.symbolTable.exceptions.AlreadyDefinedSymbolException;
 import lib.symbolTable.exceptions.IndexArrayNotCorrect;
 
 public class SymbolTable {
-	private final int ST_SIZE = 16; //hasta 16 niveles
-    private final int HASH_SIZE = 1023; //buckets
+	public static int ST_SIZE = 16; //hasta 16 niveles
+    public final int HASH_SIZE = 1023; //buckets
     private ArrayList<HashMap<String, Symbol>> st;
 
     public int level; //nivel actual (cantidad de niveles)

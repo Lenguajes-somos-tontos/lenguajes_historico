@@ -18,7 +18,13 @@ public class SemanticFunction {
         // Se tiene un simbolo sin nombre y un array de Strings
 		for (String variable : array_nombres_variables) {
 			tipo_variables.name = variable.toLowerCase();
-			try {st.insertSymbol(tipo_variables.clone());}	// Se inserta una copia del puntero
+			try {	// Se inserta una copia del puntero
+				Symbol clon = tipo_variables.clone();
+				st.insertSymbol(clon);
+				clon.nivel = clon.nivel - 1;
+				clon.dir = alike.sig[alike.nivel_bloque];
+				alike.sig[alike.nivel_bloque]++;
+			}
 			catch (AlreadyDefinedSymbolException e) {
 				simbolo_definido(variable, linea.beginLine, linea.beginColumn);
 			}
