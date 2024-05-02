@@ -310,6 +310,15 @@ public class SemanticFunction {
 	}
 
 
+	public void verificar_bool_expresion(Trio tipo, Trio tipo2, Token t) {
+		tipo.referencia = false;
+		if (tipo.tipo != Symbol.Types.BOOL || tipo2.tipo != Symbol.Types.BOOL) {
+			esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.endColumn);
+			tipo.tipo = Symbol.Types.UNDEFINED;
+		}
+	}
+
+
 	public void verificar_relacion(Token t, Trio tipo, Trio tipo2) {
 		String operador = t.image;
 		tipo.referencia = false;

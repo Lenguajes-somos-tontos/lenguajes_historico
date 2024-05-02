@@ -226,14 +226,14 @@ Trio Expresion() :
 	Token t = null;
 }
 {
-	tipo = Relacion() ((t = <tAND> | t = <tOR>) tipo2 = Relacion()
+	tipo = Relacion() ((t = <tAND> tipo2 = Relacion()
 	{
-		tipo.referencia = false;
-		if (tipo.tipo != Symbol.Types.BOOL || tipo2.tipo != Symbol.Types.BOOL) {
-			sf.esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.endColumn);
-			tipo.tipo = Symbol.Types.UNDEFINED;
-		}
-	})*
+		sf.verificar_bool_expresion(tipo, tipo2, t);
+	})+
+	| (t = <tOR> tipo2 = Relacion()
+	{
+		sf.verificar_bool_expresion(tipo, tipo2, t);
+	})+)?
 	{return tipo;}
 }
 
