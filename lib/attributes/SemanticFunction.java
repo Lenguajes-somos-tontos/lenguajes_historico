@@ -301,17 +301,17 @@ public class SemanticFunction {
 					else if (id.equals("get")) {
 						try {
 							Symbol simbolo = st.getSymbol(lista_argumentos.get(i).nombre);
-							int tipo;
+							int tipo = -1;
 							if (simbolo.type == Symbol.Types.INT) {
 								tipo = 1;
 							}
 							else if (simbolo.type == Symbol.Types.CHAR) {
 								tipo = 0;
 							}
-							bloque.addComment("Leer");
-							bloque.addComment("Direccion de variable" + lista_argumentos.get(i).nombre);
-							bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, simbolo.dir);
-							bloque.addInst(PCodeInstruction.OpCode.RD, tipo);
+							alike.bloque.addComment("Leer");
+							alike.bloque.addComment("Direccion de variable" + lista_argumentos.get(i).nombre);
+							alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
+							alike.bloque.addInst(PCodeInstruction.OpCode.RD, tipo);
 
 						} catch (SymbolNotFoundException e){
 							simbolo_no_definido(id, t.beginLine, t.beginColumn);

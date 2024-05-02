@@ -23,6 +23,8 @@ import lib.tools.codeGeneration.*;
 public class alike {
 	static SymbolTable st;
 	static SemanticFunction sf;
+	public static CodeBlock bloque;
+
 
 	public static int codigo_estado;
 	public static int nivel_bloque;
@@ -36,6 +38,7 @@ public class alike {
 		sf = new SemanticFunction();
 		codigo_estado = 0;
 		nivel_bloque = 0;
+		bloque = new CodeBlock();
 
 		sig = new int[SymbolTable.ST_SIZE];
 		for (int i = 0; i < sig.length; i++) sig[i] = 3;
@@ -473,7 +476,6 @@ void Programa_completo() :
 }
 {
 	{
-		CodeBlock bloque = new CodeBlock();
 		bloque.addInst(PCodeInstruction.OpCode.ENP, "L0");
 	}
 	<tPROC> <tID> <tIS>
