@@ -128,6 +128,13 @@ public class SemanticFunction {
 				|| tipo_id == Symbol.Types.STRING || tipo_id == Symbol.Types.UNDEFINED || tipo_id == Symbol.Types.ARRAY) {
 					esperaba_tipo(tipo_id, linea.beginLine, linea.beginColumn);
 			}
+			else {
+				alike.bloque.addComment("Leer");
+				alike.bloque.addComment("Direccion de variable" + id);
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF,
+									alike.nivel_bloque - simbolo_asignacion.nivel, (int)simbolo_asignacion.dir);
+				alike.bloque.addInst(PCodeInstruction.OpCode.ASGI);
+			}
 		}
 		catch (SymbolNotFoundException s) {
 			simbolo_no_definido(id, linea.beginLine, linea.beginColumn);
@@ -344,6 +351,14 @@ public class SemanticFunction {
 			esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.endColumn);
 			tipo.tipo = Symbol.Types.UNDEFINED;
 		}
+		else {
+			if (t.image.toLowerCase().equals("and")) {
+				alike.bloque.addInst(PCodeInstruction.OpCode.AND);
+			}
+			else {
+				alike.bloque.addInst(PCodeInstruction.OpCode.OR);
+			}
+		}
 	}
 
 
@@ -355,7 +370,21 @@ public class SemanticFunction {
 				tipo.tipo = Symbol.Types.UNDEFINED;
 				esperaba_tipo(Symbol.Types.INT, t.beginLine, t.endColumn);
 			}
-			else tipo.tipo = Symbol.Types.BOOL;
+			else  {
+				tipo.tipo = Symbol.Types.BOOL;
+				if (operador.equals("<")) {
+					alike.bloque.addInst(PCodeInstruction.OpCode.LT);
+				}
+				else if (operador.equals(">")) {
+					alike.bloque.addInst(PCodeInstruction.OpCode.GT);
+				}
+				else if (operador.equals("<=")) {
+					alike.bloque.addInst(PCodeInstruction.OpCode.LTE);
+				}
+				else {
+					alike.bloque.addInst(PCodeInstruction.OpCode.GTE);
+				}
+			}
 		}
 		else if (tipo2.tipo != Symbol.Types.ARRAY || tipo2.tipo != Symbol.Types.FUNCTION ||
 				tipo2.tipo != Symbol.Types.PROCEDURE || tipo2.tipo != Symbol.Types.STRING) {
@@ -363,7 +392,15 @@ public class SemanticFunction {
 				tipo.tipo = Symbol.Types.UNDEFINED;
 				esperaba_tipo(tipo.tipo, t.beginLine, t.endColumn);
 			}
-			else tipo.tipo = Symbol.Types.BOOL;
+			else {
+				tipo.tipo = Symbol.Types.BOOL;
+				if (operador.equals("=")) {
+					alike.bloque.addInst(PCodeInstruction.OpCode.EQ);
+				}
+				else {
+					alike.bloque.addInst(PCodeInstruction.OpCode.NEQ);
+				}
+			}
 		}
 		else {
 			error("Se esperaba un tipo INT/BOOL/CHAR", t.beginLine, t.endColumn);
@@ -377,6 +414,23 @@ public class SemanticFunction {
 		if (tipo.tipo != Symbol.Types.INT || tipo2.tipo != Symbol.Types.INT) {
 			tipo.tipo = Symbol.Types.UNDEFINED;
 			esperaba_tipo(Symbol.Types.INT, t.beginLine, t.endColumn);
+		}
+		else {
+			if (t.image.equals("*")) {
+				alike.bloque.addInst(PCodeInstruction.OpCode.TMS);
+			}
+			else if (t.image.toLowerCase().equals("mod")) {
+				alike.bloque.addInst(PCodeInstruction.OpCode.MOD);
+			}
+			else if (t.image.equals("/")) {
+				alike.bloque.addInst(PCodeInstruction.OpCode.DIV);
+			}
+			else if (t.image.equals("+")) {
+				alike.bloque.addInst(PCodeInstruction.OpCode.PLUS);
+			}
+			else {
+				alike.bloque.addInst(PCodeInstruction.OpCode.SBT);
+			}
 		}
 	}
 
