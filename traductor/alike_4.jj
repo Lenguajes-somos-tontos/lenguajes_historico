@@ -359,7 +359,7 @@ Trio Primario() :
 |	t = <tID> {sf.Primario_ID(t, tipo, st);}
 |	t = <tNUM> {tipo.tipo = Symbol.Types.INT;}
 |	t = <tCONSTCHAR> {tipo.tipo = Symbol.Types.CHAR;}
-|	t = <tSTRING> {tipo.tipo = Symbol.Types.STRING;}
+|	t = <tSTRING> {tipo.tipo = Symbol.Types.STRING; tipo.nombre = t.image;}
 |	t = <tTRUE> {tipo.tipo = Symbol.Types.BOOL;}
 |	t = <tFALSE> {tipo.tipo = Symbol.Types.BOOL;})
 	{return tipo;}
@@ -487,12 +487,12 @@ void Programa_completo() :
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
 	{
-		bloque.addComment("Comienzo de main");
+		bloque.addComment(" Comienzo de main");
 		bloque.addLabel("L0");
 	}
 	(Instruccion_sin_return())+
 	{
-		bloque.addComment("Fin de main");
+		bloque.addComment(" Fin de main");
 		bloque.addInst(PCodeInstruction.OpCode.LVP);
 		System.out.println(bloque.toString());
 		bloque.clearBlock();

@@ -79,6 +79,9 @@ public class SemanticFunction {
     	try {
 			Symbol simbolo = st.getSymbol(t.image.toLowerCase());
 
+			alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
+			alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
+
 			if (simbolo.type == Symbol.Types.INT) {
 				tipo.tipo = Symbol.Types.INT;
 				tipo.referencia = true;
@@ -308,19 +311,36 @@ public class SemanticFunction {
 							else if (simbolo.type == Symbol.Types.CHAR) {
 								tipo = 0;
 							}
-							alike.bloque.addComment("Leer");
-							alike.bloque.addComment("Direccion de variable" + lista_argumentos.get(i).nombre);
-							alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
 							alike.bloque.addInst(PCodeInstruction.OpCode.RD, tipo);
 
-						} catch (SymbolNotFoundException e){
-							simbolo_no_definido(id, t.beginLine, t.beginColumn);
-						}
+						} catch (SymbolNotFoundException e) {}
 
 					}
 					if ((id.equals("put") || id.equals("put_line")) && (argumento.tipo != Symbol.Types.INT &&
 						argumento.tipo != Symbol.Types.BOOL && argumento.tipo != Symbol.Types.CHAR && argumento.tipo != Symbol.Types.STRING)) {
 							error("Se esperaba un tipo INT/BOOL/CHAR/STRING", t.beginLine, t.beginColumn);
+					}
+					else if (id.equals("put") || id.equals("put_line")) {
+						if (argumento.tipo == Symbol.Types.STRING) {
+							for (char c : argumento.nombre.toCharArray()) {
+								if (c != '\"') {
+									alike.bloque.addInst(PCodeInstruction.OpCode.STC, c);
+									alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+								}
+							}
+						}
+						else {
+							try {
+								Symbol simbolo = st.getSymbol(lista_argumentos.get(i).nombre);
+								alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+								if (simbolo.type == Symbol.Types.INT || simbolo.type == Symbol.Types.BOOL) {
+									alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 1);	
+								}
+								else if (simbolo.type == Symbol.Types.CHAR) {
+									alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);	
+								}
+							} catch (SymbolNotFoundException e) {}
+						}
 					}
 				}
 			}
