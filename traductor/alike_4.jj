@@ -294,16 +294,14 @@ Trio Expresion_simple() :
 	Trio tipo;
 	Trio tipo2 = new Trio();
 	boolean match1 = false;
-	boolean match2 = false;
 	Token t;
 }
 {
-	(<tOPMAS> {match1=false;} | <tOPMENOS> {match2=false;})?
+	(<tOPMAS> {match1=false;} | <tOPMENOS> {match1=false;})?
 	tipo = Termino() ((t = <tOPMAS> | t = <tOPMENOS>)  tipo2 = Termino()
 	{sf.verificar_int(tipo, tipo2, t);})*
 	{
-		if (match1 && match2) tipo.referencia = false;
-		else if (!match2) alike.bloque.addInst(PCodeInstruction.OpCode.NGI);
+		if (match1) tipo.referencia = false;
 		return tipo;
 	}
 }
@@ -338,11 +336,7 @@ Trio Factor() :
 				tipo.tipo = Symbol.Types.UNDEFINED;
 				sf.esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.beginColumn);
 			}
-			else {
-				tipo.tipo = Symbol.Types.BOOL;
-				bloque.addInst(PCodeInstruction.OpCode.NGB);
-			}
-
+			else tipo.tipo = Symbol.Types.BOOL;
 		}
 		return tipo;
 	}
@@ -363,26 +357,11 @@ Trio Primario() :
 	(<tCOMA> argumento = Expresion() {lista_argumentos.add(argumento);})* <tCP>
 	{tipo = sf.verificar_expresion(t, lista_argumentos, st);}
 |	t = <tID> {sf.Primario_ID(t, tipo, st);}
-|	t = <tNUM> {
-		tipo.tipo = Symbol.Types.INT;
-		bloque.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(t.image));
-	}
-|	t = <tCONSTCHAR> {
-		tipo.tipo = Symbol.Types.CHAR;
-		bloque.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(t.image));
-	}
-|	t = <tSTRING> {
-		tipo.tipo = Symbol.Types.STRING;
-		tipo.nombre = t.image;
-	}
-|	t = <tTRUE> {
-		tipo.tipo = Symbol.Types.BOOL;
-		bloque.addInst(PCodeInstruction.OpCode.STC, 1);
-	}
-|	t = <tFALSE> {
-		tipo.tipo = Symbol.Types.BOOL;
-		bloque.addInst(PCodeInstruction.OpCode.STC, 0);
-	})
+|	t = <tNUM> {tipo.tipo = Symbol.Types.INT;}
+|	t = <tCONSTCHAR> {tipo.tipo = Symbol.Types.CHAR;}
+|	t = <tSTRING> {tipo.tipo = Symbol.Types.STRING; tipo.nombre = t.image;}
+|	t = <tTRUE> {tipo.tipo = Symbol.Types.BOOL;}
+|	t = <tFALSE> {tipo.tipo = Symbol.Types.BOOL;})
 	{return tipo;}
 }
 
