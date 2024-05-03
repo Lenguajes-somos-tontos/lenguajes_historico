@@ -275,6 +275,7 @@ public class SemanticFunction {
 
 	public void llamada_procedimiento(String id, ArrayList<Trio> lista_argumentos, SymbolTable st, Token t) {
 		try {
+			id = id.toLowerCase();
 			comprobar_funciones_especiales(id);
 
 			Symbol simbolo = st.getSymbol(id);
@@ -292,46 +293,44 @@ public class SemanticFunction {
 		}
 		catch (SpecialFunctionFound g) {
 			int numero_argumentos = lista_argumentos.size();
+
 			if (numero_argumentos > 0 || id.equals("put_line")) {
 				for (int i = 0; i < numero_argumentos; i++) {
 					Trio argumento = lista_argumentos.get(i);
-					if (id.equals("get") && (argumento.tipo != Symbol.Types.INT && argumento.tipo != Symbol.Types.CHAR)) {
-						error("Se esperaba un tipo INT/CHAR", t.beginLine, t.beginColumn);
-					}
-					else if (id.equals("get") && !argumento.referencia) {
-						tipo_asignable(t.beginLine, t.beginColumn);
-					}
-					else if (id.equals("get")) {
-						try {
-							Symbol simbolo = st.getSymbol(lista_argumentos.get(i).nombre);
-							int tipo = -1;
+
+					if (id.equals("get")) {
+						if (argumento.tipo != Symbol.Types.INT && argumento.tipo != Symbol.Types.CHAR) {
+							error("Se esperaba un tipo INT/CHAR", t.beginLine, t.beginColumn);
+						}
+						else if (!argumento.referencia) {
+							tipo_asignable(t.beginLine, t.beginColumn);
+						}
+						else {	// Caso de no error
+							Symbol simbolo = argumento.simbolo;
 							if (simbolo.type == Symbol.Types.INT) {
-								tipo = 1;
+								alike.bloque.addInst(PCodeInstruction.OpCode.RD, 1);
 							}
 							else if (simbolo.type == Symbol.Types.CHAR) {
-								tipo = 0;
-							}
-							alike.bloque.addInst(PCodeInstruction.OpCode.RD, tipo);
-
-						} catch (SymbolNotFoundException e) {}
-
-					}
-					if ((id.equals("put") || id.equals("put_line")) && (argumento.tipo != Symbol.Types.INT &&
-						argumento.tipo != Symbol.Types.BOOL && argumento.tipo != Symbol.Types.CHAR && argumento.tipo != Symbol.Types.STRING)) {
-							error("Se esperaba un tipo INT/BOOL/CHAR/STRING", t.beginLine, t.beginColumn);
-					}
-					else if (id.equals("put") || id.equals("put_line")) {
-						if (argumento.tipo == Symbol.Types.STRING) {
-							for (char c : argumento.nombre.toCharArray()) {
-								if (c != '\"') {
-									alike.bloque.addInst(PCodeInstruction.OpCode.STC, c);
-									alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
-								}
+								alike.bloque.addInst(PCodeInstruction.OpCode.RD, 0);
 							}
 						}
-						else {
-							try {
-								Symbol simbolo = st.getSymbol(lista_argumentos.get(i).nombre);
+					}
+					else {		// put ó put_line
+						if (argumento.tipo != Symbol.Types.INT && argumento.tipo != Symbol.Types.BOOL
+							&& argumento.tipo != Symbol.Types.CHAR && argumento.tipo != Symbol.Types.STRING) {
+							error("Se esperaba un tipo INT/BOOL/CHAR/STRING", t.beginLine, t.beginColumn);
+						}
+						else {	// Caso de no error
+							if (argumento.tipo == Symbol.Types.STRING) {
+								for (char c : argumento.nombre.toCharArray()) {
+									if (c != '\"') {
+										alike.bloque.addInst(PCodeInstruction.OpCode.STC, c);
+										alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+									}
+								}
+							}
+							else {
+								Symbol.Types tipo = argumento.tipo;
 								alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 								if (simbolo.type == Symbol.Types.INT || simbolo.type == Symbol.Types.BOOL) {
 									alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 1);	
@@ -339,9 +338,12 @@ public class SemanticFunction {
 								else if (simbolo.type == Symbol.Types.CHAR) {
 									alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);	
 								}
-							} catch (SymbolNotFoundException e) {}
+							}
 						}
 					}
+				}
+				if (id.equals("put_line")) {
+					// Carácter new_line
 				}
 			}
 			else {
