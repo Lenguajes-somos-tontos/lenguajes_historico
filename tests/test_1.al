@@ -6,5 +6,6 @@ procedure test_1 is
     t: ARRAY(1..1000) OF boolean;
 ----------------------------------------------------------
 begin
-    get(n);
+    --get(c);
+    put("Hola", c);
 end;
