@@ -387,7 +387,7 @@ void Instruccion_sin_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
 	{
-		// Llamada a función/procedimiento sin parámetros
+		// Llamada a procedimiento sin parámetros
 		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Trio>(), st, id);
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
@@ -432,22 +432,22 @@ void Instr_funcion_vector(String id) :
 
 void Instr_funcion_vector_2(String id, Trio tipo) :
 {
-	Trio parametro;
+	Trio argumento;
 	ArrayList<Trio> lista_argumentos = null;
 	Token t = null;
 }
 {
 	t = <tCP> Instr_funcion_vector_3(id, tipo, t)
-	|	// Matching de las llamadas a funciones con más de un parámetro
+	|	// Matching de las llamadas a procedimientos con más de un parámetro
 	{
 		// Se crea la lista de parámetros y se añade el primero ya leído
 		lista_argumentos = new ArrayList<>();
 		lista_argumentos.add(tipo);
 	}
-	(t = <tCOMA> parametro = Expresion()
+	(t = <tCOMA> argumento = Expresion()
 	{
-		// Se recogen los parámetros que se leen
-		lista_argumentos.add(parametro);
+		// Se recogen los argumentos que se leen
+		lista_argumentos.add(argumento);
 	})+ <tCP>
 	{
 		sf.llamada_procedimiento(id, lista_argumentos, st, t);
@@ -455,21 +455,21 @@ void Instr_funcion_vector_2(String id, Trio tipo) :
 }
 
 
-void Instr_funcion_vector_3(String id, Trio tipo_primera_expresion, Token t) :
+void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 {
 	Trio tipo_asignacion;
 }
 {
-	// Matching de asignacion a componente de array "tipo_primera_expresion" es el tipo del índice
+	// Matching de asignacion a componente de array, "primera_expresion" es el tipo del índice
 	t = <tASIG> tipo_asignacion = Expresion()
 	{
-		sf.Instr_funcion_vector_3(id, tipo_primera_expresion, tipo_asignacion, st, t);
+		sf.Instr_funcion_vector_3(id, primera_expresion, tipo_asignacion, st, t);
 	}
 
-	| {}	// Matching de llamada a funcion con UN solo parametro
+	| {}	// Matching de llamada a procedimiento con UN solo parametro
 	{
 		ArrayList<Trio> lista_argumentos = new ArrayList<>();
-		lista_argumentos.add(tipo_primera_expresion);
+		lista_argumentos.add(primera_expresion);
 		sf.llamada_procedimiento(id, lista_argumentos, st, t);
 	}
 }
