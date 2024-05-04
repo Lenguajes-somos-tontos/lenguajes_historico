@@ -440,7 +440,7 @@ void Instr_funcion_vector_2(String id, Trio tipo) :
 	t = <tCP> Instr_funcion_vector_3(id, tipo, t)
 	|	// Matching de las llamadas a procedimientos con más de un parámetro
 	{
-		// Se crea la lista de parámetros y se añade el primero ya leído
+		// Se crea la lista de argumentos y se añade el primero ya leído
 		lista_argumentos = new ArrayList<>();
 		lista_argumentos.add(tipo);
 	}
