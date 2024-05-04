@@ -438,7 +438,7 @@ void Instr_funcion_vector_2(String id, Trio tipo) :
 }
 {
 	t = <tCP> Instr_funcion_vector_3(id, tipo, t)
-	|	// Matching de las llamadas a procedimientos con más de un parámetro
+	|	// Matching de las llamadas a procedimientos con más de un argumento
 	{
 		// Se crea la lista de argumentos y se añade el primero ya leído
 		lista_argumentos = new ArrayList<>();
@@ -466,7 +466,7 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 		sf.Instr_funcion_vector_3(id, primera_expresion, tipo_asignacion, st, t);
 	}
 
-	| {}	// Matching de llamada a procedimiento con UN solo parametro
+	| {}	// Matching de llamada a procedimiento con UN solo argumento
 	{
 		ArrayList<Trio> lista_argumentos = new ArrayList<>();
 		lista_argumentos.add(primera_expresion);
