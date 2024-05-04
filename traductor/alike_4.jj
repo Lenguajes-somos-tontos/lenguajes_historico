@@ -132,6 +132,8 @@ TOKEN : {
 |	<tRETURN: "return">
 |	<tNULL: "null">
 |	<tEXIT: "exit">
+|	<tINT2CHAR: "int2char">
+|	<tCHAR2INT: "char2int">
 |	<tNUM: (<tDIGITO>)+>
 |	<tID: (<tLETRA > | <tBARRAB>) (<tLETRA> | <tDIGITO> | <tBARRAB>)*>
 |	<tSTRING: "\""(<tCARACTER>)*"\"">
@@ -152,22 +154,7 @@ void Programa() :
 {
 }
 {
-	{
-		st.insertBlock();
-		try {
-			ArrayList<Symbol> lista_int =  new ArrayList<>();
-			lista_int.add(new SymbolInt("i", Symbol.ParameterClass.VAL));
-			st.insertSymbol(new SymbolFunction("int2char", lista_int, Symbol.Types.CHAR));
-		
-			ArrayList<Symbol> lista_char =  new ArrayList<>();
-			lista_char.add(new SymbolChar("c", Symbol.ParameterClass.VAL));
-			st.insertSymbol(new SymbolFunction("char2int", lista_char, Symbol.Types.INT));
-		
-			st.insertSymbol(new SymbolProcedure("skip_line", new ArrayList<Symbol>()));
-		}
-		catch (AlreadyDefinedSymbolException a) {}
-		catch (IndexArrayNotCorrect a) {}
-	}
+	{st.insertBlock();}
 	Programa_completo()
 	{st.removeBlock();}
 	<EOF>
@@ -361,6 +348,20 @@ Trio Primario() :
 }
 {
     (<tAP> tipo = Expresion() <tCP>
+|	t = <tCHAR2INT> <tAP> tipo = Expresion() <tCP>
+	{
+		if (tipo.tipo != Symbol.Types.CHAR) sf.esperaba_tipo(Symbol.Types.CHAR, t.beginLine, t.beginColumn);
+		else {
+			// Genera código
+		}
+	}
+|	t = <tINT2CHAR> <tAP> tipo = Expresion() <tCP>
+	{
+		if (tipo.tipo != Symbol.Types.INT) sf.esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);
+		else {
+			// Genera código
+		}
+	}
 |	LOOKAHEAD(2) t = <tID> <tAP> argumento = Expresion() {lista_argumentos.add(argumento);}
 	(<tCOMA> argumento = Expresion() {lista_argumentos.add(argumento);})* <tCP>
 	{tipo = sf.verificar_expresion(t, lista_argumentos, st);}
@@ -395,7 +396,7 @@ void Instruccion_sin_return() :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase()) {llamada_funcion_simple = false;})?
 	{
-		// Llamada a procedimiento sin parámetros
+		// Llamada a procedimiento sin parámetros, recordar caso skip_line
 		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image.toLowerCase(), new ArrayList<Trio>(), st, id);
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
@@ -417,7 +418,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase()) {llamada_funcion_simple = false;})?
 	{
-		// Llamada a procedimiento sin parámetros
+		// Llamada a procedimiento sin parámetros, recordar caso skip_line
 		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image.toLowerCase(), new ArrayList<Trio>(), st, id);
 	}
 	| return_if = Instr_condicional_con_return(tipo_a_retornar) | Instr_iterativa_con_return(tipo_a_retornar)
