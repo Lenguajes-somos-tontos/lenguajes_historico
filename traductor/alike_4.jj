@@ -65,6 +65,7 @@ public class alike {
 		}
 	    catch (Exception e) {
 			System.err.println("Finalizo traducción por detección de error no controlado: \n\t" + e.getMessage());
+			System.err.println("Se ha producido la excepción: \n\t" + e.getClass().getName());
   		}
 		if (codigo_estado == 0) {
 			System.out.println("Se ha compilado correctamente, se genera código");
@@ -294,14 +295,18 @@ Trio Expresion_simple() :
 	Trio tipo;
 	Trio tipo2 = new Trio();
 	boolean match1 = false;
-	Token t;
+	Token t = null;
 }
 {
-	(<tOPMAS> {match1=false;} | <tOPMENOS> {match1=false;})?
-	tipo = Termino() ((t = <tOPMAS> | t = <tOPMENOS>)  tipo2 = Termino()
+	((t = <tOPMAS> | t = <tOPMENOS>) {match1=false;})? tipo = Termino() ((t = <tOPMAS> | t = <tOPMENOS>)  tipo2 = Termino()
 	{sf.verificar_int(tipo, tipo2, t);})*
 	{
-		if (match1) tipo.referencia = false;
+		if (match1) {
+			tipo.referencia = false;
+			if (t.image.equals("-")) {
+				alike.bloque.addInst(PCodeInstruction.OpCode.NGI);
+			}
+		}
 		return tipo;
 	}
 }
@@ -336,7 +341,10 @@ Trio Factor() :
 				tipo.tipo = Symbol.Types.UNDEFINED;
 				sf.esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.beginColumn);
 			}
-			else tipo.tipo = Symbol.Types.BOOL;
+			else {
+				tipo.tipo = Symbol.Types.BOOL;
+				bloque.addInst(PCodeInstruction.OpCode.NGB);
+			}
 		}
 		return tipo;
 	}
@@ -357,11 +365,11 @@ Trio Primario() :
 	(<tCOMA> argumento = Expresion() {lista_argumentos.add(argumento);})* <tCP>
 	{tipo = sf.verificar_expresion(t, lista_argumentos, st);}
 |	t = <tID> {sf.Primario_ID(t, tipo, st);}
-|	t = <tNUM> {tipo.tipo = Symbol.Types.INT;}
-|	t = <tCONSTCHAR> {tipo.tipo = Symbol.Types.CHAR;}
+|	t = <tNUM> {tipo.tipo = Symbol.Types.INT; bloque.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(t.image));}
+|	t = <tCONSTCHAR> {tipo.tipo = Symbol.Types.CHAR; bloque.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(t.image));}
 |	t = <tSTRING> {tipo.tipo = Symbol.Types.STRING; tipo.nombre = t.image;}
-|	t = <tTRUE> {tipo.tipo = Symbol.Types.BOOL;}
-|	t = <tFALSE> {tipo.tipo = Symbol.Types.BOOL;})
+|	t = <tTRUE> {tipo.tipo = Symbol.Types.BOOL; bloque.addInst(PCodeInstruction.OpCode.STC, 1);}
+|	t = <tFALSE> {tipo.tipo = Symbol.Types.BOOL; bloque.addInst(PCodeInstruction.OpCode.STC, 0);})
 	{return tipo;}
 }
 
@@ -385,10 +393,10 @@ void Instruccion_sin_return() :
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
-	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
+	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase()) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a procedimiento sin parámetros
-		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Trio>(), st, id);
+		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image.toLowerCase(), new ArrayList<Trio>(), st, id);
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tEXIT>
@@ -407,10 +415,10 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
-	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image) {llamada_funcion_simple = false;})?
+	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase()) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a procedimiento sin parámetros
-		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image, new ArrayList<Trio>(), st, id);
+		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image.toLowerCase(), new ArrayList<Trio>(), st, id);
 	}
 	| return_if = Instr_condicional_con_return(tipo_a_retornar) | Instr_iterativa_con_return(tipo_a_retornar)
 	| <tNULL>
@@ -438,6 +446,7 @@ void Instr_funcion_vector_2(String id, Trio tipo) :
 }
 {
 	t = <tCP> Instr_funcion_vector_3(id, tipo, t)
+
 	|	// Matching de las llamadas a procedimientos con más de un argumento
 	{
 		// Se crea la lista de argumentos y se añade el primero ya leído
