@@ -278,6 +278,34 @@ public class SemanticFunction {
 	}
 
 
+	public ArrayList<Symbol> funcion_proc(String id, Token t, SymbolTable st) {
+		ArrayList<Symbol> result = null;
+		try {
+			Symbol func_proc = st.getSymbol(id);
+			if (func_proc.type == Symbol.Types.PROCEDURE) {
+				SymbolProcedure s = (SymbolProcedure) func_proc;
+				result = s.parList;
+			}
+			else if (func_proc.type == Symbol.Types.FUNCTION) {
+				SymbolFunction s = (SymbolFunction) func_proc;
+				result = s.parList;
+			}
+			else {
+				// Error, se esperaba procedimiento/funcion
+			}
+		}
+		catch (SymbolNotFoundException e) {
+			simbolo_no_definido(id, t.beginLine, t.beginColumn);
+		}
+		return result;
+	}
+
+
+	public void verificar_argumento(Trio argumento, ArrayList<Symbol> lista_parametros, int indice) {
+
+	}
+
+
 	public void llamada_procedimiento(String id, ArrayList<Trio> lista_argumentos, SymbolTable st, Token t) {
 		try {
 			comprobar_funciones_especiales(id);

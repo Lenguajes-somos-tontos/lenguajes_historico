@@ -391,13 +391,21 @@ void Instruccion_sin_return() :
 {
 	Token id = null;
 	boolean llamada_funcion_simple = true;
+	ArrayList<Symbol> lista_param = null;
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase()) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a procedimiento sin parámetros, recordar caso skip_line
-		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image.toLowerCase(), new ArrayList<Trio>(), st, id);
+		if (llamada_funcion_simple) {
+			lista_param = sf.funcion_proc(id.image.toLowerCase(), id, st);
+			if (lista_param != null) {
+				if (lista_param.size() != 0) {
+					// Error, se ha llamado como void sin parámetros a un void que sí que tiene
+				}
+			}
+		}
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tEXIT>
@@ -413,13 +421,21 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 	boolean es_return = false;
 	boolean return_if = false;
 	Token t = null;
+	ArrayList<Symbol> lista_param = null;
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase()) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a procedimiento sin parámetros, recordar caso skip_line
-		if (llamada_funcion_simple) sf.llamada_procedimiento(id.image.toLowerCase(), new ArrayList<Trio>(), st, id);
+		if (llamada_funcion_simple) {
+			lista_param = sf.funcion_proc(id.image.toLowerCase(), id, st);
+			if (lista_param != null) {
+				if (lista_param.size() != 0) {
+					// Error, se ha llamado como void sin parámetros a un void que sí que tiene
+				}
+			}
+		}
 	}
 	| return_if = Instr_condicional_con_return(tipo_a_retornar) | Instr_iterativa_con_return(tipo_a_retornar)
 	| <tNULL>
@@ -442,32 +458,33 @@ void Instr_funcion_vector(String id) :
 void Instr_funcion_vector_2(String id, Trio tipo) :
 {
 	Trio argumento;
-	ArrayList<Trio> lista_argumentos = null;
+	ArrayList<Symbol> lista_parametros = null;
 	Token t = null;
+	int iterador_argumentos = 1;
 }
 {
 	t = <tCP> Instr_funcion_vector_3(id, tipo, t)
 
 	|	// Matching de las llamadas a procedimientos con más de un argumento
 	{
-		// Se crea la lista de argumentos y se añade el primero ya leído
-		lista_argumentos = new ArrayList<>();
-		lista_argumentos.add(tipo);
+		lista_parametros = sf.funcion_proc(id, t, st);
+		if (lista_parametros != null)
+			sf.verificar_argumento(tipo, lista_parametros, 0);
 	}
 	(t = <tCOMA> argumento = Expresion()
 	{
-		// Se recogen los argumentos que se leen
-		lista_argumentos.add(argumento);
+		if (lista_parametros != null) {
+			sf.verificar_argumento(argumento, lista_parametros, iterador_argumentos);
+			iterador_argumentos++;
+		}
 	})+ <tCP>
-	{
-		sf.llamada_procedimiento(id, lista_argumentos, st, t);
-	}
 }
 
 
 void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 {
 	Trio tipo_asignacion;
+	ArrayList<Symbol> lista_parametros = null;
 }
 {
 	// Matching de asignacion a componente de array, "primera_expresion" es el tipo del índice
@@ -478,9 +495,9 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 
 	| {}	// Matching de llamada a procedimiento con UN solo argumento
 	{
-		ArrayList<Trio> lista_argumentos = new ArrayList<>();
-		lista_argumentos.add(primera_expresion);
-		sf.llamada_procedimiento(id, lista_argumentos, st, t);
+		lista_parametros = sf.funcion_proc(id, t, st);
+		if (lista_parametros != null)
+			sf.verificar_argumento(primera_expresion, lista_parametros, 0);
 	}
 }
 
