@@ -400,10 +400,13 @@ void Instruccion_sin_return() :
 				// Código skip_line
 			}
 			else if (idd.equals("put_line")) {
-				// Salto de línea
+				bloque.addInst(PCodeInstruction.OpCode.STC, 13);
+				bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				bloque.addInst(PCodeInstruction.OpCode.STC, 10);
+				bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
 			}
 			else if (idd.equals("put") || idd.equals("int2char") || idd.equals("char2int") || idd.equals("get")) {
-				// Número de parámetros no coinciden
+				sf.error("El número de argumentos en la llamada a " + idd + " no coincide", id.beginLine, id.beginColumn);
 			}
 		}
 	}
@@ -440,10 +443,13 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 				// Código skip_line
 			}
 			else if (idd.equals("put_line")) {
-				// Salto de línea
+				bloque.addInst(PCodeInstruction.OpCode.STC, 13);
+				bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				bloque.addInst(PCodeInstruction.OpCode.STC, 10);
+				bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
 			}
 			else if (idd.equals("put") || idd.equals("int2char") || idd.equals("char2int") || idd.equals("get")) {
-				// Número de parámetros no coinciden
+				sf.error("El número de argumentos en la llamada a " + idd + " no coincide", id.beginLine, id.beginColumn);
 			}
 		}
 	}
@@ -507,6 +513,14 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 		else if (id.equals("get")) {
 			if (!tipo.referencia)
 				sf.error("Se esperaba un tipo asignable", t.beginLine, t.beginColumn);
+			else if (tipo.tipo == Symbol.Types.INT) {
+
+			}
+			else if (tipo.tipo == Symbol.Types.CHAR) {
+				
+			}
+			else
+				sf.error("Se esperaba un tipo INT/CHAR", t.beginLine, t.beginColumn);
 		}
 	}
 	(t = <tCOMA> argumento = Expresion()

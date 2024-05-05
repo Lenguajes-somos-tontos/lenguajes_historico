@@ -8,7 +8,7 @@ procedure test_1 is
     s: ARRAY(1..1000) of INTEGER;
 ----------------------------------------------------------
 begin
-    get(c,n,c);
+    --get(c,n,c);
     --put(n+24+36);
     --put(int2char(9));
     --mcd(n, m);
@@ -16,4 +16,5 @@ begin
     --k := (k and true) or (true or false or k or (k and k));
     --calcular(3, c);
     --n := char2int(c);
+    put_line;
 end;

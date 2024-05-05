@@ -281,7 +281,7 @@ public class SemanticFunction {
 	public ArrayList<Symbol> funcion_proc(String id, Token t, SymbolTable st) {
 		ArrayList<Symbol> result = null;
 		try {
-
+			// Evitar excepción de símbolo no existe
 			Symbol func_proc = st.getSymbol(id);
 			if (func_proc.type == Symbol.Types.PROCEDURE) {
 				SymbolProcedure s = (SymbolProcedure) func_proc;
