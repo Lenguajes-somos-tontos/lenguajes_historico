@@ -532,7 +532,8 @@ void Programa_completo() :
 }
 {
 	{
-		bloque.addInst(PCodeInstruction.OpCode.ENP, "L0");
+		String label = newLabel();
+		bloque.addInst(PCodeInstruction.OpCode.ENP, label);
 	}
 	<tPROC> <tID> <tIS>
 	(Declaracion() <tPC>)*
@@ -540,7 +541,7 @@ void Programa_completo() :
 	<tBEGIN>
 	{
 		bloque.addComment(" Comienzo de main");
-		bloque.addLabel("L0");
+		bloque.addLabel(label);
 	}
 	(Instruccion_sin_return())+
 	{
@@ -710,8 +711,15 @@ void Instr_condicional_sin_return():
 }
 {
 	t = <tIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.tipo, t);}
+	{
+		sf.verificar_bool(tipo.tipo, t);
+		String label = newLabel();
+		bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+	}
 	(Instruccion_sin_return())+
+	{
+		bloque.addLabel(label);
+	}
 	MasIF()
 	<tEND> <tIF>
 }
@@ -724,8 +732,15 @@ void MasIF():
 }
 {
 	t = <tELSIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.tipo, t);}
+	{
+		sf.verificar_bool(tipo.tipo, t);
+		String label = newLabel();
+		bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+	}
 	(Instruccion_sin_return())+
+	{
+		bloque.addLabel(label);
+	}
 	MasIF()
 	| <tELSE> (Instruccion_sin_return())+
 	| {}

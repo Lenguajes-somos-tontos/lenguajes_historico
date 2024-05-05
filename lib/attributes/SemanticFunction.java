@@ -390,6 +390,9 @@ public class SemanticFunction {
 		if (tipo != Symbol.Types.BOOL) {
 			esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.endColumn);
 		}
+		else {
+			
+		}
 	}
 
 
