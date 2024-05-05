@@ -349,19 +349,9 @@ Trio Primario() :
 {
     (<tAP> tipo = Expresion() <tCP>
 |	t = <tCHAR2INT> <tAP> tipo = Expresion() <tCP>
-	{
-		if (tipo.tipo != Symbol.Types.CHAR) sf.esperaba_tipo(Symbol.Types.CHAR, t.beginLine, t.beginColumn);
-		else {
-			// Genera código
-		}
-	}
+	{if (tipo.tipo != Symbol.Types.CHAR) sf.esperaba_tipo(Symbol.Types.CHAR, t.beginLine, t.beginColumn);}
 |	t = <tINT2CHAR> <tAP> tipo = Expresion() <tCP>
-	{
-		if (tipo.tipo != Symbol.Types.INT) sf.esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);
-		else {
-			// Genera código
-		}
-	}
+	{if (tipo.tipo != Symbol.Types.INT) sf.esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);}
 |	LOOKAHEAD(2) t = <tID> <tAP> argumento = Expresion() {lista_argumentos.add(argumento);}
 	(<tCOMA> argumento = Expresion() {lista_argumentos.add(argumento);})* <tCP>
 	{tipo = sf.verificar_expresion(t, lista_argumentos, st);}
@@ -395,7 +385,7 @@ void Instruccion_sin_return() :
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
-	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase()) {llamada_funcion_simple = false;})?
+	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase(), id) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a procedimiento sin parámetros, recordar caso skip_line
 		if (llamada_funcion_simple) {
@@ -425,14 +415,14 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 }
 {
 	(LOOKAHEAD(2) Asignacion() // Asignacion a variable no array
-	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase()) {llamada_funcion_simple = false;})?
+	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase(), id) {llamada_funcion_simple = false;})?
 	{
 		// Llamada a procedimiento sin parámetros, recordar caso skip_line
 		if (llamada_funcion_simple) {
 			lista_param = sf.funcion_proc(id.image.toLowerCase(), id, st);
 			if (lista_param != null) {
 				if (lista_param.size() != 0) {
-					// Error, se ha llamado como void sin parámetros a un void que sí que tiene
+					sf.error("El número de argumentos en la llamada a " + id.image + " no coincide", id.beginLine, id.beginColumn);
 				}
 			}
 		}
@@ -446,21 +436,20 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 }
 
 
-void Instr_funcion_vector(String id) :
+void Instr_funcion_vector(String id, Token t) :
 {
 	Trio tipo;
 }
 {
-	<tAP> tipo = Expresion() Instr_funcion_vector_2(id, tipo)
+	<tAP> tipo = Expresion() Instr_funcion_vector_2(id, tipo, t)
 }
 
 
-void Instr_funcion_vector_2(String id, Trio tipo) :
+void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 {
 	Trio argumento;
 	ArrayList<Symbol> lista_parametros = null;
 	ArrayList<Trio> lista_argumentos = new ArrayList<>();
-	Token t = null;
 	int iterador_argumentos = 1;
 	boolean error_sacado = false;
 }
@@ -479,6 +468,25 @@ void Instr_funcion_vector_2(String id, Trio tipo) :
 				error_sacado = true;
 				sf.error("El número de argumentos en la llamada a " + id + " no coincide", t.beginLine, t.beginColumn);
 			}
+		}
+		else if (id.equals("put") || id.equals("put_line")) {
+			if (tipo.tipo == Symbol.Types.INT || tipo.tipo == Symbol.Types.BOOL)
+				bloque.addInst(PCodeInstruction.OpCode.WRT, 1);
+			else if (tipo.tipo == Symbol.Types.CHAR)
+				bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+			else if (tipo.tipo == Symbol.Types.STRING) {
+				for (char c : tipo.nombre.toCharArray()) {
+					bloque.addInst(PCodeInstruction.OpCode.STC, c);
+					bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				}
+			}
+			else {
+				sf.error("Se esperaba un tipo INT/BOOL/CHAR", t.beginLine, t.beginColumn);
+			}
+		}
+		else if (id.equals("get")) {
+			if (!tipo.referencia)
+				sf.error("Se esperaba un tipo asignable", t.beginLine, t.beginColumn);
 		}
 	}
 	(t = <tCOMA> argumento = Expresion()

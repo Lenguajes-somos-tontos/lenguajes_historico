@@ -281,6 +281,7 @@ public class SemanticFunction {
 	public ArrayList<Symbol> funcion_proc(String id, Token t, SymbolTable st) {
 		ArrayList<Symbol> result = null;
 		try {
+
 			Symbol func_proc = st.getSymbol(id);
 			if (func_proc.type == Symbol.Types.PROCEDURE) {
 				SymbolProcedure s = (SymbolProcedure) func_proc;
@@ -303,86 +304,6 @@ public class SemanticFunction {
 
 	public void verificar_argumento(Trio argumento, ArrayList<Symbol> lista_parametros, int indice) {
 
-	}
-
-
-	public void llamada_procedimiento(String id, ArrayList<Trio> lista_argumentos, SymbolTable st, Token t) {
-		try {
-			comprobar_funciones_especiales(id);
-
-			Symbol simbolo = st.getSymbol(id);
-
-			SymbolProcedure simbolo_procedimiento = (SymbolProcedure) simbolo;
-			ArrayList<Symbol> lista_parametros = simbolo_procedimiento.parList;
-
-			verificar_argumentos(lista_parametros, lista_argumentos, st, t);
-		}
-		catch (SymbolNotFoundException s) {
-			simbolo_no_definido(id, t.beginLine, t.beginColumn);
-		}
-		catch (ClassCastException e) {
-			simbolo_no_es(id, "procedimiento", t.beginLine, t.beginColumn);
-		}
-		catch (SpecialFunctionFound g) {
-			int numero_argumentos = lista_argumentos.size();
-
-			if (numero_argumentos > 0 || id.equals("put_line")) {
-				for (int i = 0; i < numero_argumentos; i++) {
-					Trio argumento = lista_argumentos.get(i);
-					Symbol simbolo = argumento.simbolo;
-					System.out.println(simbolo);
-					if (id.equals("get")) {
-						if (argumento.tipo != Symbol.Types.INT && argumento.tipo != Symbol.Types.CHAR) {
-							error("Se esperaba un tipo INT/CHAR", t.beginLine, t.beginColumn);
-						}
-						else if (!argumento.referencia) {
-							tipo_asignable(t.beginLine, t.beginColumn);
-						}
-						else {	// Caso de no error
-							if (simbolo.type == Symbol.Types.INT) {
-								alike.bloque.addInst(PCodeInstruction.OpCode.RD, 1);
-							}
-							else if (simbolo.type == Symbol.Types.CHAR) {
-								alike.bloque.addInst(PCodeInstruction.OpCode.RD, 0);
-							}
-						}
-					}
-					else {		// put ó put_line
-						if (argumento.tipo != Symbol.Types.INT && argumento.tipo != Symbol.Types.BOOL
-							&& argumento.tipo != Symbol.Types.CHAR && argumento.tipo != Symbol.Types.STRING) {
-							error("Se esperaba un tipo INT/BOOL/CHAR/STRING", t.beginLine, t.beginColumn);
-						}
-						else {	// Caso de no error
-							if (argumento.tipo == Symbol.Types.STRING) {
-								for (char c : argumento.nombre.toCharArray()) {
-									if (c != '\"') {
-										alike.bloque.addInst(PCodeInstruction.OpCode.STC, c);
-										alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
-									}
-								}
-							}
-							else {
-								Symbol.Types tipo = argumento.tipo;
-								alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
-								if (simbolo.type == Symbol.Types.INT || simbolo.type == Symbol.Types.BOOL) {
-									alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 1);	
-								}
-								else if (simbolo.type == Symbol.Types.CHAR) {
-									alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);	
-								}
-							}
-						}
-					}
-					
-				}
-				if (id.equals("put_line")) {
-					// Carácter new_line
-				}
-			}
-			else {
-				error("Los parámetros de la función " + id + " no son vacíos", t.beginLine, t.beginColumn);
-			}
-		}
 	}
 
 
