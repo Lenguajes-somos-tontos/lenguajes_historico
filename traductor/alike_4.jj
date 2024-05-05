@@ -459,25 +459,48 @@ void Instr_funcion_vector_2(String id, Trio tipo) :
 {
 	Trio argumento;
 	ArrayList<Symbol> lista_parametros = null;
+	ArrayList<Trio> lista_argumentos = new ArrayList<>();
 	Token t = null;
 	int iterador_argumentos = 1;
+	boolean error_sacado = false;
 }
 {
 	t = <tCP> Instr_funcion_vector_3(id, tipo, t)
 
 	|	// Matching de las llamadas a procedimientos con más de un argumento
 	{
+		lista_argumentos.add(tipo);
 		lista_parametros = sf.funcion_proc(id, t, st);
-		if (lista_parametros != null)
-			sf.verificar_argumento(tipo, lista_parametros, 0);
+		if (lista_parametros != null) {
+			if (lista_parametros.size() > 0) {
+				sf.verificar_argumento(tipo, lista_parametros, 0);
+			}
+			else {
+				error_sacado = true;
+				sf.error("El número de argumentos en la llamada a " + id + " no coincide", t.beginLine, t.beginColumn);
+			}
+		}
 	}
 	(t = <tCOMA> argumento = Expresion()
 	{
+		lista_argumentos.add(argumento);
 		if (lista_parametros != null) {
-			sf.verificar_argumento(argumento, lista_parametros, iterador_argumentos);
-			iterador_argumentos++;
+			if (iterador_argumentos < lista_parametros.size()) {
+				sf.verificar_argumento(argumento, lista_parametros, iterador_argumentos);
+				iterador_argumentos++;
+			}
+			else if (!error_sacado) {
+				error_sacado = true;
+				sf.error("El número de argumentos en la llamada a " + id + " no coincide", t.beginLine, t.beginColumn);
+			}
 		}
 	})+ <tCP>
+	{
+		if (lista_parametros != null && lista_argumentos.size() != lista_parametros.size() && !error_sacado) {
+			error_sacado = true;
+			sf.error("El número de argumentos en la llamada a " + id + " no coincide", t.beginLine, t.beginColumn);
+		}
+	}
 }
 
 
@@ -496,8 +519,10 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 	| {}	// Matching de llamada a procedimiento con UN solo argumento
 	{
 		lista_parametros = sf.funcion_proc(id, t, st);
-		if (lista_parametros != null)
-			sf.verificar_argumento(primera_expresion, lista_parametros, 0);
+		if (lista_parametros != null) {
+			if (lista_parametros.size() != 1)
+				sf.verificar_argumento(primera_expresion, lista_parametros, 0);
+		}
 	}
 }
 
