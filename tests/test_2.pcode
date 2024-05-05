@@ -1,0 +1,29 @@
+  ENP L0
+L0:
+L1:
+
+  SRF  0  4
+  RD  0
+  SRF  0  4
+  DRF 
+  STC 10
+  EQ 
+  JMF L1
+
+  SRF  0  3
+  STC  3
+  STC  4
+  PLUS 
+  ASG 
+
+L2:
+
+  SRF  0  4
+  RD  0
+  SRF  0  4
+  DRF 
+  STC 10
+  EQ 
+  JMF L2
+  
+  LVP 

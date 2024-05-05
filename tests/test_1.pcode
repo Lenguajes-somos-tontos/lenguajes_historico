@@ -1,14 +1,18 @@
   ENP L0
 L0:
-  STC 72
-  WRT  0
-  STC 111
-  WRT  0
-  STC 108
-  WRT  0
-  STC 97
-  WRT  0
-  SRF  0  5
+
+  STC  3
+  WRT  1
+  SRF  0  6
   DRF 
   WRT  0
+
   LVP 
+
+
+
+  STC  3
+  SRF  0  6
+  DRF 
+  WRT  0
+  WRT  1
