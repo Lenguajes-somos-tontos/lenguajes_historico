@@ -25,7 +25,12 @@ public class SemanticFunction {
 				st.insertSymbol(clon);
 				clon.nivel = clon.nivel - 1;
 				clon.dir = alike.sig[alike.nivel_bloque];
-				alike.sig[alike.nivel_bloque]++;
+				if (clon.type == Symbol.Types.ARRAY) {
+					SymbolArray s = (SymbolArray) clon;
+					alike.sig[alike.nivel_bloque] += (s.maxInd - s.minInd + 1);
+				}
+				else
+					alike.sig[alike.nivel_bloque]++;
 			}
 			catch (AlreadyDefinedSymbolException e) {
 				simbolo_definido(variable, linea.beginLine, linea.beginColumn);
@@ -278,26 +283,23 @@ public class SemanticFunction {
 	}
 
 
-	public ArrayList<Symbol> funcion_proc(String id, Token t, SymbolTable st) {
+	public ArrayList<Symbol> proc(String id, Token t, SymbolTable st) {
 		ArrayList<Symbol> result = null;
 		try {
-			// Evitar excepción de símbolo no existe
+			comprobar_funciones_especiales(id);
 			Symbol func_proc = st.getSymbol(id);
 			if (func_proc.type == Symbol.Types.PROCEDURE) {
 				SymbolProcedure s = (SymbolProcedure) func_proc;
 				result = s.parList;
 			}
-			else if (func_proc.type == Symbol.Types.FUNCTION) {
-				SymbolFunction s = (SymbolFunction) func_proc;
-				result = s.parList;
-			}
 			else {
-				// Error, se esperaba procedimiento/funcion
+				// Error, se esperaba procedimiento
 			}
 		}
 		catch (SymbolNotFoundException e) {
 			simbolo_no_definido(id, t.beginLine, t.beginColumn);
 		}
+		catch (SpecialFunctionFound s) {}
 		return result;
 	}
 

@@ -388,9 +388,8 @@ void Instruccion_sin_return() :
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase(), id) {llamada_funcion_simple = false;})?
 	{
 		String idd = id.image.toLowerCase();
-		// Llamada a procedimiento sin parámetros, recordar caso skip_line
 		if (llamada_funcion_simple) {
-			lista_param = sf.funcion_proc(idd, id, st);
+			lista_param = sf.proc(idd, id, st);
 			if (lista_param != null) {
 				if (lista_param.size() != 0) {
 					sf.error("El número de argumentos en la llamada a " + idd + " no coincide", id.beginLine, id.beginColumn);
@@ -431,9 +430,8 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 	| LOOKAHEAD(2) id = <tID> (Instr_funcion_vector(id.image.toLowerCase(), id) {llamada_funcion_simple = false;})?
 	{
 		String idd = id.image.toLowerCase();
-		// Llamada a procedimiento sin parámetros, recordar caso skip_line
 		if (llamada_funcion_simple) {
-			lista_param = sf.funcion_proc(idd, id, st);
+			lista_param = sf.proc(idd, id, st);
 			if (lista_param != null) {
 				if (lista_param.size() != 0) {
 					sf.error("El número de argumentos en la llamada a " + idd + " no coincide", id.beginLine, id.beginColumn);
@@ -485,7 +483,7 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 	|	// Matching de las llamadas a procedimientos con más de un argumento
 	{
 		lista_argumentos.add(tipo);
-		lista_parametros = sf.funcion_proc(id, t, st);
+		lista_parametros = sf.proc(id, t, st);
 		if (lista_parametros != null) {
 			if (lista_parametros.size() > 0) {
 				sf.verificar_argumento(tipo, lista_parametros, 0);
@@ -502,8 +500,10 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 				bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
 			else if (tipo.tipo == Symbol.Types.STRING) {
 				for (char c : tipo.nombre.toCharArray()) {
-					bloque.addInst(PCodeInstruction.OpCode.STC, c);
-					bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+					if (c != '\"') {
+						bloque.addInst(PCodeInstruction.OpCode.STC, c);
+						bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+					}
 				}
 			}
 			else {
@@ -514,10 +514,12 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 			if (!tipo.referencia)
 				sf.error("Se esperaba un tipo asignable", t.beginLine, t.beginColumn);
 			else if (tipo.tipo == Symbol.Types.INT) {
-
+				bloque.removeLastInst();
+				bloque.addInst(PCodeInstruction.OpCode.RD, 1);
 			}
 			else if (tipo.tipo == Symbol.Types.CHAR) {
-				
+				bloque.removeLastInst();
+				bloque.addInst(PCodeInstruction.OpCode.RD, 0);
 			}
 			else
 				sf.error("Se esperaba un tipo INT/CHAR", t.beginLine, t.beginColumn);
@@ -536,9 +538,46 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 				sf.error("El número de argumentos en la llamada a " + id + " no coincide", t.beginLine, t.beginColumn);
 			}
 		}
+		else if (id.equals("put") || id.equals("put_line")) {
+			if (argumento.tipo == Symbol.Types.INT || argumento.tipo == Symbol.Types.BOOL)
+				bloque.addInst(PCodeInstruction.OpCode.WRT, 1);
+			else if (argumento.tipo == Symbol.Types.CHAR)
+				bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+			else if (argumento.tipo == Symbol.Types.STRING) {
+				for (char c : argumento.nombre.toCharArray()) {
+					if (c != '\"') {
+						bloque.addInst(PCodeInstruction.OpCode.STC, c);
+						bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+					}
+				}
+			}
+			else {
+				sf.error("Se esperaba un tipo INT/BOOL/CHAR", t.beginLine, t.beginColumn);
+			}
+		}
+		else if (id.equals("get")) {
+			if (!argumento.referencia)
+				sf.error("Se esperaba un tipo asignable", t.beginLine, t.beginColumn);
+			else if (argumento.tipo == Symbol.Types.INT) {
+				bloque.removeLastInst();
+				bloque.addInst(PCodeInstruction.OpCode.RD, 1);
+			}
+			else if (argumento.tipo == Symbol.Types.CHAR) {
+				bloque.removeLastInst();
+				bloque.addInst(PCodeInstruction.OpCode.RD, 0);
+			}
+			else
+				sf.error("Se esperaba un tipo INT/CHAR", t.beginLine, t.beginColumn);
+		}
 	})+ <tCP>
 	{
-		if (lista_parametros != null && lista_argumentos.size() != lista_parametros.size() && !error_sacado) {
+		if (id.equals("put_line")) {
+			bloque.addInst(PCodeInstruction.OpCode.STC, 13);
+			bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+			bloque.addInst(PCodeInstruction.OpCode.STC, 10);
+			bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+		}
+		else if (lista_parametros != null && lista_argumentos.size() != lista_parametros.size() && !error_sacado) {
 			error_sacado = true;
 			sf.error("El número de argumentos en la llamada a " + id + " no coincide", t.beginLine, t.beginColumn);
 		}
@@ -560,7 +599,7 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 
 	| {}	// Matching de llamada a procedimiento con UN solo argumento
 	{
-		lista_parametros = sf.funcion_proc(id, t, st);
+		lista_parametros = sf.proc(id, t, st);
 		if (lista_parametros != null) {
 			if (lista_parametros.size() != 1)
 				sf.verificar_argumento(primera_expresion, lista_parametros, 0);
@@ -644,7 +683,12 @@ ArrayList<Symbol> Parametros() :
 				st.insertSymbol(simbolo);
 				simbolo.nivel = simbolo.nivel - 1;
 				simbolo.dir = sig[nivel_bloque];
-				sig[nivel_bloque]++;
+				if (simbolo.type == Symbol.Types.ARRAY) {
+					SymbolArray s = (SymbolArray) simbolo;
+					alike.sig[alike.nivel_bloque] += (s.maxInd - s.minInd + 1);
+				}
+				else
+					alike.sig[alike.nivel_bloque]++;
 			}
 			catch (AlreadyDefinedSymbolException a) {
 				sf.simbolo_definido(simbolo.name, t.beginLine, t.endColumn);
