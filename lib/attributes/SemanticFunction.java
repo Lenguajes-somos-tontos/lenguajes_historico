@@ -136,6 +136,10 @@ public class SemanticFunction {
 				|| tipo_id == Symbol.Types.STRING || tipo_id == Symbol.Types.UNDEFINED || tipo_id == Symbol.Types.ARRAY) {
 					esperaba_tipo(tipo_id, linea.beginLine, linea.beginColumn);
 			}
+			else {
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo_asignacion.nivel, (int)simbolo_asignacion.dir);
+				alike.bloque.addInst(PCodeInstruction.OpCode.ASGI);
+			}
 		}
 		catch (SymbolNotFoundException s) {
 			simbolo_no_definido(id, linea.beginLine, linea.beginColumn);
@@ -389,9 +393,6 @@ public class SemanticFunction {
 	public void verificar_bool(Symbol.Types tipo, Token t) {
 		if (tipo != Symbol.Types.BOOL) {
 			esperaba_tipo(Symbol.Types.BOOL, t.beginLine, t.endColumn);
-		}
-		else {
-			
 		}
 	}
 
