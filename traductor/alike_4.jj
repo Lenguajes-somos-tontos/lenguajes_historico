@@ -532,7 +532,7 @@ void Programa_completo() :
 }
 {
 	{
-		String label = newLabel();
+		String label = CGUtils.newLabel();
 		bloque.addInst(PCodeInstruction.OpCode.ENP, label);
 	}
 	<tPROC> <tID> <tIS>
@@ -713,19 +713,21 @@ void Instr_condicional_sin_return():
 	t = <tIF> tipo = Expresion() <tTHEN>
 	{
 		sf.verificar_bool(tipo.tipo, t);
-		String label = newLabel();
+		String label = CGUtils.newLabel();
 		bloque.addInst(PCodeInstruction.OpCode.JMF, label);
 	}
 	(Instruccion_sin_return())+
 	{
+		String label2 = CGUtils.newLabel();
+		bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
 		bloque.addLabel(label);
 	}
-	MasIF()
+	MasIF(label2)
 	<tEND> <tIF>
 }
 
 
-void MasIF():
+void MasIF(String label2):
 {
 	Trio tipo;
 	Token t;
@@ -734,15 +736,16 @@ void MasIF():
 	t = <tELSIF> tipo = Expresion() <tTHEN>
 	{
 		sf.verificar_bool(tipo.tipo, t);
-		String label = newLabel();
+		String label = CGUtils.newLabel();
 		bloque.addInst(PCodeInstruction.OpCode.JMF, label);
 	}
 	(Instruccion_sin_return())+
 	{
+		bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
 		bloque.addLabel(label);
 	}
-	MasIF()
-	| <tELSE> (Instruccion_sin_return())+
+	MasIF(label2)
+	| <tELSE> (Instruccion_sin_return())+ {bloque.addLabel(label2);}
 	| {}
 }
 
