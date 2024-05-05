@@ -700,7 +700,6 @@ void Instr_iterativa_sin_return():
 	{
 		String label2 = CGUtils.newLabel();
 		bloque.addLabel(label2);
-
 	}
 	t = <tWHILE> tipo = Expresion() <tLOOP>
     {
@@ -769,9 +768,21 @@ void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar):
 	Token t;
 }
 {
+	{
+		String label2 = CGUtils.newLabel();
+		bloque.addLabel(label2);
+	}
 	t = <tWHILE> tipo = Expresion() <tLOOP>
-	{sf.verificar_bool(tipo.tipo, t);}
+	{
+        sf.verificar_bool(tipo.tipo, t);
+        String label = CGUtils.newLabel();
+        bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+    }
 	(Instruccion_con_return(tipo_a_retornar))+
+	{
+        bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
+		bloque.addLabel(label);
+    }
 	<tEND> <tLOOP>
 }
 
