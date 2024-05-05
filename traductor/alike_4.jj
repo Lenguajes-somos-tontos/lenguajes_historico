@@ -532,7 +532,7 @@ void Programa_completo() :
 }
 {
 	{
-		String label = newLabel();
+		String label = CGUtils.newLabel();
 		bloque.addInst(PCodeInstruction.OpCode.ENP, label);
 	}
 	<tPROC> <tID> <tIS>
@@ -788,7 +788,7 @@ boolean Instr_condicional_con_return(Symbol.Types tipo_a_retornar):
 	t = <tIF> tipo = Expresion() <tTHEN>
 	{
 		sf.verificar_bool(tipo.tipo, t);
-		String label = newLabel();
+		String label = CGUtils.newLabel();
 		bloque.addInst(PCodeInstruction.OpCode.JMF, label);
 	}
 	(es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+
@@ -822,7 +822,7 @@ boolean MasIF_return(Symbol.Types tipo_a_retornar, String label2):
         bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
         bloque.addLabel(label);
     }
-	es_return = MasIF_return(tipo_a_retornar, label2);
+	es_return = MasIF_return(tipo_a_retornar, label2)
 
 	| <tELSE> (es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+ {bloque.addLabel(label2);}
 	| {} {return_leido = false;})
