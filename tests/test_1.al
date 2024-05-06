@@ -3,10 +3,17 @@ procedure test_1 is
 	m: integer;
     k: boolean;
     c: character;
-    v: ARRAY(1..3) OF CHARACTER;
+    v: ARRAY(1..1000) OF CHARACTER;
     t: ARRAY(1..1000) OF boolean;
     s: ARRAY(1..1000) of INTEGER;
 ----------------------------------------------------------
+procedure inicializar(v: ref array(1..1000) of integer; n: integer) is
+    i: integer;
+begin
+    null;
+end;
+------------------------------------------------------
+
 begin
     --get(c,n,c);
     --put(n+24+36);
@@ -17,5 +24,6 @@ begin
     --calcular(3, c);
     --n := char2int(c);
     --put("Ho", n);
-    get(v, t);
+    --get(n, c, v);
+    inicializar(v, 3);
 end;

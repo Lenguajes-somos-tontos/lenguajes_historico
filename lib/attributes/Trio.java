@@ -5,17 +5,17 @@ import lib.symbolTable.Symbol;
 public class Trio {
     public Symbol.Types tipo;
     public boolean referencia;
-    public String nombre;
     public Symbol simbolo;
+    public String nombre;
 
     public Trio() {
         this.tipo = Symbol.Types.UNDEFINED;
         this.referencia = false;
-        this.nombre = "";
         this.simbolo = null;
+        nombre = "";
     }
 
     public String toString() {
-        return tipo +  " " + Boolean.toString(referencia) + " " + nombre;
+        return tipo +  " " + Boolean.toString(referencia) + " " + simbolo.name;
     }
 }

@@ -86,29 +86,26 @@ public class SemanticFunction {
 
 			alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
 			alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
-			alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+			// Revisar caso de que expresión sea SOLO un array
+				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 			if (simbolo.type == Symbol.Types.INT) {
 				tipo.tipo = Symbol.Types.INT;
 				tipo.referencia = true;
-				tipo.nombre = t.image;
 				tipo.simbolo = simbolo;
 			}
 			else if (simbolo.type == Symbol.Types.BOOL) {
 				tipo.tipo = Symbol.Types.BOOL;
 				tipo.referencia = true;
-				tipo.nombre = t.image;
 				tipo.simbolo = simbolo;
 			}
 			else if (simbolo.type == Symbol.Types.CHAR) {
 				tipo.tipo = Symbol.Types.CHAR;
 				tipo.referencia = true;
-				tipo.nombre = t.image;
 				tipo.simbolo = simbolo;
 			}
 			else if (simbolo.type == Symbol.Types.ARRAY) {
 				tipo.tipo = Symbol.Types.ARRAY;
 				tipo.referencia = true;
-				tipo.nombre = t.image;
 				tipo.simbolo = simbolo;
 			}
 			else if (simbolo.type == Symbol.Types.FUNCTION) {
@@ -174,12 +171,12 @@ public class SemanticFunction {
 
 	public void comprobar_funciones_especiales(String id_funcion) throws SpecialFunctionFound {
 		String id = id_funcion;
-		if (id.equals("put_line") || id.equals("put") || id.equals("get")) {
+		if (id.equals("put_line") || id.equals("put") || id.equals("get") || id.equals("skip_line") || id.equals("int2char") || id.equals("char2int")) {
 			throw new SpecialFunctionFound();
 		}
 	}
 
-
+	/*
 	public Trio llamada_funcion(SymbolFunction simbolo_funcion, ArrayList<Trio> lista_argumentos, SymbolTable st, Token t) {
 		Trio resultado = new Trio();
 		resultado.tipo = simbolo_funcion.returnType;
@@ -187,7 +184,7 @@ public class SemanticFunction {
 		verificar_argumentos(lista_parametros, lista_argumentos, st, t);
 		return resultado;
 	}
-
+	*/
 
 	public Trio indice_array(SymbolArray simbolo_array, Trio indice, Token t) {
 		Trio resultado = new Trio();
@@ -203,7 +200,7 @@ public class SemanticFunction {
 		return resultado;
 	}
 
-
+	/*
 	public Trio verificar_expresion(Token t, ArrayList<Trio> lista_argumentos, SymbolTable st) {
 		String id = t.image.toLowerCase();
 		Trio resultado = new Trio();
@@ -234,56 +231,9 @@ public class SemanticFunction {
 		catch (SpecialFunctionFound g) {}
 		return resultado;
 	}
+	*/
 
-
-	public void verificar_argumentos(ArrayList<Symbol> lista_parametros, ArrayList<Trio> lista_argumentos, SymbolTable st, Token t) {
-		int numero_parametros = lista_parametros.size();
-		if (numero_parametros == lista_argumentos.size()) {
-			for (int i = 0; i < numero_parametros; i++) {
-
-				Symbol parametro = lista_parametros.get(i);
-				Trio argumento = lista_argumentos.get(i);
-
-				// Tipos no coinciden
-				if (argumento.tipo != parametro.type) {
-					esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
-				}
-
-				// Tipo por referencia y no es asignable
-				if (parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia) {
-					tipo_asignable(t.beginLine, t.beginColumn);
-				}
-
-				// Caso ARRAY
-				if (parametro.type == Symbol.Types.ARRAY) {
-					if (argumento.tipo == Symbol.Types.ARRAY) {
-						SymbolArray array_argumento = (SymbolArray) (st.getSymbol(argumento.nombre));
-						SymbolArray array_parametro = (SymbolArray) (parametro);
-
-						// Índices no coinciden
-						if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
-							error("Los índices del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
-						}
-
-						// Tipos base no coinciden
-						if (array_argumento.baseType != array_parametro.baseType) {
-							error("Los tipos base del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
-						}
-					}
-					else {
-						// Se esperaba un array
-						esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
-					}
-				}
-			}
-		}
-		else {
-			error("Se esperaban " + numero_parametros + " parametros", t.beginLine, t.beginColumn);
-		}
-	}
-
-
-	public ArrayList<Symbol> proc(String id, Token t, SymbolTable st) {
+	public ArrayList<Symbol> proc_param(String id, Token t, SymbolTable st) {
 		ArrayList<Symbol> result = null;
 		try {
 			comprobar_funciones_especiales(id);
@@ -293,19 +243,95 @@ public class SemanticFunction {
 				result = s.parList;
 			}
 			else {
-				// Error, se esperaba procedimiento
+				esperaba_tipo(Symbol.Types.PROCEDURE, t.beginLine, t.beginColumn);
 			}
 		}
 		catch (SymbolNotFoundException e) {
 			simbolo_no_definido(id, t.beginLine, t.beginColumn);
 		}
-		catch (SpecialFunctionFound s) {}
+		catch (SpecialFunctionFound s) {
+			if (id.equals("skip_line")) {
+				error("Se esperaban 0 argumentos", t.beginLine, t.beginColumn);
+			}
+			// Llamar a int2char o char2int como procedimientos es error sintáctico
+		}
 		return result;
 	}
 
 
-	public void verificar_argumento(Trio argumento, ArrayList<Symbol> lista_parametros, int indice) {
+	public void procedimientos_especiales(String id, Trio tipo, Token t) {
+		if (id.equals("put") || id.equals("put_line")) {
+			if (tipo.tipo == Symbol.Types.INT || tipo.tipo == Symbol.Types.BOOL)
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 1);
+			else if (tipo.tipo == Symbol.Types.CHAR)
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+			else if (tipo.tipo == Symbol.Types.STRING) {
+				for (char c : tipo.nombre.toCharArray()) {
+					if (c != '\"') {
+						alike.bloque.addInst(PCodeInstruction.OpCode.STC, c);
+						alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+					}
+				}
+			}
+			else {
+				error("Se esperaba un tipo INT/BOOL/CHAR", t.beginLine, t.beginColumn);
+			}
+		}
+		else if (id.equals("get")) {
+			if (!tipo.referencia)
+				error("Se esperaba un tipo asignable", t.beginLine, t.endColumn);
+			else if (tipo.tipo == Symbol.Types.INT) {
+				alike.bloque.removeLastInst();
+				alike.bloque.addInst(PCodeInstruction.OpCode.RD, 1);
+			}
+			else if (tipo.tipo == Symbol.Types.CHAR) {
+				alike.bloque.removeLastInst();
+				alike.bloque.addInst(PCodeInstruction.OpCode.RD, 0);
+			}
+			else
+				error("Se esperaba un tipo INT/CHAR", t.beginLine, t.endColumn);
+		}
+	}
 
+
+	// Pre: El parámetro con índice "indice" existe en "lista_parametros"
+	public void verificar_argumento(Trio argumento, ArrayList<Symbol> lista_parametros, int indice, SymbolTable st, Token t) {
+		Symbol parametro = lista_parametros.get(indice);
+
+		// Tipos no coinciden
+		if (argumento.tipo != parametro.type) {
+			esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
+		}
+
+		// Tipo por referencia y no es asignable
+		if (parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia) {
+			tipo_asignable(t.beginLine, t.beginColumn);
+		}
+		else if (parametro.parClass == Symbol.ParameterClass.REF) {
+			alike.bloque.removeLastInst();
+		}
+
+		// Caso ARRAY
+		if (parametro.type == Symbol.Types.ARRAY) {
+			if (argumento.tipo == Symbol.Types.ARRAY) {
+				SymbolArray array_argumento = (SymbolArray) (argumento.simbolo);
+				SymbolArray array_parametro = (SymbolArray) (parametro);
+
+				// Índices no coinciden
+				if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
+					error("Los índices del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
+				}
+
+				// Tipos base no coinciden
+				if (array_argumento.baseType != array_parametro.baseType) {
+					error("Los tipos base del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
+				}
+			}
+			else {
+				// Se esperaba un array
+				esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
+			}
+		}
 	}
 
 
