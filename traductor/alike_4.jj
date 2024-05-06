@@ -541,13 +541,18 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 		sf.Instr_funcion_vector_3(id, primera_expresion, tipo_asignacion, st, t);
 	}
 
-	| {}	// Matching de llamada a procedimiento con UN solo argumento
+	| {}	// Matching de llamada a procedimiento con UN argumento
 	{
-		//lista_parametros = sf.proc(id, t, st);
+		lista_parametros = sf.proc_param(id, t, st);
 		if (lista_parametros != null) {
-			//if (lista_parametros.size() != 1)
-				//sf.verificar_argumento(primera_expresion, lista_parametros, 0);
+			if (lista_parametros.size() == 1) {
+				sf.verificar_argumento(primera_expresion, lista_parametros, 0, st, t);
+			}
+			else {	// El número de argumentos no coincide con el de parámetros
+				sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
+			}
 		}
+		sf.procedimientos_especiales(id, primera_expresion, t);
 	}
 }
 
