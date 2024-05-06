@@ -85,8 +85,8 @@ public class SemanticFunction {
     	try {
 			Symbol simbolo = st.getSymbol(t.image.toLowerCase());
 
-			alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
-			alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
+			//alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
+			//alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
 			// Revisar caso de que expresión sea SOLO un array
 				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 			if (simbolo.type == Symbol.Types.INT) {
@@ -116,11 +116,10 @@ public class SemanticFunction {
 				if (s.parList.isEmpty()) {
 					// Se asigna el tipo que retorna la función
 					tipo.tipo = s.returnType;
-					tipo.simbolo.type = s.returnType;
 				}
 				else {
 					// Se ha utilizado una función que tiene parámetros como una que no los tiene
-					error("Los parámetros de la llamada a " + t.image + " no son correctos", t.beginLine, t.beginColumn);
+					error("Se esperaban 0 parámetros", t.beginLine, t.beginColumn);
 				}
 			}
 		}
@@ -138,6 +137,10 @@ public class SemanticFunction {
 			if (tipo_id != tipo_asignacion.tipo || tipo_id == Symbol.Types.FUNCTION || tipo_id == Symbol.Types.PROCEDURE
 				|| tipo_id == Symbol.Types.STRING || tipo_id == Symbol.Types.UNDEFINED || tipo_id == Symbol.Types.ARRAY) {
 					esperaba_tipo(tipo_id, linea.beginLine, linea.beginColumn);
+			}
+			else {
+				//alike.bloque.addInst(PCodeInstruction.OpCode.SRF, );
+				//alike.bloque.addInst(PCodeInstruction.OpCode.ASGI);
 			}
 		}
 		catch (SymbolNotFoundException s) {
@@ -177,41 +180,17 @@ public class SemanticFunction {
 		}
 	}
 
-	/*
-	public Trio llamada_funcion(SymbolFunction simbolo_funcion, ArrayList<Trio> lista_argumentos, SymbolTable st, Token t) {
-		Trio resultado = new Trio();
-		resultado.tipo = simbolo_funcion.returnType;
-		ArrayList<Symbol> lista_parametros = simbolo_funcion.parList;
-		verificar_argumentos(lista_parametros, lista_argumentos, st, t);
-		return resultado;
-	}
-	*/
 
-	public Trio indice_array(SymbolArray simbolo_array, Trio indice, Token t) {
-		Trio resultado = new Trio();
-
-		// La expresión para calcular el índice no es de tipo INT
-		if (indice.tipo != Symbol.Types.INT) {
-			esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);
-		}
-		else {
-			resultado.tipo = simbolo_array.baseType;
-			resultado.referencia = true;
-		}
-		return resultado;
-	}
-
-
-	public Symbol verificar_func_array(Token t, SymbolTable st, ArrayList<Symbol> lista_argumentos) {
+	public Llamada verificar_func_array(Token t, SymbolTable st) {
 		String id = t.image.toLowerCase();
-		Symbol result = null;
+		Llamada result = new Llamada();
 		try {
 			comprobar_funciones_especiales(id);
 			Symbol simbolo = st.getSymbol(id);
-			result = simbolo;
+			result.simbolo = simbolo;
 			if (simbolo.type == Symbol.Types.FUNCTION) {
 				SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
-				lista_argumentos = simbolo_funcion.parList;
+				result.lista = simbolo_funcion.parList;
 			}
 			else if (simbolo.type != Symbol.Types.ARRAY) {
 				error("Se esperaba una función/acceso a array", t.beginLine, t.beginColumn);
@@ -356,18 +335,9 @@ public class SemanticFunction {
 
 
 	public void void_sin_parametros(boolean llamada_funcion_simple, String idd, Token id, SymbolTable st) {
-		ArrayList<Symbol> lista_param;
+		ArrayList<Symbol> lista_param = null;
 		if (llamada_funcion_simple) {
-			lista_param = proc_param(idd, id, st);
-			if (lista_param != null) {
-				if (lista_param.size() != 0) {
-					error("Se esperaban 0 argumentos", id.beginLine, id.beginColumn);
-				}
-				else {
-					// Caso bueno, el ID es un procedimiento y el procedimiento no tiene parámetros
-				}
-			}
-			else if (idd.equals("skip_line")) {
+			if (idd.equals("skip_line")) {
 				String label = CGUtils.newLabel();
 				alike.bloque.addLabel(label);
 				//alike.bloque.addInst(PCodeInstruction.OpCode.SRF, nivel_bloque, sig[nivel_bloque]);
@@ -386,6 +356,17 @@ public class SemanticFunction {
 			}
 			else if (idd.equals("put") || idd.equals("int2char") || idd.equals("char2int") || idd.equals("get")) {
 				error("Se esperaban uno o más argumentos", id.beginLine, id.beginColumn);
+			}
+			else {
+				lista_param = proc_param(idd, id, st);
+				if (lista_param != null) {
+					if (lista_param.size() != 0) {
+						error("Se esperaban 0 argumentos", id.beginLine, id.beginColumn);
+					}
+					else {
+						// Caso bueno, el ID es un procedimiento y el procedimiento no tiene parámetros
+					}
+				}
 			}
 		}
 	}

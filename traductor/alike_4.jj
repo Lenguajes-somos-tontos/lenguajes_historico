@@ -343,33 +343,51 @@ Trio Primario() :
 {
 	Token t;
 	Trio tipo = new Trio();
-	Symbol simbolo = null;
-	ArrayList<Symbol> lista_argumentos = null;
+	Llamada llamada;
 	Trio argumento;
 }
 {
     (<tAP> tipo = Expresion() <tCP>
 |	t = <tCHAR2INT> <tAP> tipo = Expresion() <tCP>
-	{if (tipo.tipo != Symbol.Types.CHAR) sf.esperaba_tipo(Symbol.Types.CHAR, t.beginLine, t.beginColumn);}
+	{
+		if (tipo.tipo != Symbol.Types.CHAR) sf.esperaba_tipo(Symbol.Types.CHAR, t.beginLine, t.beginColumn);
+		else tipo.tipo = Symbol.Types.INT;
+	}
 
 |	t = <tINT2CHAR> <tAP> tipo = Expresion() <tCP>
-	{if (tipo.tipo != Symbol.Types.INT) sf.esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);}
+	{
+		if (tipo.tipo != Symbol.Types.INT) sf.esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);
+		else tipo.tipo = Symbol.Types.CHAR;
+	}
 
 
 |	LOOKAHEAD(2) t = <tID> <tAP> argumento = Expresion()
 	{
-		boolean error_array = false;
-		simbolo = sf.verificar_func_array(t, st, lista_argumentos);
-		if (simbolo.type == Symbol.Types.FUNCTION) {
+		boolean error_array = false, error_args = false;
+		int iterador_argumentos = 0;
 
+		llamada = sf.verificar_func_array(t, st);
+		Symbol simbolo = llamada.simbolo;
+		ArrayList<Symbol> lista_parametros = llamada.lista;
+
+		if (simbolo != null && simbolo.type == Symbol.Types.FUNCTION) {
+			SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
+			tipo.tipo = simbolo_funcion.returnType;
+			if (0 < lista_parametros.size()) {
+				sf.verificar_argumento(argumento, lista_parametros, 0, st, t);
+			}
+			else {
+				error_args = true;
+			}
 		}
-		else if (simbolo.type == Symbol.Types.ARRAY) {
+		else if (simbolo != null && simbolo.type == Symbol.Types.ARRAY) {
 			SymbolArray s = (SymbolArray) simbolo;
 			if (argumento.tipo == Symbol.Types.INT) {
 				tipo.tipo = s.baseType;
+				tipo.referencia = true;
 				bloque.addInst(PCodeInstruction.OpCode.STC, s.minInd);
 				bloque.addInst(PCodeInstruction.OpCode.SBT);
-				bloque.addInst(PCodeInstruction.OpCode.SRF, (int)s.dir);
+				//bloque.addInst(PCodeInstruction.OpCode.SRF, (int)s.dir);
 				bloque.addInst(PCodeInstruction.OpCode.PLUS);
 				bloque.addInst(PCodeInstruction.OpCode.DRF);
 			}
@@ -380,22 +398,60 @@ Trio Primario() :
 	}
 	(<tCOMA> argumento = Expresion()
 	{
-		if (simbolo.type == Symbol.Types.FUNCTION) {
-			
+		iterador_argumentos++;
+
+		if (simbolo != null && simbolo.type == Symbol.Types.FUNCTION) {
+			if (iterador_argumentos < lista_parametros.size()) {
+				sf.verificar_argumento(argumento, lista_parametros, iterador_argumentos, st, t);
+			}
+			else {
+				error_args = true;
+			}
 		}
-		else if (simbolo.type == Symbol.Types.ARRAY) {
+		else if (simbolo != null && simbolo.type == Symbol.Types.ARRAY) {
 			error_array = true;
 		}
 	})* <tCP>
-	{if (error_array) sf.error("Se esperaba un único índice", t.beginLine, t.beginColumn);}
+	{
+		if (lista_parametros != null) error_args = (error_args || (iterador_argumentos+1 != lista_parametros.size()));
+		if (error_array) {
+			sf.error("Se esperaba un único índice", t.beginLine, t.beginColumn);
+			tipo.tipo = Symbol.Types.UNDEFINED;
+		}
+		else if (error_args) {
+			sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
+			tipo.tipo = Symbol.Types.UNDEFINED;
+		}
+	}
 
 
 |	t = <tID> {sf.Primario_ID(t, tipo, st);}
-|	t = <tNUM> {tipo.tipo = Symbol.Types.INT; bloque.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(t.image));}
-|	t = <tCONSTCHAR> {tipo.tipo = Symbol.Types.CHAR; bloque.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(t.image));}
-|	t = <tSTRING> {tipo.tipo = Symbol.Types.STRING; tipo.nombre = t.image;}
-|	t = <tTRUE> {tipo.tipo = Symbol.Types.BOOL; bloque.addInst(PCodeInstruction.OpCode.STC, 1);}
-|	t = <tFALSE> {tipo.tipo = Symbol.Types.BOOL; bloque.addInst(PCodeInstruction.OpCode.STC, 0);})
+|	t = <tNUM>
+	{
+		tipo.tipo = Symbol.Types.INT;
+		bloque.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(t.image));
+	}
+|	t = <tCONSTCHAR>
+	{
+		char c = t.image.charAt(0);
+		tipo.tipo = Symbol.Types.CHAR;
+		bloque.addInst(PCodeInstruction.OpCode.STC, (int) c);
+	}
+|	t = <tSTRING>
+	{
+		tipo.tipo = Symbol.Types.STRING;
+		tipo.nombre = t.image;
+	}
+|	t = <tTRUE>
+	{
+		tipo.tipo = Symbol.Types.BOOL;
+		bloque.addInst(PCodeInstruction.OpCode.STC, 1);
+	}
+|	t = <tFALSE>
+	{
+		tipo.tipo = Symbol.Types.BOOL;
+		bloque.addInst(PCodeInstruction.OpCode.STC, 0);
+	})
 	{return tipo;}
 }
 
@@ -570,7 +626,7 @@ void Programa_completo() :
 	{
 		bloque.addComment(" Fin de main");
 		bloque.addInst(PCodeInstruction.OpCode.LVP);
-		System.out.println(bloque.toString());
+		//System.out.println(bloque.toString());
 		bloque.clearBlock();
 	}
 	<tEND> <tPC>
