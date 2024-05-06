@@ -201,38 +201,36 @@ public class SemanticFunction {
 		return resultado;
 	}
 
-	/*
-	public Trio verificar_expresion(Token t, ArrayList<Trio> lista_argumentos, SymbolTable st) {
+
+	public Symbol verificar_func_array(Token t, SymbolTable st, ArrayList<Symbol> lista_argumentos) {
 		String id = t.image.toLowerCase();
-		Trio resultado = new Trio();
+		Symbol result = null;
 		try {
 			comprobar_funciones_especiales(id);
-
 			Symbol simbolo = st.getSymbol(id);
 
 			if (simbolo.type == Symbol.Types.FUNCTION) {
 				SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
-				resultado = llamada_funcion(simbolo_funcion, lista_argumentos, st, t);
+				result = simbolo;
+				lista_argumentos = simbolo_funcion.parList;
 			}
 			else if (simbolo.type == Symbol.Types.ARRAY) {
 				SymbolArray simbolo_array = (SymbolArray) simbolo;
-				if (lista_argumentos.size() == 1) {
-					resultado = indice_array(simbolo_array, lista_argumentos.get(0), t);
-				}
-				else {
-					error("Se esperaba un único índice en el array " + id, t.beginLine, t.beginColumn);
-				}
+				result = simbolo;
+			}
+			else {
+				error("Se esperaba una función", t.beginLine, t.beginColumn);
 			}
 		}
 		catch (SymbolNotFoundException s) {
 			simbolo_no_definido(id, t.beginLine, t.beginColumn);
 		}
-		// Se captura la excepción pero no saca error, para evitar el error de símbolo no definido,
-		// el tipo que se va a devolver es UNDEFINED, que dará error en la llamada a la función que anida a esta otra llamada
-		catch (SpecialFunctionFound g) {}
-		return resultado;
+		catch (SpecialFunctionFound g) {
+			error("Se esperaba una función", t.beginLine, t.beginColumn);
+		}
+		return result;
 	}
-	*/
+	
 
 	public ArrayList<Symbol> proc_param(String id, Token t, SymbolTable st) {
 		ArrayList<Symbol> result = null;
@@ -357,6 +355,42 @@ public class SemanticFunction {
 			else {
 				// Se esperaba un array
 				esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
+			}
+		}
+	}
+
+
+	public void void_sin_parametros(boolean llamada_funcion_simple, String idd, Token id, SymbolTable st) {
+		ArrayList<Symbol> lista_param;
+		if (llamada_funcion_simple) {
+			lista_param = proc_param(idd, id, st);
+			if (lista_param != null) {
+				if (lista_param.size() != 0) {
+					error("Se esperaban 0 argumentos", id.beginLine, id.beginColumn);
+				}
+				else {
+					// Caso bueno, el ID es un procedimiento y el procedimiento no tiene parámetros
+				}
+			}
+			else if (idd.equals("skip_line")) {
+				String label = CGUtils.newLabel();
+				alike.bloque.addLabel(label);
+				//alike.bloque.addInst(PCodeInstruction.OpCode.SRF, nivel_bloque, sig[nivel_bloque]);
+				alike.bloque.addInst(PCodeInstruction.OpCode.RD, 0);
+				//alike.bloque.addInst(PCodeInstruction.OpCode.SRF, nivel_bloque, sig[nivel_bloque]);
+				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 10);
+				alike.bloque.addInst(PCodeInstruction.OpCode.EQ);
+				alike.bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+			}
+			else if (idd.equals("put_line")) {
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 13);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 10);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+			}
+			else if (idd.equals("put") || idd.equals("int2char") || idd.equals("char2int") || idd.equals("get")) {
+				error("Se esperaban uno o más argumentos", id.beginLine, id.beginColumn);
 			}
 		}
 	}

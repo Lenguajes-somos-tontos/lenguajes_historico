@@ -1,17 +1,16 @@
 procedure test_1 is
+n: integer;
 ------------------------------------------------------
-procedure inicializar(n: integer; v: ref array(1..1000) of integer) is
+procedure calcular(j: integer) is
     i: integer;
 begin
+    n := 5;
+    j := 3;
+    i := 2;
     null;
 end;
-------------------------------------------------------
-procedure inicializar2 is
-    i: integer;
+----------------------------------------------------------
 begin
     null;
-end;
-------------------------------------------------------
-begin
-    inicializar2(3);
+    --skip_line;
 end;
