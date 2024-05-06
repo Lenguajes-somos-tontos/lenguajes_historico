@@ -1,16 +1,7 @@
 procedure test_1 is
-n: integer;
-------------------------------------------------------
-procedure calcular(j: integer) is
-    i: integer;
-begin
-    n := 5;
-    j := 3;
-    i := 2;
-    null;
-end;
+    n: integer;
+    v: array(-5..10) of integer;
 ----------------------------------------------------------
 begin
-    null;
-    --skip_line;
+    n := v(1);
 end;

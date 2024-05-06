@@ -356,13 +356,38 @@ Trio Primario() :
 	{if (tipo.tipo != Symbol.Types.INT) sf.esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);}
 
 
-|	LOOKAHEAD(2) t = <tID> {simbolo = sf.verificar_func_array(t, st, lista_argumentos);}
-	<tAP> argumento = Expresion() {
-		//
+|	LOOKAHEAD(2) t = <tID> <tAP> argumento = Expresion()
+	{
+		boolean error_array = false;
+		simbolo = sf.verificar_func_array(t, st, lista_argumentos);
+		if (simbolo.type == Symbol.Types.FUNCTION) {
+
+		}
+		else if (simbolo.type == Symbol.Types.ARRAY) {
+			SymbolArray s = (SymbolArray) simbolo;
+			if (argumento.tipo == Symbol.Types.INT) {
+				tipo.tipo = s.baseType;
+				bloque.addInst(PCodeInstruction.OpCode.STC, s.minInd);
+				bloque.addInst(PCodeInstruction.OpCode.SBT);
+				bloque.addInst(PCodeInstruction.OpCode.SRF, (int)s.dir);
+				bloque.addInst(PCodeInstruction.OpCode.PLUS);
+				bloque.addInst(PCodeInstruction.OpCode.DRF);
+			}
+			else {
+				sf.esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);
+			}
+		}
 	}
-	(<tCOMA> argumento = Expresion() {
-		//
+	(<tCOMA> argumento = Expresion()
+	{
+		if (simbolo.type == Symbol.Types.FUNCTION) {
+			
+		}
+		else if (simbolo.type == Symbol.Types.ARRAY) {
+			error_array = true;
+		}
 	})* <tCP>
+	{if (error_array) sf.error("Se esperaba un único índice", t.beginLine, t.beginColumn);}
 
 
 |	t = <tID> {sf.Primario_ID(t, tipo, st);}

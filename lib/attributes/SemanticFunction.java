@@ -208,18 +208,13 @@ public class SemanticFunction {
 		try {
 			comprobar_funciones_especiales(id);
 			Symbol simbolo = st.getSymbol(id);
-
+			result = simbolo;
 			if (simbolo.type == Symbol.Types.FUNCTION) {
 				SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
-				result = simbolo;
 				lista_argumentos = simbolo_funcion.parList;
 			}
-			else if (simbolo.type == Symbol.Types.ARRAY) {
-				SymbolArray simbolo_array = (SymbolArray) simbolo;
-				result = simbolo;
-			}
-			else {
-				error("Se esperaba una función", t.beginLine, t.beginColumn);
+			else if (simbolo.type != Symbol.Types.ARRAY) {
+				error("Se esperaba una función/acceso a array", t.beginLine, t.beginColumn);
 			}
 		}
 		catch (SymbolNotFoundException s) {
