@@ -1,10 +1,27 @@
   ENP L0
 L0:
-  STC  2
-  STC  1
-  NGI 
-  SBT 
-  SRF  0  7
-  PLUS 
-  RD  0
+  SRF  0  5
+  DRF 
+  JMF L2
+  STC 116
+  WRT  0
+  STC 114
+  WRT  0
+  STC 117
+  WRT  0
+  STC 101
+  WRT  0
+  JMP L1
+L2:
+  STC 102
+  WRT  0
+  STC 97
+  WRT  0
+  STC 108
+  WRT  0
+  STC 115
+  WRT  0
+  STC 101
+  WRT  0
+L1:
   LVP 

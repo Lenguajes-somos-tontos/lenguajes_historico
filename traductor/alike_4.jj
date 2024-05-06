@@ -490,7 +490,7 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 			if (iterador_argumentos < lista_parametros.size()) {
 				sf.verificar_argumento(tipo, lista_parametros, iterador_argumentos, st, t);
 			}
-			else if (!error_sacado) {
+			else {	// Hay más argumentos que parámetros
 				error_sacado = true;
 				sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
 			}
@@ -507,7 +507,7 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 			if (iterador_argumentos < lista_parametros.size()) {
 				sf.verificar_argumento(argumento, lista_parametros, iterador_argumentos, st, t);
 			}
-			else if (!error_sacado) {
+			else if (!error_sacado) {	// Hay más argumentos que parámetros
 				error_sacado = true;
 				sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
 			}
@@ -525,7 +525,7 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 			bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
 		}
 		else if (lista_parametros != null && argumentos_leidos != lista_parametros.size() && !error_sacado) {
-			error_sacado = true;
+			// Hay más parámetros que argumentos
 			sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
 		}
 	}
@@ -560,7 +560,8 @@ void Programa_completo() :
 }
 {
 	{
-		bloque.addInst(PCodeInstruction.OpCode.ENP, "L0");
+		String label = CGUtils.newLabel();
+		bloque.addInst(PCodeInstruction.OpCode.ENP, label);
 	}
 	<tPROC> <tID> <tIS>
 	(Declaracion() <tPC>)*
@@ -568,7 +569,7 @@ void Programa_completo() :
 	<tBEGIN>
 	{
 		bloque.addComment(" Comienzo de main");
-		bloque.addLabel("L0");
+		bloque.addLabel(label);
 	}
 	(Instruccion_sin_return())+
 	{

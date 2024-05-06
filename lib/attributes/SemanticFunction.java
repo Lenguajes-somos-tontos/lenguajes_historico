@@ -8,6 +8,7 @@ package lib.attributes;
 
 import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
+import lib.tools.codeGeneration.CGUtils;
 import lib.tools.codeGeneration.PCodeInstruction;
 
 import java.util.*;
@@ -261,10 +262,36 @@ public class SemanticFunction {
 
 	public void procedimientos_especiales(String id, Trio tipo, Token t) {
 		if (id.equals("put") || id.equals("put_line")) {
-			if (tipo.tipo == Symbol.Types.INT || tipo.tipo == Symbol.Types.BOOL)
+			if (tipo.tipo == Symbol.Types.INT)
 				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 1);
 			else if (tipo.tipo == Symbol.Types.CHAR)
 				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+			else if (tipo.tipo == Symbol.Types.BOOL) {
+				String label1 = CGUtils.newLabel();
+				String label2 = CGUtils.newLabel();
+				alike.bloque.addInst(PCodeInstruction.OpCode.JMF, label2);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 116);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 114);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 117);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 101);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addInst(PCodeInstruction.OpCode.JMP, label1);
+				alike.bloque.addLabel(label2);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 102);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 97);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 108);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 115);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 101);
+				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				alike.bloque.addLabel(label1);
+			}
 			else if (tipo.tipo == Symbol.Types.STRING) {
 				for (char c : tipo.nombre.toCharArray()) {
 					if (c != '\"') {
