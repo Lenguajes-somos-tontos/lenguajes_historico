@@ -85,10 +85,10 @@ public class SemanticFunction {
     	try {
 			Symbol simbolo = st.getSymbol(t.image.toLowerCase());
 
-			//alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
-			//alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
-			// Revisar caso de que expresión sea SOLO un array
-				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+			alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
+			alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
+			alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+			// Revisar caso de que expresión sea SOLO un array o una función
 			if (simbolo.type == Symbol.Types.INT) {
 				tipo.tipo = Symbol.Types.INT;
 				tipo.referencia = true;
@@ -139,8 +139,8 @@ public class SemanticFunction {
 					esperaba_tipo(tipo_id, linea.beginLine, linea.beginColumn);
 			}
 			else {
-				//alike.bloque.addInst(PCodeInstruction.OpCode.SRF, );
-				//alike.bloque.addInst(PCodeInstruction.OpCode.ASGI);
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, 0, (int)simbolo_asignacion.dir);
+				alike.bloque.addInst(PCodeInstruction.OpCode.ASGI);
 			}
 		}
 		catch (SymbolNotFoundException s) {
@@ -154,15 +154,26 @@ public class SemanticFunction {
 			comprobar_funciones_especiales(id);
 			Symbol simbolo = st.getSymbol(id);
 			SymbolArray simbolo_array = (SymbolArray) simbolo;
+			boolean error = false;
 
 			if (tipo_primera_expresion.tipo != Symbol.Types.INT) {
 				esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);
+				error = true;
 			}
 
 			// No se verifica que la expresión a la derecha pueda ser string, función, array o procedimiento
 			// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
 			if (tipo_asignacion.tipo != simbolo_array.baseType) {
 				esperaba_tipo(simbolo_array.baseType, t.beginLine, t.endColumn);
+				error = true;
+			}
+
+			if (!error) {
+				alike.bloque.addInst(PCodeInstruction.OpCode.STC, simbolo_array.minInd);
+				alike.bloque.addInst(PCodeInstruction.OpCode.SBT);
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, 0, (int)simbolo_array.dir);
+				alike.bloque.addInst(PCodeInstruction.OpCode.PLUS);
+				alike.bloque.addInst(PCodeInstruction.OpCode.ASGI);
 			}
 		}
 		catch (SymbolNotFoundException s) {
@@ -344,9 +355,9 @@ public class SemanticFunction {
 			if (idd.equals("skip_line")) {
 				String label = CGUtils.newLabel();
 				alike.bloque.addLabel(label);
-				//alike.bloque.addInst(PCodeInstruction.OpCode.SRF, nivel_bloque, sig[nivel_bloque]);
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, 0, alike.sig[alike.nivel_bloque]);
 				alike.bloque.addInst(PCodeInstruction.OpCode.RD, 0);
-				//alike.bloque.addInst(PCodeInstruction.OpCode.SRF, nivel_bloque, sig[nivel_bloque]);
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, 0, alike.sig[alike.nivel_bloque]);
 				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 10);
 				alike.bloque.addInst(PCodeInstruction.OpCode.EQ);

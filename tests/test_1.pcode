@@ -1,18 +1,23 @@
   ENP L0
 L0:
   SRF  0  3
-
-
-
+  DRF 
   STC  1
-  STC  5
-  NGI 
   SBT 
-  SRF  0  4
+  SRF  0  5
   PLUS 
   DRF 
+  WRT  1
 
 
+  SRF  0  3
+  DRF 
+  STC  1
+  SBT 
+  SRF  0  5
+  PLUS 
+  STC  3
 
+  
   ASG 
   LVP 

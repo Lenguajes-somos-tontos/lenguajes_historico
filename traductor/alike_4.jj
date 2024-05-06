@@ -387,7 +387,7 @@ Trio Primario() :
 				tipo.referencia = true;
 				bloque.addInst(PCodeInstruction.OpCode.STC, s.minInd);
 				bloque.addInst(PCodeInstruction.OpCode.SBT);
-				//bloque.addInst(PCodeInstruction.OpCode.SRF, (int)s.dir);
+				bloque.addInst(PCodeInstruction.OpCode.SRF, 0, (int)s.dir);
 				bloque.addInst(PCodeInstruction.OpCode.PLUS);
 				bloque.addInst(PCodeInstruction.OpCode.DRF);
 			}
