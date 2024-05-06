@@ -301,7 +301,7 @@ public class SemanticFunction {
 				}
 			}
 			else {
-				error("Se esperaba un tipo INT/BOOL/CHAR", t.beginLine, t.beginColumn);
+				error("Se esperaba un tipo INT/BOOL/CHAR/STRING", t.beginLine, t.beginColumn);
 			}
 		}
 		else if (id.equals("get")) {

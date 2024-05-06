@@ -8,6 +8,7 @@
 options {
 	IGNORE_CASE = true;			// Comparaciones de tokens case-insensitive
 	COMMON_TOKEN_ACTION = false;
+	//DEBUG_PARSER = true;
 }
 
 PARSER_BEGIN(alike)
@@ -82,7 +83,7 @@ PARSER_END(alike)
 TOKEN : {
 	<#tLETRA: (["a"-"z"])>
 |	<#tDIGITO: ["0"-"9"]>
-|	<#tCARACTER: (~["\t","\n","\r"])>
+|	<#tCARACTER: (~["\t","\n","\r","\""])>
 }
 
 TOKEN : {
@@ -495,9 +496,7 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 				sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
 			}
 		}
-		else {
-			sf.procedimientos_especiales(id, tipo, t);
-		}
+		sf.procedimientos_especiales(id, tipo, t);
 		iterador_argumentos++;
 	}
 	(t = <tCOMA> argumento = Expresion()
@@ -512,9 +511,7 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 				sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
 			}
 		}
-		else {
-			sf.procedimientos_especiales(id, argumento, t);
-		}
+		sf.procedimientos_especiales(id, argumento, t);
 		iterador_argumentos++;
 	})+ <tCP>
 	{
