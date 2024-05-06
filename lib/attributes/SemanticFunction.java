@@ -151,6 +151,7 @@ public class SemanticFunction {
 
 	public void Instr_funcion_vector_3(String id, Trio tipo_primera_expresion, Trio tipo_asignacion, SymbolTable st, Token t) {
 		try {
+			comprobar_funciones_especiales(id);
 			Symbol simbolo = st.getSymbol(id);
 			SymbolArray simbolo_array = (SymbolArray) simbolo;
 
@@ -168,7 +169,10 @@ public class SemanticFunction {
 			simbolo_no_definido(id, t.beginLine, t.beginColumn);
 		}
 		catch (ClassCastException e) {	// Excepción que saltará si se intenta meter un simbolo que no es un array en un SymbolArray
-			simbolo_no_es(id, "array", t.beginLine, t.beginColumn);
+			esperaba_tipo(Symbol.Types.ARRAY, t.beginLine, t.beginColumn);
+		}
+		catch (SpecialFunctionFound s) {
+			esperaba_tipo(Symbol.Types.ARRAY, t.beginLine, t.beginColumn);
 		}
 	}
 
@@ -278,7 +282,7 @@ public class SemanticFunction {
 		}
 		else if (id.equals("get")) {
 			if (!tipo.referencia)
-				error("Se esperaba un tipo asignable", t.beginLine, t.endColumn);
+				tipo_asignable(t.beginLine, t.beginColumn);
 			else if (tipo.tipo == Symbol.Types.INT) {
 				alike.bloque.removeLastInst();
 				alike.bloque.addInst(PCodeInstruction.OpCode.RD, 1);
@@ -354,14 +358,14 @@ public class SemanticFunction {
 				alike.bloque.addInst(PCodeInstruction.OpCode.STC, 10);
 				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
 			}
-			else if (idd.equals("put") || idd.equals("int2char") || idd.equals("char2int") || idd.equals("get")) {
+			else if (idd.equals("put") || idd.equals("get")) {
 				error("Se esperaban uno o más argumentos", id.beginLine, id.beginColumn);
 			}
 			else {
 				lista_param = proc_param(idd, id, st);
 				if (lista_param != null) {
 					if (lista_param.size() != 0) {
-						error("Se esperaban 0 argumentos", id.beginLine, id.beginColumn);
+						error("Se esperaban " + lista_param.size() + " argumentos", id.beginLine, id.beginColumn);
 					}
 					else {
 						// Caso bueno, el ID es un procedimiento y el procedimiento no tiene parámetros
@@ -498,10 +502,6 @@ public class SemanticFunction {
 		error("El simbolo " + id + " ya está definido", linea, columna);
 	}
 
-
-	public void simbolo_no_es(String id, String tipo, int linea, int columna) {
-		error("El simbolo " + id + " no es un " + tipo, linea, columna);
-	}
 
 	public void tipo_asignable(int linea, int columna) {
 		error("Se esperaba un tipo asignable", linea, columna);

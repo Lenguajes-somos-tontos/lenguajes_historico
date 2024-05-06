@@ -9,6 +9,6 @@ begin
 end;
 ----------------------------------------------------------
 begin
-    n := siguiente(1);
-    --int2char(c);
+    null;
+    v(4) := siguiente(v(n));
 end;
