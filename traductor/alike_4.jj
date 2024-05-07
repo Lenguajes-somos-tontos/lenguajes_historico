@@ -628,7 +628,7 @@ void Programa_completo() :
 	{
 		//bloque.addComment(" Fin de main");
 		bloque.addInst(PCodeInstruction.OpCode.LVP);
-		System.out.println(bloque.toString());
+		//System.out.println(bloque.toString());
 		bloque.clearBlock();
 	}
 	<tEND> <tPC>

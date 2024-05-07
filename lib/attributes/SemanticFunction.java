@@ -87,27 +87,39 @@ public class SemanticFunction {
 
 			//alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
 			alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
-			alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
-			// Revisar caso de que expresión sea SOLO un array o una función
 			if (simbolo.type == Symbol.Types.INT) {
 				tipo.tipo = Symbol.Types.INT;
 				tipo.referencia = true;
 				tipo.simbolo = simbolo;
+				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 			}
 			else if (simbolo.type == Symbol.Types.BOOL) {
 				tipo.tipo = Symbol.Types.BOOL;
 				tipo.referencia = true;
 				tipo.simbolo = simbolo;
+				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 			}
 			else if (simbolo.type == Symbol.Types.CHAR) {
 				tipo.tipo = Symbol.Types.CHAR;
 				tipo.referencia = true;
 				tipo.simbolo = simbolo;
+				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 			}
 			else if (simbolo.type == Symbol.Types.ARRAY) {
 				tipo.tipo = Symbol.Types.ARRAY;
 				tipo.referencia = true;
 				tipo.simbolo = simbolo;
+
+				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+				SymbolArray s = (SymbolArray) simbolo;
+				int indice = (int)simbolo.dir + 1;
+				int longitud_array = s.maxInd - s.minInd;
+
+				for (int i = 0; i < longitud_array; i++) {
+					alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, indice);
+					alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+					indice++;
+				}
 			}
 			else if (simbolo.type == Symbol.Types.FUNCTION) {
 				SymbolFunction s = (SymbolFunction) simbolo;
@@ -116,6 +128,7 @@ public class SemanticFunction {
 				if (s.parList.isEmpty()) {
 					// Se asigna el tipo que retorna la función
 					tipo.tipo = s.returnType;
+					// Llamada a función?
 				}
 				else {
 					// Se ha utilizado una función que tiene parámetros como una que no los tiene
@@ -320,10 +333,10 @@ public class SemanticFunction {
 		}
 
 		// Tipo por referencia y no es asignable
-		if (parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia) {
+		if (parametro.type != Symbol.Types.ARRAY && parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia ) {
 			tipo_asignable(t.beginLine, t.beginColumn);
 		}
-		else if (parametro.parClass == Symbol.ParameterClass.REF) {
+		else if (parametro.type != Symbol.Types.ARRAY && parametro.parClass == Symbol.ParameterClass.REF) {
 			alike.bloque.removeLastInst();
 		}
 
@@ -341,6 +354,16 @@ public class SemanticFunction {
 				// Tipos base no coinciden
 				if (array_argumento.baseType != array_parametro.baseType) {
 					error("Los tipos base del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
+				}
+
+				// Por referencia
+				if (parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia) {
+					tipo_asignable(t.beginLine, t.beginColumn);
+				}
+				else if (parametro.parClass == Symbol.ParameterClass.REF) {
+					// Has puesto 2*long_array inst
+					int longitud_array = array_argumento.maxInd - array_argumento.minInd + 1;
+					for (int i = 0; i < (2*longitud_array) - 1; i++) alike.bloque.removeLastInst();
 				}
 			}
 			else {
