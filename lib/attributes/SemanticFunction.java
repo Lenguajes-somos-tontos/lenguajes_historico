@@ -85,7 +85,7 @@ public class SemanticFunction {
     	try {
 			Symbol simbolo = st.getSymbol(t.image.toLowerCase());
 
-			alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
+			//alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
 			alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
 			alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 			// Revisar caso de que expresión sea SOLO un array o una función
@@ -139,7 +139,7 @@ public class SemanticFunction {
 					esperaba_tipo(tipo_id, linea.beginLine, linea.beginColumn);
 			}
 			else {
-				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, 0, (int)simbolo_asignacion.dir);
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo_asignacion.nivel, (int)simbolo_asignacion.dir);
 				alike.bloque.addInst(PCodeInstruction.OpCode.ASGI);
 			}
 		}
@@ -149,31 +149,22 @@ public class SemanticFunction {
 	}
 
 
-	public void Instr_funcion_vector_3(String id, Trio tipo_primera_expresion, Trio tipo_asignacion, SymbolTable st, Token t) {
+	public Symbol.Types direccion_array(String id, SymbolTable st, Trio expresion_indice, Token t) {
+		Symbol.Types tipo_base_array = Symbol.Types.UNDEFINED;
 		try {
 			comprobar_funciones_especiales(id);
 			Symbol simbolo = st.getSymbol(id);
 			SymbolArray simbolo_array = (SymbolArray) simbolo;
-			boolean error = false;
 
-			if (tipo_primera_expresion.tipo != Symbol.Types.INT) {
+			if (expresion_indice.tipo != Symbol.Types.INT) {
 				esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);
-				error = true;
 			}
-
-			// No se verifica que la expresión a la derecha pueda ser string, función, array o procedimiento
-			// A nivel sintáctico, un array sólo puede ser de tipo INT, BOOL o CHAR
-			if (tipo_asignacion.tipo != simbolo_array.baseType) {
-				esperaba_tipo(simbolo_array.baseType, t.beginLine, t.endColumn);
-				error = true;
-			}
-
-			if (!error) {
+			else {
+				tipo_base_array = simbolo_array.baseType;
 				alike.bloque.addInst(PCodeInstruction.OpCode.STC, simbolo_array.minInd);
 				alike.bloque.addInst(PCodeInstruction.OpCode.SBT);
-				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, 0, (int)simbolo_array.dir);
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo_array.nivel, (int)simbolo_array.dir);
 				alike.bloque.addInst(PCodeInstruction.OpCode.PLUS);
-				alike.bloque.addInst(PCodeInstruction.OpCode.ASGI);
 			}
 		}
 		catch (SymbolNotFoundException s) {
@@ -184,6 +175,17 @@ public class SemanticFunction {
 		}
 		catch (SpecialFunctionFound s) {
 			esperaba_tipo(Symbol.Types.ARRAY, t.beginLine, t.beginColumn);
+		}
+		return tipo_base_array;
+	}
+
+
+	public void Instr_funcion_vector_3(Trio tipo_asignacion, Symbol.Types tipo_base_array, Token t) {
+		if (tipo_asignacion.tipo != tipo_base_array) {
+			esperaba_tipo(tipo_base_array, t.beginLine, t.beginColumn);
+		}
+		else {
+			alike.bloque.addInst(PCodeInstruction.OpCode.ASG);
 		}
 	}
 

@@ -6,8 +6,8 @@ procedure test_1 is
 ----------------------------------------------------------
 begin
     null;
-    put(v(n));
-    v(n) := 3;
-    --skip_line;
-    --v(4) := siguiente(v(n));
+    --put(v(n));
+    --v(n) := 3;
+    --put_line;
+    v(4) := 2;
 end;

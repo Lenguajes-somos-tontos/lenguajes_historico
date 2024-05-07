@@ -582,12 +582,14 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 {
 	Trio tipo_asignacion;
 	ArrayList<Symbol> lista_parametros = null;
+	Symbol.Types tipo_base_array;
 }
 {
-	// Matching de asignacion a componente de array, "primera_expresion" es el tipo del índice
-	t = <tASIG> tipo_asignacion = Expresion()
+	// Matching de asignacion a componente de array, "primera_expresion" es la expresión del índice
+
+	t = <tASIG> {tipo_base_array = sf.direccion_array(id, st, primera_expresion, t);} tipo_asignacion = Expresion()
 	{
-		sf.Instr_funcion_vector_3(id, primera_expresion, tipo_asignacion, st, t);
+		sf.Instr_funcion_vector_3(tipo_asignacion, tipo_base_array, t);
 	}
 
 	| {}	// Matching de llamada a procedimiento con UN argumento
@@ -619,12 +621,12 @@ void Programa_completo() :
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
 	{
-		bloque.addComment(" Comienzo de main");
+		//bloque.addComment(" Comienzo de main");
 		bloque.addLabel(label);
 	}
 	(Instruccion_sin_return())+
 	{
-		bloque.addComment(" Fin de main");
+		//bloque.addComment(" Fin de main");
 		bloque.addInst(PCodeInstruction.OpCode.LVP);
 		System.out.println(bloque.toString());
 		bloque.clearBlock();
