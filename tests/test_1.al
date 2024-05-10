@@ -3,9 +3,9 @@ procedure test_1 is
     --c: character;
     v: array(1..4) of integer;
 ----------------------------------------------------------
-procedure f1 (r: array(1..4) of integer) is
+procedure f1 (r: ref array(1..4) of integer) is
 begin
-    null;
+    r(2) := 3;
 end;
 ----------------------------------------------------------
 begin

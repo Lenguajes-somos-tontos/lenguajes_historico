@@ -1,24 +1,19 @@
   ENP L0
 L1:
-  SRF  0  6
-  ASGI 
-  SRF  0  5
-  ASGI 
-  SRF  0  4
-  ASGI 
   SRF  0  3
   ASGI 
   JMP L2
 L2:
-  CSF 
-L0:
+  STC  2
+  STC  1
+  SBT 
   SRF  0  3
   DRF 
+  PLUS 
+  STC  3
+  ASG 
+  CSF 
+L0:
   SRF  0  4
-  DRF 
-  SRF  0  5
-  DRF 
-  SRF  0  6
-  DRF 
-  OSF  7  0 L1
+  OSF  8  0 L1
   LVP 
