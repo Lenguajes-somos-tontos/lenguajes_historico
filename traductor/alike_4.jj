@@ -719,7 +719,7 @@ void Procedimiento() :
 	{
 		String label = CGUtils.newLabel();
 		// Se crea el simbolo procedimiento sin parametros, que van un nivel por debajo
-		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>());
+		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>(), label);
 		try {
 			st.insertSymbol(simbolo_procedimiento);
 			simbolo_procedimiento.nivel = simbolo_procedimiento.nivel-1;
@@ -786,7 +786,7 @@ void Funcion() :
 	<tFUNC> nombre_funcion = <tID>
 	{
 		String label = CGUtils.newLabel();
-		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED);
+		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED, label);
 		try {
 			st.insertSymbol(simbolo_funcion);
 			simbolo_funcion.nivel = simbolo_funcion.nivel-1;
