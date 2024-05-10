@@ -729,8 +729,9 @@ void Procedimiento() :
 	<tPROC> nombre_procedimiento = <tID>
 	// Antes de leer la lista de parametros se inserta el simbolo procedimiento y se crea el bloque de parametros y variables locales
 	{
+		String label = CGUtils.newLabel();
 		// Se crea el simbolo procedimiento sin parametros, que van un nivel por debajo
-		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>(), "");
+		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>(), label);
 		try {
 			st.insertSymbol(simbolo_procedimiento);
 			simbolo_procedimiento.nivel = simbolo_procedimiento.nivel-1;
@@ -744,9 +745,36 @@ void Procedimiento() :
 	}
 	simbolo_procedimiento.parList = Parametros() <tIS>	// Se asigna al simbolo del procedimiento la lista de parametros
 	(Declaracion() <tPC>)*
+	{
+		bloque.addLabel(label);
+		for (int i = simbolo_procedimiento.parList.size() - 1; i >= 0; i--) {
+			Symbol simbolo = simbolo_procedimiento.parList.get(i);
+			if (simbolo.type == Symbol.Types.ARRAY) {
+				SymbolArray s = (SymbolArray) simbolo;
+				int dirArray = (int)simbolo.dir + (s.maxInd - s.minInd - 1);
+				for (int j = (s.maxInd - s.minInd); j >= 0; j++) {
+					bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, dirArray);
+					bloque.addInst(PCodeInstruction.OpCode.ASGI);
+					dirArray--;
+				}
+			}
+			else {
+				bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
+				bloque.addInst(PCodeInstruction.OpCode.ASGI);
+			}
+		}
+		String label2 = CGUtils.newLabel();
+		bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
+	}
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
+	{
+		bloque.addLabel(label2);
+	}
 	(Instruccion_sin_return())+
+	{
+		bloque.addInst(PCodeInstruction.OpCode.CSF);
+	}
 	<tEND> <tPC>
 	{
 		st.removeBlock();
@@ -769,7 +797,8 @@ void Funcion() :
 {
 	<tFUNC> nombre_funcion = <tID>
 	{
-		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED, "");
+		String label = CGUtils.newLabel();
+		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED, label);
 		try {
 			st.insertSymbol(simbolo_funcion);
 			simbolo_funcion.nivel = simbolo_funcion.nivel-1;
@@ -784,12 +813,39 @@ void Funcion() :
 	// Se asigna la lista de parámetros, se recoge el tipo que retorna la función y se asigna al simbolo función
 	simbolo_funcion.parList = Parametros() <tRETURN> tipo_return = Tipo_variable() <tIS> {simbolo_funcion.returnType = tipo_return.type;}
 	(Declaracion() <tPC>)*
+	{
+		bloque.addLabel(label);
+		for (int i = simbolo_procedimiento.parList.size() - 1; i >= 0; i--) {
+			Symbol simbolo = simbolo_procedimiento.parList.get(i);
+			if (simbolo.type == Symbol.Types.ARRAY) {
+				SymbolArray s = (SymbolArray) simbolo;
+				int dirArray = (int)simbolo.dir + (s.maxInd - s.minInd - 1);
+				for (int j = (s.maxInd - s.minInd); j >= 0; j++) {
+					bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, dirArray);
+					bloque.addInst(PCodeInstruction.OpCode.ASGI);
+					dirArray--;
+				}
+			}
+			else {
+				bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
+				bloque.addInst(PCodeInstruction.OpCode.ASGI);
+			}
+		}
+		String label2 = CGUtils.newLabel();
+		bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
+	}
 	(Procedimiento() | Funcion())*
 	<tBEGIN>
+	{
+		bloque.addLabel(label2);
+	}
 	(instruccion = Instruccion_con_return(tipo_return.type)
 	{
 		if (instruccion) return_valido = true;
 	})+
+	{
+		bloque.addInst(PCodeInstruction.OpCode.CSF);
+	}
 	<tEND> t = <tPC>
 	{
 		if (!return_valido) System.out.println("AVISO (" + Integer.toString(t.beginLine) + ", " + Integer.toString(t.endColumn) + "): Es posible que la función no alcance ningún return");
