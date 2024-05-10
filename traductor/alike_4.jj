@@ -414,6 +414,10 @@ Trio Primario() :
 		}
 	})* <tCP>
 	{
+		if (simbolo.type == Symbol.Types.FUNCTION) {
+			SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
+			bloque.addOSFInst(sig[nivel_bloque], nivel_bloque - simbolo_funcion.nivel, simbolo_funcion.label);
+		}
 		if (lista_parametros != null) error_args = (error_args || (iterador_argumentos+1 != lista_parametros.size()));
 		if (error_array) {
 			sf.error("Se esperaba un único índice", t.beginLine, t.beginColumn);
@@ -481,7 +485,6 @@ void Instruccion_sin_return() :
 	{
 		String idd = id.image.toLowerCase();
 		sf.void_sin_parametros(llamada_funcion_simple, idd, id, st);
-		// OSF
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tEXIT>
@@ -505,7 +508,6 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 	{
 		String idd = id.image.toLowerCase();
 		sf.void_sin_parametros(llamada_funcion_simple, idd, id, st);
-		// OSF
 	}
 	| return_if = Instr_condicional_con_return(tipo_a_retornar) | Instr_iterativa_con_return(tipo_a_retornar)
 	| <tNULL>
@@ -579,8 +581,10 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 			// Hay más parámetros que argumentos
 			sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
 		}
-		// OSF
-		//System.out.println("Llamada con varios argumentos");
+		if (l.simbolo.type == Symbol.Types.PROCEDURE) {
+			SymbolProcedure s = (SymbolProcedure) l.simbolo;
+			bloque.addOSFInst(sig[nivel_bloque], nivel_bloque - s.nivel, s.label);
+		}
 	}
 }
 
@@ -613,8 +617,10 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 			}
 		}
 		sf.procedimientos_especiales(id, primera_expresion, t);
-		//System.out.println("Llamada con un argumento");
-		//bloque.addInst(PCodeInstruction.OpCode.OSF, sig[nivel_bloque], alike.nivel_bloque - l.simbolo.nivel);
+		if (l.simbolo.type == Symbol.Types.PROCEDURE) {
+			SymbolProcedure s = (SymbolProcedure) l.simbolo;
+			bloque.addOSFInst(sig[nivel_bloque], nivel_bloque - s.nivel, s.label);
+		}
 	}
 }
 
@@ -639,7 +645,7 @@ void Programa_completo() :
 	{
 		//bloque.addComment(" Fin de main");
 		bloque.addInst(PCodeInstruction.OpCode.LVP);
-		//System.out.println(bloque.toString());
+		System.out.println(bloque.toString());
 		bloque.clearBlock();
 	}
 	<tEND> <tPC>

@@ -128,7 +128,8 @@ public class SemanticFunction {
 				if (s.parList.isEmpty()) {
 					// Se asigna el tipo que retorna la función
 					tipo.tipo = s.returnType;
-					// OSF
+					SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
+					alike.bloque.addOSFInst(alike.sig[alike.nivel_bloque], alike.nivel_bloque - simbolo_funcion.nivel, simbolo_funcion.label);
 				}
 				else {
 					// Se ha utilizado una función que tiene parámetros como una que no los tiene
@@ -406,7 +407,7 @@ public class SemanticFunction {
 						error("Se esperaban " + lista_param.size() + " argumentos", id.beginLine, id.beginColumn);
 					}
 					else {
-						// Caso bueno, el ID es un procedimiento y el procedimiento no tiene parámetros
+						alike.bloque.addInst(PCodeInstruction.OpCode.OSF, alike.sig[alike.nivel_bloque], alike.nivel_bloque - l.simbolo.nivel);
 					}
 				}
 			}
