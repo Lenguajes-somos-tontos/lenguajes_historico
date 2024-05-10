@@ -4,15 +4,20 @@ L1:
   ASGI 
   JMP L2
 L2:
-  STC  2
-  STC  1
-  SBT 
-  SRF  1  5
-  PLUS 
-  STC  4
-  ASG 
+  STC 115
+  WRT  0
+  CSF 
+L3:
+  SRF  0  3
+  ASGI 
+  JMP L4
+L4:
+  STC 115
+  WRT  0
   CSF 
 L0:
-  SRF  0  5
-  OSF  9  0 L1
+  SRF  0  3
+  OSF  4  0 L1
+  SRF  0  3
+  OSF  4  0 L3
   LVP 

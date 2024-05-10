@@ -128,7 +128,7 @@ public class SemanticFunction {
 				if (s.parList.isEmpty()) {
 					// Se asigna el tipo que retorna la función
 					tipo.tipo = s.returnType;
-					// Llamada a función?
+					// OSF
 				}
 				else {
 					// Se ha utilizado una función que tiene parámetros como una que no los tiene

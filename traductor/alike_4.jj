@@ -283,16 +283,17 @@ Trio Expresion_simple() :
 	Trio tipo;
 	Trio tipo2 = new Trio();
 	boolean match1 = false;
-	Token t = null;
+	Token t1 = null;
+	Token t2 = null;
 }
 {
-	((t = <tOPMAS> | t = <tOPMENOS>) {match1=false;})? tipo = Termino() ((t = <tOPMAS> | t = <tOPMENOS>)  tipo2 = Termino()
-	{sf.verificar_int(tipo, tipo2, t);})*
+	((t1 = <tOPMAS> | t1 = <tOPMENOS>) {match1=true;})? tipo = Termino() ((t2 = <tOPMAS> | t2 = <tOPMENOS>)  tipo2 = Termino()
+	{sf.verificar_int(tipo, tipo2, t2);})*
 	{
 		if (match1) {
 			tipo.referencia = false;
-			if (t.image.equals("-")) {
-				alike.bloque.addInst(PCodeInstruction.OpCode.NGI);
+			if (t1 != null && t1.image.equals("-")) {
+				bloque.addInst(PCodeInstruction.OpCode.NGI);
 			}
 		}
 		return tipo;
@@ -480,6 +481,7 @@ void Instruccion_sin_return() :
 	{
 		String idd = id.image.toLowerCase();
 		sf.void_sin_parametros(llamada_funcion_simple, idd, id, st);
+		// OSF
 	}
 	| Instr_condicional_sin_return() | Instr_iterativa_sin_return()
 	| <tEXIT>
@@ -503,6 +505,7 @@ boolean Instruccion_con_return(Symbol.Types tipo_a_retornar) :
 	{
 		String idd = id.image.toLowerCase();
 		sf.void_sin_parametros(llamada_funcion_simple, idd, id, st);
+		// OSF
 	}
 	| return_if = Instr_condicional_con_return(tipo_a_retornar) | Instr_iterativa_con_return(tipo_a_retornar)
 	| <tNULL>
@@ -574,6 +577,7 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 			// Hay más parámetros que argumentos
 			sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
 		}
+		// OSF
 	}
 }
 
@@ -604,6 +608,7 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 			}
 		}
 		sf.procedimientos_especiales(id, primera_expresion, t);
+		bloque.addInst(PCodeInstruction.OSF, sig[nivel_bloque], alike.nivel_bloque - simbolo.nivel);
 	}
 }
 
@@ -628,7 +633,7 @@ void Programa_completo() :
 	{
 		//bloque.addComment(" Fin de main");
 		bloque.addInst(PCodeInstruction.OpCode.LVP);
-		//System.out.println(bloque.toString());
+		System.out.println(bloque.toString());
 		bloque.clearBlock();
 	}
 	<tEND> <tPC>
@@ -642,7 +647,7 @@ Symbol Parametro_aux() :
 	Symbol tipo_parametro;
 }
 {
-	({por_referencia = true;} <tREF> | {por_referencia = false;} {}) tipo_parametro = Tipos_variables() // Tipos_variables() devuelve UN symbol sin nombre de un tipo
+	({por_referencia = true;} <tREF> | {por_referencia = false;}) tipo_parametro = Tipos_variables() // Tipos_variables() devuelve UN symbol sin nombre de un tipo
 	{
 		if (por_referencia) tipo_parametro.parClass = Symbol.ParameterClass.REF;
 		else tipo_parametro.parClass = Symbol.ParameterClass.VAL;
@@ -714,7 +719,10 @@ void Procedimiento() :
 	{
 		// Se crea el simbolo procedimiento sin parametros, que van un nivel por debajo
 		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>());
-		try {st.insertSymbol(simbolo_procedimiento);}
+		try {
+			st.insertSymbol(simbolo_procedimiento);
+			simbolo_procedimiento.nivel = simbolo_procedimiento.nivel-1;
+		}
 		catch (AlreadyDefinedSymbolException a) {
 			sf.simbolo_definido(nombre_procedimiento.image, nombre_procedimiento.beginLine, nombre_procedimiento.beginColumn);
 		}
@@ -750,7 +758,10 @@ void Funcion() :
 	<tFUNC> nombre_funcion = <tID>
 	{
 		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED);
-		try {st.insertSymbol(simbolo_funcion);}
+		try {
+			st.insertSymbol(simbolo_funcion);
+			simbolo_funcion.nivel = simbolo_funcion.nivel-1;
+		}
 		catch (AlreadyDefinedSymbolException a) {
 			sf.simbolo_definido(nombre_funcion.image, nombre_funcion.beginLine, nombre_funcion.beginColumn);
 		}
