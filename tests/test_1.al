@@ -1,16 +1,11 @@
 procedure test_1 is
-    --n: integer;
+    n: integer;
     --c: character;
-    v: array(1..1) of integer;
+    v: array(1..4) of integer;
 ----------------------------------------------------------
-procedure f1 (r: ref array(1..1) of integer) is
+procedure f1 (r: array(1..4) of integer) is
 begin
-    put("s");
-end;
-----------------------------------------------------------
-procedure f2 (r: ref array(1..1) of integer) is
-begin
-    put("s");
+    null;
 end;
 ----------------------------------------------------------
 begin
@@ -19,6 +14,6 @@ begin
     --v(n) := 3;
     --put_line;
     f1(v);
-    f2(v);
+    --f2(v);
     --v(4) := 2;
 end;

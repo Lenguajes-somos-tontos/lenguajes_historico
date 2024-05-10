@@ -234,16 +234,17 @@ public class SemanticFunction {
 		}
 		return result;
 	}
-	
 
-	public ArrayList<Symbol> proc_param(String id, Token t, SymbolTable st) {
-		ArrayList<Symbol> result = null;
+
+	public Llamada proc_param(String id, Token t, SymbolTable st) {
+		Llamada resul2 = new Llamada();
 		try {
 			comprobar_funciones_especiales(id);
 			Symbol func_proc = st.getSymbol(id);
 			if (func_proc.type == Symbol.Types.PROCEDURE) {
 				SymbolProcedure s = (SymbolProcedure) func_proc;
-				result = s.parList;
+				resul2.simbolo = s;
+				resul2.lista = s.parList;
 			}
 			else {
 				esperaba_tipo(Symbol.Types.PROCEDURE, t.beginLine, t.beginColumn);
@@ -258,7 +259,7 @@ public class SemanticFunction {
 			}
 			// Llamar a int2char o char2int como procedimientos es error sintáctico
 		}
-		return result;
+		return resul2;
 	}
 
 
@@ -398,7 +399,8 @@ public class SemanticFunction {
 				error("Se esperaban uno o más argumentos", id.beginLine, id.beginColumn);
 			}
 			else {
-				lista_param = proc_param(idd, id, st);
+				Llamada l = proc_param(idd, id, st);
+				lista_param = l.lista;
 				if (lista_param != null) {
 					if (lista_param.size() != 0) {
 						error("Se esperaban " + lista_param.size() + " argumentos", id.beginLine, id.beginColumn);

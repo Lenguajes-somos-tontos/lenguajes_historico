@@ -532,13 +532,15 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 	int iterador_argumentos = 0;
 	int argumentos_leidos = 1;
 	boolean error_sacado = false;
+	Llamada l = null;
 }
 {
 	t = <tCP> Instr_funcion_vector_3(id, tipo, t)
 
 	|	// Matching de llamadas a procedimientos con más de un argumento
 	{
-		lista_parametros = sf.proc_param(id, t, st);
+		l = sf.proc_param(id, t, st);
+		lista_parametros = l.lista;
 		if (lista_parametros != null) {
 			if (iterador_argumentos < lista_parametros.size()) {
 				sf.verificar_argumento(tipo, lista_parametros, iterador_argumentos, st, t);
@@ -578,6 +580,7 @@ void Instr_funcion_vector_2(String id, Trio tipo, Token t) :
 			sf.error("Se esperaban " + lista_parametros.size() + " argumentos", t.beginLine, t.beginColumn);
 		}
 		// OSF
+		//System.out.println("Llamada con varios argumentos");
 	}
 }
 
@@ -586,6 +589,7 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 {
 	Trio tipo_asignacion;
 	ArrayList<Symbol> lista_parametros = null;
+	Llamada l = null;
 	Symbol.Types tipo_base_array;
 }
 {
@@ -598,7 +602,8 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 
 	| {}	// Matching de llamada a procedimiento con UN argumento
 	{
-		lista_parametros = sf.proc_param(id, t, st);
+		l = sf.proc_param(id, t, st);
+		lista_parametros = l.lista;
 		if (lista_parametros != null) {
 			if (lista_parametros.size() == 1) {
 				sf.verificar_argumento(primera_expresion, lista_parametros, 0, st, t);
@@ -608,7 +613,8 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 			}
 		}
 		sf.procedimientos_especiales(id, primera_expresion, t);
-		bloque.addInst(PCodeInstruction.OSF, sig[nivel_bloque], alike.nivel_bloque - simbolo.nivel);
+		//System.out.println("Llamada con un argumento");
+		//bloque.addInst(PCodeInstruction.OpCode.OSF, sig[nivel_bloque], alike.nivel_bloque - l.simbolo.nivel);
 	}
 }
 
@@ -633,7 +639,7 @@ void Programa_completo() :
 	{
 		//bloque.addComment(" Fin de main");
 		bloque.addInst(PCodeInstruction.OpCode.LVP);
-		System.out.println(bloque.toString());
+		//System.out.println(bloque.toString());
 		bloque.clearBlock();
 	}
 	<tEND> <tPC>
@@ -718,7 +724,7 @@ void Procedimiento() :
 	// Antes de leer la lista de parametros se inserta el simbolo procedimiento y se crea el bloque de parametros y variables locales
 	{
 		// Se crea el simbolo procedimiento sin parametros, que van un nivel por debajo
-		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>());
+		simbolo_procedimiento = new SymbolProcedure(nombre_procedimiento.image.toLowerCase(), new ArrayList<Symbol>(), "");
 		try {
 			st.insertSymbol(simbolo_procedimiento);
 			simbolo_procedimiento.nivel = simbolo_procedimiento.nivel-1;
@@ -757,7 +763,7 @@ void Funcion() :
 {
 	<tFUNC> nombre_funcion = <tID>
 	{
-		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED);
+		simbolo_funcion = new SymbolFunction(nombre_funcion.image, new ArrayList<Symbol>(), Symbol.Types.UNDEFINED, "");
 		try {
 			st.insertSymbol(simbolo_funcion);
 			simbolo_funcion.nivel = simbolo_funcion.nivel-1;

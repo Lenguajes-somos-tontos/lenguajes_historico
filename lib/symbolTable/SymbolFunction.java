@@ -17,14 +17,15 @@ public class SymbolFunction extends Symbol implements Cloneable {
     // se eliminan de la tabla, pero la propia función/proc sigue en la tabla, haciendo
     // necesario mantener la información de los parámetros.
     public ArrayList<Symbol> parList;
+    public String label;
 
     public Types returnType; //tipo de la función
 
-    public SymbolFunction(String _name, ArrayList<Symbol> _parList, 
-                          Types _returnType) {
+    public SymbolFunction(String _name, ArrayList<Symbol> _parList, Types _returnType, String _label) {
     	super(_name, Types.FUNCTION, ParameterClass.NONE);
         parList = _parList;
         returnType = _returnType;
+        label = _label;
     }
 
     public String toString() {
