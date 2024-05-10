@@ -794,39 +794,68 @@ void Instr_iterativa_sin_return():
 	Token t;
 }
 {
+	{
+		String label2 = CGUtils.newLabel();
+		bloque.addLabel(label2);
+	}
 	t = <tWHILE> tipo = Expresion() <tLOOP>
-	{sf.verificar_bool(tipo.tipo, t);}
+    {
+        sf.verificar_bool(tipo.tipo, t);
+        String label = CGUtils.newLabel();
+        bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+    }
 	(Instruccion_sin_return())+
+	{
+        bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
+		bloque.addLabel(label);
+    }
 	<tEND> <tLOOP>
 }
 
 
 void Instr_condicional_sin_return():
 {
-	Trio tipo;
-	Token t;
+    Trio tipo;
+    Token t;
 }
 {
-	t = <tIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.tipo, t);}
-	(Instruccion_sin_return())+
-	MasIF()
-	<tEND> <tIF>
+    t = <tIF> tipo = Expresion() <tTHEN>
+    {
+        sf.verificar_bool(tipo.tipo, t);
+        String label = CGUtils.newLabel();
+        bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+    }
+    (Instruccion_sin_return())+
+    {
+        String label2 = CGUtils.newLabel();
+        bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
+        bloque.addLabel(label);
+    }
+    MasIF(label2)
+    <tEND> <tIF>
 }
 
 
-void MasIF():
+void MasIF(String label2):
 {
-	Trio tipo;
-	Token t;
+    Trio tipo;
+    Token t;
 }
 {
-	t = <tELSIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.tipo, t);}
-	(Instruccion_sin_return())+
-	MasIF()
-	| <tELSE> (Instruccion_sin_return())+
-	| {}
+    t = <tELSIF> tipo = Expresion() <tTHEN>
+    {
+        sf.verificar_bool(tipo.tipo, t);
+        String label = CGUtils.newLabel();
+        bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+    }
+    (Instruccion_sin_return())+
+    {
+        bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
+        bloque.addLabel(label);
+    }
+    MasIF(label2)
+    | <tELSE> (Instruccion_sin_return())+ {bloque.addLabel(label2);}
+    | {}
 }
 
 
@@ -836,9 +865,21 @@ void Instr_iterativa_con_return(Symbol.Types tipo_a_retornar):
 	Token t;
 }
 {
+	{
+		String label2 = CGUtils.newLabel();
+		bloque.addLabel(label2);
+	}
 	t = <tWHILE> tipo = Expresion() <tLOOP>
-	{sf.verificar_bool(tipo.tipo, t);}
+	{
+        sf.verificar_bool(tipo.tipo, t);
+        String label = CGUtils.newLabel();
+        bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+    }
 	(Instruccion_con_return(tipo_a_retornar))+
+	{
+        bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
+		bloque.addLabel(label);
+    }
 	<tEND> <tLOOP>
 }
 
@@ -853,15 +894,24 @@ boolean Instr_condicional_con_return(Symbol.Types tipo_a_retornar):
 }
 {
 	t = <tIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.tipo, t);}
+	{
+		sf.verificar_bool(tipo.tipo, t);
+		String label = CGUtils.newLabel();
+		bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+	}
 	(es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+
-	return_else = MasIF_return(tipo_a_retornar)
+	{
+        String label2 = CGUtils.newLabel();
+        bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
+        bloque.addLabel(label);
+	}
+	return_else = MasIF_return(tipo_a_retornar, label2)
 	<tEND> <tIF>
 	{return return_leido && return_else;}
 }
 
 
-boolean MasIF_return(Symbol.Types tipo_a_retornar):
+boolean MasIF_return(Symbol.Types tipo_a_retornar, String label2):
 {
 	Trio tipo;
 	Token t;
@@ -870,11 +920,19 @@ boolean MasIF_return(Symbol.Types tipo_a_retornar):
 }
 {
 	(t = <tELSIF> tipo = Expresion() <tTHEN>
-	{sf.verificar_bool(tipo.tipo, t);}
+	{
+        sf.verificar_bool(tipo.tipo, t);
+        String label = CGUtils.newLabel();
+        bloque.addInst(PCodeInstruction.OpCode.JMF, label);
+    }
 	(es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+
-	es_return = MasIF_return(tipo_a_retornar)
+	{
+        bloque.addInst(PCodeInstruction.OpCode.JMP, label2);
+        bloque.addLabel(label);
+    }
+	es_return = MasIF_return(tipo_a_retornar, label2)
 
-	| <tELSE> (es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+
+	| <tELSE> (es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+ {bloque.addLabel(label2);}
 	| {} {return_leido = false;})
 	{return return_leido && es_return;}
 }
