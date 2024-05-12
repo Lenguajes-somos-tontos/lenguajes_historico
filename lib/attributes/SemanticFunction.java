@@ -277,10 +277,12 @@ public class SemanticFunction {
 
 	public void procedimientos_especiales(String id, Trio tipo, Token t) {
 		if (id.equals("put") || id.equals("put_line")) {
-			if (tipo.tipo == Symbol.Types.INT)
+			if (tipo.tipo == Symbol.Types.INT) {
 				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 1);
-			else if (tipo.tipo == Symbol.Types.CHAR)
+			}
+			else if (tipo.tipo == Symbol.Types.CHAR) {
 				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+			}
 			else if (tipo.tipo == Symbol.Types.BOOL) {
 				String label1 = CGUtils.newLabel();
 				String label2 = CGUtils.newLabel();
@@ -340,47 +342,63 @@ public class SemanticFunction {
 	public void verificar_argumento(Trio argumento, ArrayList<Symbol> lista_parametros, int indice, SymbolTable st, Token t) {
 		Symbol parametro = lista_parametros.get(indice);
 
-		// Tipos no coinciden
-		if (argumento.tipo != parametro.type) {
-			esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
-		}
+		// Ambos son arrays (en este punto no se ha generado código)
+		if (parametro.type == Symbol.Types.ARRAY && argumento.tipo == Symbol.Types.ARRAY) {
+			SymbolArray array_argumento = (SymbolArray) (argumento.simbolo);
+			SymbolArray array_parametro = (SymbolArray) (parametro);
 
-		// Tipo por referencia y no es asignable
-		if (parametro.type != Symbol.Types.ARRAY && parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia ) {
-			tipo_asignable(t.beginLine, t.beginColumn);
-		}
-		else if (parametro.type != Symbol.Types.ARRAY && parametro.parClass == Symbol.ParameterClass.REF) {
-			alike.bloque.removeLastInst();
-		}
+			// Índices no coinciden
+			if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
+				error("Los índices del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
+			}
 
-		// Caso ARRAY
-		if (parametro.type == Symbol.Types.ARRAY) {
-			if (argumento.tipo == Symbol.Types.ARRAY) {
-				SymbolArray array_argumento = (SymbolArray) (argumento.simbolo);
-				SymbolArray array_parametro = (SymbolArray) (parametro);
+			// Tipos base no coinciden
+			if (array_argumento.baseType != array_parametro.baseType) {
+				error("Los tipos base del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
+			}
 
-				// Índices no coinciden
-				if (array_argumento.minInd != array_parametro.minInd || array_argumento.maxInd != array_parametro.maxInd) {
-					error("Los índices del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
-				}
-
-				// Tipos base no coinciden
-				if (array_argumento.baseType != array_parametro.baseType) {
-					error("Los tipos base del array parámetro " + parametro.name + " no coinciden", t.beginLine, t.beginColumn);
-				}
-
-				// Por referencia
-				if (parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia) {
-					tipo_asignable(t.beginLine, t.beginColumn);
-				}
-				else if (parametro.parClass == Symbol.ParameterClass.REF) {
-					int longitud_array = array_argumento.maxInd - array_argumento.minInd + 1;
+			// El array es por referencia
+			if (parametro.parClass == Symbol.ParameterClass.REF) {
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - argumento.simbolo.nivel, (int)argumento.simbolo.dir);
+				if (argumento.simbolo.parClass == Symbol.ParameterClass.REF) {
+					alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 				}
 			}
+			// El array se pasa por valor
 			else {
-				// Se esperaba un array
-				esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
+				int iterador_array = (int)argumento.simbolo.dir;
+				int longitud_array = array_argumento.maxInd - array_argumento.minInd + 1;
+				if (argumento.simbolo.parClass == Symbol.ParameterClass.REF) {
+					for (int i = 0; i < longitud_array; i++) {
+						alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - argumento.simbolo.nivel, iterador_array);
+						alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+						alike.bloque.addInst(PCodeInstruction.OpCode.STC, i);
+						alike.bloque.addInst(PCodeInstruction.OpCode.PLUS);
+						alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+					}
+				}
+				else {
+					for (int i = 0; i < longitud_array; i++) {
+						alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - argumento.simbolo.nivel, iterador_array);
+						alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+						iterador_array++;
+					}
+				}
 			}
+		}
+		// Ambos son un tipo distinto de array (en este punto se ha generado el código del VALOR del argumento)
+		else if (parametro.type == argumento.tipo) {
+			if (parametro.parClass == Symbol.ParameterClass.REF && !argumento.referencia) {
+				tipo_asignable(t.beginLine, t.beginColumn);
+			}
+			else if (parametro.parClass == Symbol.ParameterClass.REF) {
+				// Si el parámetro es por referencia, se borra la última instrucción, que será un DRF, para apilar la DIRECCIÓN
+				alike.bloque.removeLastInst();
+			}
+		}
+		// Tipos no coinciden
+		else {
+			esperaba_tipo(parametro.type, t.beginLine, t.beginColumn);
 		}
 	}
 
