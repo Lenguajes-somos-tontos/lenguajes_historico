@@ -371,6 +371,7 @@ Trio Primario() :
 		Symbol simbolo = llamada.simbolo;
 		ArrayList<Symbol> lista_parametros = llamada.lista;
 
+		// Se ha leído el ID de una función
 		if (simbolo != null && simbolo.type == Symbol.Types.FUNCTION) {
 			SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
 			tipo.tipo = simbolo_funcion.returnType;
@@ -381,6 +382,7 @@ Trio Primario() :
 				error_args = true;
 			}
 		}
+		// Se ha leído el ID de un array
 		else if (simbolo != null && simbolo.type == Symbol.Types.ARRAY) {
 			SymbolArray s = (SymbolArray) simbolo;
 			if (argumento.tipo == Symbol.Types.INT) {
@@ -389,6 +391,7 @@ Trio Primario() :
 				bloque.addInst(PCodeInstruction.OpCode.STC, s.minInd);
 				bloque.addInst(PCodeInstruction.OpCode.SBT);
 				bloque.addInst(PCodeInstruction.OpCode.SRF, nivel_bloque - s.nivel, (int)s.dir);
+				if (s.parClass == Symbol.ParameterClass.REF) bloque.addInst(PCodeInstruction.OpCode.DRF);
 				bloque.addInst(PCodeInstruction.OpCode.PLUS);
 				bloque.addInst(PCodeInstruction.OpCode.DRF);
 			}
@@ -396,6 +399,8 @@ Trio Primario() :
 				sf.esperaba_tipo(Symbol.Types.INT, t.beginLine, t.beginColumn);
 			}
 		}
+		// Sólo se consideran los casos de función y array, si el ID es de otra cosa,
+		// se ha sacado ya el error en "verificar_func_array()"
 	}
 	(<tCOMA> argumento = Expresion()
 	{
@@ -701,7 +706,7 @@ ArrayList<Symbol> Parametros() :
 				st.insertSymbol(simbolo);
 				simbolo.nivel = simbolo.nivel - 1;
 				simbolo.dir = sig[nivel_bloque];
-				if (simbolo.type == Symbol.Types.ARRAY) {
+				if (simbolo.type == Symbol.Types.ARRAY && simbolo.parClass == Symbol.ParameterClass.VAL) {
 					SymbolArray s = (SymbolArray) simbolo;
 					alike.sig[alike.nivel_bloque] += (s.maxInd - s.minInd + 1);
 				}

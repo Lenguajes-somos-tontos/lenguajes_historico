@@ -183,9 +183,12 @@ public class SemanticFunction {
 			}
 			else {
 				tipo_base_array = simbolo_array.baseType;
+
+				// El código de la expresión para calcular el índice ya se ha generado
 				alike.bloque.addInst(PCodeInstruction.OpCode.STC, simbolo_array.minInd);
 				alike.bloque.addInst(PCodeInstruction.OpCode.SBT);
 				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo_array.nivel, (int)simbolo_array.dir);
+				if (simbolo_array.parClass == Symbol.ParameterClass.REF) alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 				alike.bloque.addInst(PCodeInstruction.OpCode.PLUS);
 			}
 		}
@@ -373,7 +376,7 @@ public class SemanticFunction {
 				else if (parametro.parClass == Symbol.ParameterClass.REF) {
 					// Has puesto 2*long_array inst
 					int longitud_array = array_argumento.maxInd - array_argumento.minInd + 1;
-					for (int i = 0; i < (2*longitud_array) - 1; i++) alike.bloque.removeLastInst();
+					//for (int i = 0; i < (2*longitud_array) - 1; i++) alike.bloque.removeLastInst();
 				}
 			}
 			else {
@@ -553,5 +556,4 @@ public class SemanticFunction {
 	public void tipo_asignable(int linea, int columna) {
 		error("Se esperaba un tipo asignable", linea, columna);
 	}
-
 }
