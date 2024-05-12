@@ -11,6 +11,7 @@ import lib.symbolTable.exceptions.*;
 import lib.tools.codeGeneration.CGUtils;
 import lib.tools.codeGeneration.PCodeInstruction;
 
+import java.net.StandardProtocolFamily;
 import java.util.*;
 import lib.attributes.*;
 import traductor.*;
@@ -86,30 +87,35 @@ public class SemanticFunction {
 			Symbol simbolo = st.getSymbol(t.image.toLowerCase());
 
 			//alike.bloque.addComment(" Leer la direccion de la variable " + simbolo.name);
-			alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
 			if (simbolo.type == Symbol.Types.INT) {
 				tipo.tipo = Symbol.Types.INT;
 				tipo.referencia = true;
 				tipo.simbolo = simbolo;
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
 				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+				if (simbolo.parClass == Symbol.ParameterClass.REF) alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 			}
 			else if (simbolo.type == Symbol.Types.BOOL) {
 				tipo.tipo = Symbol.Types.BOOL;
 				tipo.referencia = true;
 				tipo.simbolo = simbolo;
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
 				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+				if (simbolo.parClass == Symbol.ParameterClass.REF) alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 			}
 			else if (simbolo.type == Symbol.Types.CHAR) {
 				tipo.tipo = Symbol.Types.CHAR;
 				tipo.referencia = true;
 				tipo.simbolo = simbolo;
+				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, (int)simbolo.dir);
 				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
+				if (simbolo.parClass == Symbol.ParameterClass.REF) alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 			}
 			else if (simbolo.type == Symbol.Types.ARRAY) {
 				tipo.tipo = Symbol.Types.ARRAY;
 				tipo.referencia = true;
 				tipo.simbolo = simbolo;
-
+				/*
 				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 				SymbolArray s = (SymbolArray) simbolo;
 				int indice = (int)simbolo.dir + 1;
@@ -120,6 +126,7 @@ public class SemanticFunction {
 					alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 					indice++;
 				}
+				*/
 			}
 			else if (simbolo.type == Symbol.Types.FUNCTION) {
 				SymbolFunction s = (SymbolFunction) simbolo;
@@ -154,6 +161,7 @@ public class SemanticFunction {
 			}
 			else {
 				alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo_asignacion.nivel, (int)simbolo_asignacion.dir);
+				if (simbolo_asignacion.parClass == Symbol.ParameterClass.REF) alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
 				alike.bloque.addInst(PCodeInstruction.OpCode.ASGI);
 			}
 		}
