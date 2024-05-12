@@ -1,11 +1,22 @@
 procedure test_1 is
     n: integer;
-    --c: character;
-    v: array(1..4) of integer;
+    c: character;
+    v: array(0..2) of integer;
 ----------------------------------------------------------
-procedure f1 (r: ref array(1..4) of integer) is
+procedure f2 (y: array(0..2) of integer) is
+    si: integer;
 begin
-    r(2) := 3;
+    null;
+end;
+----------------------------------------------------------
+procedure f1 (x: array(0..2) of integer) is
+    si: integer;
+begin
+    --x(3) := x(2);
+    --put(x);
+    f2(x);
+    --x := si;
+    null;
 end;
 ----------------------------------------------------------
 begin
