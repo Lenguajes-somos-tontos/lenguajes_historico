@@ -374,9 +374,7 @@ public class SemanticFunction {
 					tipo_asignable(t.beginLine, t.beginColumn);
 				}
 				else if (parametro.parClass == Symbol.ParameterClass.REF) {
-					// Has puesto 2*long_array inst
 					int longitud_array = array_argumento.maxInd - array_argumento.minInd + 1;
-					//for (int i = 0; i < (2*longitud_array) - 1; i++) alike.bloque.removeLastInst();
 				}
 			}
 			else {
