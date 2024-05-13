@@ -234,9 +234,6 @@ public class SemanticFunction {
 				SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
 				result.lista = simbolo_funcion.parList;
 			}
-			else if (simbolo.type != Symbol.Types.ARRAY) {
-				error("Se esperaba una función/acceso a array", t.beginLine, t.beginColumn);
-			}
 		}
 		catch (SymbolNotFoundException s) {
 			simbolo_no_definido(id, t.beginLine, t.beginColumn);

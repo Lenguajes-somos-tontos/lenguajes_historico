@@ -1,5 +1,11 @@
   ENP L0
 L0:
   STC  3
-  WRT  1
+  STC  0
+  SBT
+  SRF  0  4
+  PLUS
+  DRF
+  SRF  0  3
+  ASGI
   LVP

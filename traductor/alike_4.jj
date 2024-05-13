@@ -60,6 +60,7 @@ public class alike {
 			   args[0] += ".al";
 			   parser = new alike(new java.io.FileInputStream(args[0]));
 		    }
+		System.out.println("Compilando programa...");
 		   parser.Programa();
 	    }
 	    catch (java.io.FileNotFoundException e) {
@@ -75,7 +76,6 @@ public class alike {
 			System.err.println("Finalizo traducción por detección de error no controlado: \n\t" + e.getMessage());
 			System.err.println("Se ha producido la excepción: \n\t" + e.getClass().getName());
   		}
-		System.out.println("Compilando programa...");
 		  if (codigo_estado == 0) {
 			System.out.println("Compilación finalizada. Se ha generado el fichero " +  args[0] + ".pcode");
 		}
@@ -369,19 +369,17 @@ Trio Primario() :
 		else tipo.tipo = Symbol.Types.CHAR;
 	}
 
-
 |	LOOKAHEAD(2) t = <tID> <tAP> argumento = Expresion()
 	{
 		boolean error_array = false, error_args = false;
 		int iterador_argumentos = 0;
 
 		llamada = sf.verificar_func_array(t, st);
-		Symbol simbolo = llamada.simbolo;
 		ArrayList<Symbol> lista_parametros = llamada.lista;
 
 		// Se ha leído el ID de una función
-		if (simbolo != null && simbolo.type == Symbol.Types.FUNCTION) {
-			SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
+		if (llamada.simbolo != null && llamada.simbolo.type == Symbol.Types.FUNCTION) {
+			SymbolFunction simbolo_funcion = (SymbolFunction) llamada.simbolo;
 			tipo.tipo = simbolo_funcion.returnType;
 			if (0 < lista_parametros.size()) {
 				sf.verificar_argumento(argumento, lista_parametros, 0, st, t);
@@ -391,8 +389,8 @@ Trio Primario() :
 			}
 		}
 		// Se ha leído el ID de un array
-		else if (simbolo != null && simbolo.type == Symbol.Types.ARRAY) {
-			SymbolArray s = (SymbolArray) simbolo;
+		else if (llamada.simbolo != null && llamada.simbolo.type == Symbol.Types.ARRAY) {
+			SymbolArray s = (SymbolArray) llamada.simbolo;
 			if (argumento.tipo == Symbol.Types.INT) {
 				tipo.tipo = s.baseType;
 				tipo.referencia = true;
@@ -414,7 +412,7 @@ Trio Primario() :
 	{
 		iterador_argumentos++;
 
-		if (simbolo != null && simbolo.type == Symbol.Types.FUNCTION) {
+		if (llamada.simbolo != null && llamada.simbolo.type == Symbol.Types.FUNCTION) {
 			if (iterador_argumentos < lista_parametros.size()) {
 				sf.verificar_argumento(argumento, lista_parametros, iterador_argumentos, st, t);
 			}
@@ -422,13 +420,13 @@ Trio Primario() :
 				error_args = true;
 			}
 		}
-		else if (simbolo != null && simbolo.type == Symbol.Types.ARRAY) {
+		else if (llamada.simbolo != null && llamada.simbolo.type == Symbol.Types.ARRAY) {
 			error_array = true;
 		}
 	})* <tCP>
 	{
-		if (simbolo.type == Symbol.Types.FUNCTION) {
-			SymbolFunction simbolo_funcion = (SymbolFunction) simbolo;
+		if (llamada.simbolo != null && llamada.simbolo.type == Symbol.Types.FUNCTION) {
+			SymbolFunction simbolo_funcion = (SymbolFunction) llamada.simbolo;
 			bloque.addOSFInst(sig[nivel_bloque], nivel_bloque - simbolo_funcion.nivel, simbolo_funcion.label);
 		}
 		if (lista_parametros != null && iterador_argumentos+1 != lista_parametros.size()) {
@@ -444,29 +442,33 @@ Trio Primario() :
 		}
 	}
 
-
 |	t = <tID> {sf.Primario_ID(t, tipo, st);}
+
 |	t = <tNUM>
 	{
 		tipo.tipo = Symbol.Types.INT;
 		bloque.addInst(PCodeInstruction.OpCode.STC, Integer.parseInt(t.image));
 	}
+
 |	t = <tCONSTCHAR>
 	{
 		char c = t.image.charAt(0);
 		tipo.tipo = Symbol.Types.CHAR;
 		bloque.addInst(PCodeInstruction.OpCode.STC, (int) c);
 	}
+
 |	t = <tSTRING>
 	{
 		tipo.tipo = Symbol.Types.STRING;
 		tipo.nombre = t.image;
 	}
+
 |	t = <tTRUE>
 	{
 		tipo.tipo = Symbol.Types.BOOL;
 		bloque.addInst(PCodeInstruction.OpCode.STC, 1);
 	}
+
 |	t = <tFALSE>
 	{
 		tipo.tipo = Symbol.Types.BOOL;
