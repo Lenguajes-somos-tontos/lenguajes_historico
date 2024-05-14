@@ -155,7 +155,7 @@ SKIP :
 |	"\t"
 |	"\n"
 |	"\r"
-|	<tCOMMENT : "--" (<tCARACTER>)*>
+|	<tCOMMENT : "--" ((<tCARACTER>) | ("\""))*>
 }
 
 
@@ -634,6 +634,12 @@ void Instr_funcion_vector_3(String id, Trio primera_expresion, Token t) :
 			SymbolProcedure s = (SymbolProcedure) l.simbolo;
 			bloque.addOSFInst(sig[nivel_bloque], nivel_bloque - s.nivel, s.label);
 		}
+		if (id.equals("put_line")) {
+			bloque.addInst(PCodeInstruction.OpCode.STC, 13);
+			bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+			bloque.addInst(PCodeInstruction.OpCode.STC, 10);
+			bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+		}
 	}
 }
 
@@ -931,7 +937,7 @@ void MasIF(String label2):
     Token t;
 }
 {
-    t = <tELSIF> tipo = Expresion() <tTHEN>
+    (t = <tELSIF> tipo = Expresion() <tTHEN>
     {
         sf.verificar_bool(tipo.tipo, t);
         String label = CGUtils.newLabel();
@@ -943,8 +949,9 @@ void MasIF(String label2):
         bloque.addLabel(label);
     }
     MasIF(label2)
-    | <tELSE> (Instruccion_sin_return())+ {bloque.addLabel(label2);}
-    | {}
+    | <tELSE> (Instruccion_sin_return())+
+    | {})
+	{bloque.addLabel(label2);}
 }
 
 

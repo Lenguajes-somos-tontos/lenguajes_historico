@@ -115,18 +115,6 @@ public class SemanticFunction {
 				tipo.tipo = Symbol.Types.ARRAY;
 				tipo.referencia = true;
 				tipo.simbolo = simbolo;
-				/*
-				alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
-				SymbolArray s = (SymbolArray) simbolo;
-				int indice = (int)simbolo.dir + 1;
-				int longitud_array = s.maxInd - s.minInd;
-
-				for (int i = 0; i < longitud_array; i++) {
-					alike.bloque.addInst(PCodeInstruction.OpCode.SRF, alike.nivel_bloque - simbolo.nivel, indice);
-					alike.bloque.addInst(PCodeInstruction.OpCode.DRF);
-					indice++;
-				}
-				*/
 			}
 			else if (simbolo.type == Symbol.Types.FUNCTION) {
 				SymbolFunction s = (SymbolFunction) simbolo;
@@ -431,7 +419,9 @@ public class SemanticFunction {
 						error("Se esperaban " + lista_param.size() + " argumentos", id.beginLine, id.beginColumn);
 					}
 					else {
-						alike.bloque.addInst(PCodeInstruction.OpCode.OSF, alike.sig[alike.nivel_bloque], alike.nivel_bloque - l.simbolo.nivel);
+						SymbolProcedure s = (SymbolProcedure) l.simbolo;
+						//alike.bloque.addInst(PCodeInstruction.OpCode.OSF, alike.sig[alike.nivel_bloque], alike.nivel_bloque - l.simbolo.nivel);
+						alike.bloque.addOSFInst(alike.sig[alike.nivel_bloque], alike.nivel_bloque - l.simbolo.nivel, s.label);
 					}
 				}
 			}
