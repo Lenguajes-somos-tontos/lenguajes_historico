@@ -56,3 +56,10 @@ Características generales:
   reconocios como métodos escritos por el usuario. En cambio, "get", "put" y "put_line" son tratados como casos especiales,
   ya que no se puede conocer su número de parámetros, por lo que en las comprobaciones de las invocaciones,
   se comprueba antes que el ID invocado sea uno de ellos (para que no de error de símbolo no definido).
+
+- Generación de código asignación: El planteamiento de la regla Expresion() es que generara directamente su código en el codeblock
+  con el resto del código, por lo que en una asignación a una variable distinta de una componente de un array, se genera antes lo que
+  se va a asignar y después la dirección de la variable, utilizando para ello la instrucción ASGI.
+
+- Cambio en comprobaciones semánticas en llamadas a procedimientos/funciones: Ahora todas las comprobaciones semánticas de cada argumento
+  en una llamada, se hacen conforme se leen estos argumentos, no se acumulan en una lista y después se verifican todos.
