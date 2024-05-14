@@ -266,7 +266,19 @@ public class SemanticFunction {
 				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 1);
 			}
 			else if (tipo.tipo == Symbol.Types.CHAR) {
-				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				if (tipo.nombre == "" || tipo.nombre.charAt(0) < 128) {
+					alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				}
+				else {
+					char c = tipo.nombre.charAt(0);
+					byte[] bytes = String.valueOf(c).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+					int num1 = bytes[0] & 0xFF;
+					int num2 = bytes[1] & 0xFF;
+					alike.bloque.addInst(PCodeInstruction.OpCode.STC, num1);
+					alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+					alike.bloque.addInst(PCodeInstruction.OpCode.STC, num2);
+					alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+				}
 			}
 			else if (tipo.tipo == Symbol.Types.BOOL) {
 				String label1 = CGUtils.newLabel();
@@ -297,8 +309,19 @@ public class SemanticFunction {
 			else if (tipo.tipo == Symbol.Types.STRING) {
 				for (char c : tipo.nombre.toCharArray()) {
 					if (c != '\"') {
-						alike.bloque.addInst(PCodeInstruction.OpCode.STC, c);
-						alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+						if (c < 128) {
+							alike.bloque.addInst(PCodeInstruction.OpCode.STC, c);
+							alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+						}
+						else {
+							byte[] bytes = String.valueOf(c).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+							int num1 = bytes[0] & 0xFF;
+							int num2 = bytes[1] & 0xFF;
+							alike.bloque.addInst(PCodeInstruction.OpCode.STC, num1);
+							alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+							alike.bloque.addInst(PCodeInstruction.OpCode.STC, num2);
+							alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
+						}
 					}
 				}
 			}

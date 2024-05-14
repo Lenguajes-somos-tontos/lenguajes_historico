@@ -58,8 +58,7 @@ public class alike {
 			   parser = new alike(System.in);
 			}
 		    else {
-			   args[0] += ".al";
-			   parser = new alike(new java.io.FileInputStream(args[0]));
+			   parser = new alike(new java.io.FileInputStream(args[0] + ".al"));
 		    }
 		System.out.println("Compilando programa...");
 		   parser.Programa();
@@ -92,7 +91,7 @@ PARSER_END(alike)
 TOKEN : {
 	<#tLETRA: (["a"-"z"])>
 |	<#tDIGITO: ["0"-"9"]>
-|	<#tCARACTER: (~["\t","\n","\r","\""] | ["á"-"ú", "Á"-"Ú"])>
+|	<#tCARACTER: (~["\t","\n","\r","\""])>
 }
 
 TOKEN : {
@@ -296,14 +295,15 @@ Trio Expresion_simple() :
 	Token t2 = null;
 }
 {
-	((t1 = <tOPMAS> | t1 = <tOPMENOS>) {match1=true;})? tipo = Termino() ((t2 = <tOPMAS> | t2 = <tOPMENOS>)  tipo2 = Termino()
+	((t1 = <tOPMAS> | t1 = <tOPMENOS>) {match1=true;})? tipo = Termino()
+	{
+		if (t1 != null && t1.image.equals("-")) bloque.addInst(PCodeInstruction.OpCode.NGI);
+	}
+	((t2 = <tOPMAS> | t2 = <tOPMENOS>)  tipo2 = Termino()
 	{sf.verificar_int(tipo, tipo2, t2);})*
 	{
 		if (match1) {
 			tipo.referencia = false;
-			if (t1 != null && t1.image.equals("-")) {
-				bloque.addInst(PCodeInstruction.OpCode.NGI);
-			}
 		}
 		return tipo;
 	}
@@ -455,7 +455,10 @@ Trio Primario() :
 	{
 		char c = t.image.charAt(1);
 		tipo.tipo = Symbol.Types.CHAR;
-		bloque.addInst(PCodeInstruction.OpCode.STC, (int) c);
+		tipo.nombre = String.valueOf(c);
+		if (c < 128) {
+			bloque.addInst(PCodeInstruction.OpCode.STC, (int) c);
+		}
 	}
 
 |	t = <tSTRING>
