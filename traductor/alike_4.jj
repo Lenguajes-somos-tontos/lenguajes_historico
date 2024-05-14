@@ -8,6 +8,7 @@
 options {
 	IGNORE_CASE = true;			// Comparaciones de tokens case-insensitive
 	COMMON_TOKEN_ACTION = false;
+	UNICODE_INPUT = true;
 	//DEBUG_PARSER = true;
 }
 
@@ -91,7 +92,7 @@ PARSER_END(alike)
 TOKEN : {
 	<#tLETRA: (["a"-"z"])>
 |	<#tDIGITO: ["0"-"9"]>
-|	<#tCARACTER: (~["\t","\n","\r","\""])>
+|	<#tCARACTER: (~["\t","\n","\r","\""] | ["á"-"ú", "Á"-"Ú"])>
 }
 
 TOKEN : {
@@ -452,7 +453,7 @@ Trio Primario() :
 
 |	t = <tCONSTCHAR>
 	{
-		char c = t.image.charAt(0);
+		char c = t.image.charAt(1);
 		tipo.tipo = Symbol.Types.CHAR;
 		bloque.addInst(PCodeInstruction.OpCode.STC, (int) c);
 	}
@@ -927,6 +928,7 @@ void Instr_condicional_sin_return():
         bloque.addLabel(label);
     }
     MasIF(label2)
+	{bloque.addLabel(label2);}
     <tEND> <tIF>
 }
 
@@ -951,7 +953,6 @@ void MasIF(String label2):
     MasIF(label2)
     | <tELSE> (Instruccion_sin_return())+
     | {})
-	{bloque.addLabel(label2);}
 }
 
 
@@ -1002,6 +1003,7 @@ boolean Instr_condicional_con_return(Symbol.Types tipo_a_retornar):
         bloque.addLabel(label);
 	}
 	return_else = MasIF_return(tipo_a_retornar, label2)
+	{bloque.addLabel(label2);}
 	<tEND> <tIF>
 	{return return_leido && return_else;}
 }
@@ -1028,7 +1030,7 @@ boolean MasIF_return(Symbol.Types tipo_a_retornar, String label2):
     }
 	es_return = MasIF_return(tipo_a_retornar, label2)
 
-	| <tELSE> (es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+ {bloque.addLabel(label2);}
+	| <tELSE> (es_return = Instruccion_con_return(tipo_a_retornar) {if (es_return) return_leido = true;})+
 	| {} {return_leido = false;})
 	{return return_leido && es_return;}
 }

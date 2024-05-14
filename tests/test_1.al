@@ -1,19 +1,11 @@
 procedure test_1 is
-    n: integer;
+    vivos: integer;
+    i: integer;
     --c: character;
     v: array(0..2) of integer;
 ----------------------------------------------------------
 begin
-    --null;
-    --put(v(skip_line));
-    --v(n) := 3;
-    --n := v(3);
-    --v(3) := n(4);
-    --f1(v);
-    --f2(v);
-    --v(3);
-    --v(4) := 2;
-    --n := 3;
-    --put("La variable n vale: ", n);
-    put_line;
+	skip_line;
+    i := 3 + 4;
+	skip_line;
 end;
