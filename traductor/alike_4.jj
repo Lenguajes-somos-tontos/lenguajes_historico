@@ -459,6 +459,9 @@ Trio Primario() :
 		if (c < 128) {
 			bloque.addInst(PCodeInstruction.OpCode.STC, (int) c);
 		}
+		else {
+			sf.error("Carácter extraño leído", t.beginLine, t.beginColumn);
+		}
 	}
 
 |	t = <tSTRING>
