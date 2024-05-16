@@ -266,7 +266,7 @@ public class SemanticFunction {
 				alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 1);
 			}
 			else if (tipo.tipo == Symbol.Types.CHAR) {
-				if (tipo.nombre.charAt(0) < 128) {
+				if (tipo.nombre == "" || tipo.nombre.charAt(0) < 128) {
 					alike.bloque.addInst(PCodeInstruction.OpCode.WRT, 0);
 				}
 			}

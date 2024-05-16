@@ -4,5 +4,6 @@ procedure exps is
 	numFormulas, numCorrectas: integer;
 ------------------------------------------------------------------------
 begin
-	put('ó');
+    put (int2char (13), int2char (10));
+	put_line;
 end;
